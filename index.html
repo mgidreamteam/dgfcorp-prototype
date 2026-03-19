@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>D.R.E.A.M. Gigafactory Corp. - Studio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Alumni+Sans+Pinstripe&family=Mulish:wght@300;400;500;600;700&family=Kode+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+      :root {
+        --app-bg: #09090b; /* Deep dark background */
+        --stage-bg: #18181b; 
+        --text-primary: #ffffff;
+        --text-secondary: #a1a1aa;
+        --accent-color: #ffffff;
+        --accent-bg: #27272a;
+        --border-color: #27272a;
+        --glass-border: rgba(255, 255, 255, 0.1);
+      }
+      body {
+        font-family: 'Mulish', sans-serif;
+        background-color: var(--stage-bg);
+        color: var(--text-primary);
+      }
+      /* Globally reduce boldness */
+      body .font-bold {
+        font-weight: 500;
+      }
+      /* Keep product panel titles on login page bold */
+      .login-page-product-panel h3.font-bold {
+        font-weight: 700;
+      }
+
+      .font-kido {
+          font-family: 'Kode Mono', monospace;
+      }
+      
+      /* Custom Scrollbar */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: var(--accent-bg);
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #52525b; /* zinc-600 */
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #71717a; /* zinc-500 */
+      }
+       /* Animations */
+      @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+      }
+      .animate-fade-in {
+          animation: fadeIn 0.5s ease-out forwards;
+      }
+      @keyframes fadeInUp {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+      }
+      .animate-fade-in-up {
+        animation: fadeInUp 0.5s ease-out forwards;
+      }
+
+      /* Sliding panel animation */
+      .slide-container {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        overflow-x: hidden;
+      }
+      .slide-panel {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        transition: transform 0.3s ease-in-out;
+        backface-visibility: hidden;
+      }
+      
+      /* Login page wavy background */
+      .wavy-background {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        z-index: 0;
+      }
+      .wavy-background svg {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        min-width: 100%;
+        min-height: 100%;
+        width: auto;
+        height: auto;
+        transform: translate(-50%, -50%);
+      }
+      /* About us page styles */
+      .panel {
+        background-color: #18181b; /* zinc-900 */
+        border: 1px solid var(--border-color);
+        border-radius: 1rem;
+      }
+      .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+      }
+      .scrollbar-hide {
+        -ms-overflow-style: none; /* IE and Edge */
+        scrollbar-width: none; /* Firefox */
+      }
+      .spotlight-effect {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 150%;
+        height: 150%;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 60%);
+        transform: translate(-50%, -50%);
+        pointer-events: none;
+      }
+
+      /* Print Styles */
+      .print-only {
+        display: none;
+      }
+      @media print {
+        .no-print {
+          display: none !important;
+        }
+        body * {
+          visibility: hidden;
+        }
+        .printable-area, .printable-area * {
+          visibility: visible;
+        }
+        .printable-area {
+          position: absolute;
+          left: 0;
+          top: 0;
+          width: 100%;
+          padding: 1rem;
+          height: auto;
+          overflow: visible !important;
+        }
+        body, html {
+          background-color: #fff !important;
+          color: #000 !important;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+          overflow: visible !important;
+          height: auto !important;
+        }
+        main[class*="overflow-hidden"], div[class*="overflow-y-auto"] {
+            overflow: visible !important;
+            height: auto !important;
+        }
+        .print-only {
+          display: block;
+          visibility: visible;
+          padding-bottom: 1.5rem;
+          border-bottom: 1px solid #ccc;
+          margin-bottom: 1.5rem;
+        }
+        .bg-zinc-900, .bg-zinc-800, .bg-black, .bg-zinc-900\/50, .bg-zinc-900\/80 { background: transparent !important; }
+        .border, .border-zinc-800, .border-zinc-700 { border-color: #ddd !important; }
+        .text-white, .text-zinc-200, .text-zinc-300, .text-zinc-400 { color: #000 !important; }
+        .text-zinc-500, .text-zinc-600 { color: #555 !important; }
+        h1, h2, h3, h4 { color: #000 !important; }
+        .shadow-lg, .backdrop-blur-sm { box-shadow: none !important; filter: none !important; }
+        .rounded-xl, .rounded-lg { border-radius: 0 !important; }
+        
+        .asset-viewer-grid {
+          grid-template-columns: repeat(2, 1fr) !important;
+          page-break-after: always;
+        }
+        .spec-viewer-tabs {
+          display: none !important;
+        }
+        .spec-tab-content-container > div {
+          display: block !important;
+          margin-bottom: 2rem;
+          page-break-inside: avoid;
+        }
+         .spec-tab-content-container > div:not(:first-child) {
+           page-break-before: always;
+         }
+        .recharts-wrapper {
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+        .recharts-legend-wrapper, .recharts-tooltip-wrapper {
+            visibility: hidden; /* Often don't print well */
+        }
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-router-dom": "https://aistudiocdn.com/react-router-dom@^6.25.1",
+    "recharts": "https://aistudiocdn.com/recharts@^3.4.1",
+    "uuid": "https://aistudiocdn.com/uuid@^13.0.0",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0",
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.554.0",
+    "path": "https://esm.sh/path@^0.12.7",
+    "vite": "https://esm.sh/vite@^7.3.1",
+    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
