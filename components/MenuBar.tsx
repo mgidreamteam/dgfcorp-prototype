@@ -1,5 +1,6 @@
 import React from 'react';
-import { PlusCircle, Save, Trash2, FileInput, FileOutput, Box, ImageIcon, XSquare, CloudUpload, CloudDownload, Loader2 } from 'lucide-react';
+import { useTheme } from '../contexts/ThemeContext';
+import { PlusCircle, Save, Trash2, FileInput, FileOutput, Box, ImageIcon, XSquare, CloudUpload, CloudDownload, Loader2, Moon, Sun } from 'lucide-react';
 
 interface FileMenuBarProps {
   onNewProject: () => void;
@@ -37,62 +38,68 @@ const FileMenuBar: React.FC<FileMenuBarProps> = ({
     cloudStorageUsed
 }) => {
     
-  const buttonClass = "flex items-center gap-2 px-3 py-1.5 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-white rounded-md transition-colors";
-  const disabledButtonClass = "flex items-center gap-2 px-3 py-1.5 text-sm text-zinc-600 cursor-not-allowed";
+  const iconBtnClass = "flex items-center justify-center p-2 text-zinc-300 hover:bg-zinc-800 hover:text-white rounded-md transition-colors";
+  const disabledIconBtnClass = "flex items-center justify-center p-2 text-zinc-600 cursor-not-allowed";
+
+  const textBtnClass = "flex items-center gap-2 px-3 py-1.5 text-body text-zinc-300 hover:bg-zinc-800 hover:text-white rounded-md transition-colors";
+  const disabledTextBtnClass = "flex items-center gap-2 px-3 py-1.5 text-body text-zinc-600 cursor-not-allowed";
 
   return (
-    <div className="w-full px-8 py-2 flex justify-between items-center bg-zinc-900 border-b border-zinc-800 shrink-0 z-10">
-      <div className="flex items-center gap-2">
-        <button onClick={onNewProject} className={buttonClass}>
-          <PlusCircle className="w-4 h-4" /> New
+    <div className="w-full px-8 py-2 flex justify-between items-center bg-transparent shrink-0 relative z-10">
+      <div className="flex items-center gap-1.5">
+        <button onClick={onNewProject} className={iconBtnClass} title="New Project">
+          <PlusCircle className="w-5 h-5" />
         </button>
-        <button onClick={onSave} disabled={!isProjectActive} className={isProjectActive ? buttonClass : disabledButtonClass}>
-          <Save className="w-4 h-4" /> Save
+        <button onClick={onSave} disabled={!isProjectActive} className={isProjectActive ? iconBtnClass : disabledIconBtnClass} title="Save Project">
+          <Save className="w-5 h-5" />
         </button>
-        <button onClick={onDeleteProject} disabled={!isProjectActive} className={isProjectActive ? buttonClass.replace('text-zinc-300', 'text-red-400').replace('hover:bg-zinc-800', 'hover:bg-red-900/50') : disabledButtonClass}>
-          <Trash2 className="w-4 h-4" /> Delete
+        <button onClick={onDeleteProject} disabled={!isProjectActive} className={isProjectActive ? iconBtnClass.replace('text-zinc-300', 'text-red-400').replace('hover:bg-zinc-800', 'hover:bg-red-900/50') : disabledIconBtnClass} title="Delete Project">
+          <Trash2 className="w-5 h-5" />
         </button>
-        <div className="h-5 w-px bg-zinc-700 mx-1"></div>
+        <div className="h-5 w-px bg-zinc-700 mx-1.5"></div>
 
-        <button onClick={onDownload} disabled={!isProjectActive} className={isProjectActive ? buttonClass : disabledButtonClass}>
-          <FileOutput className="w-4 h-4" /> Export to Disk (*.dream)
+        <button onClick={onDownload} disabled={!isProjectActive} className={isProjectActive ? iconBtnClass : disabledIconBtnClass} title="Export to Disk (*.dream)">
+          <FileOutput className="w-5 h-5" />
         </button>
-        <button onClick={onImport} className={buttonClass}>
-            <FileInput className="w-4 h-4" /> Import from Disk (*.dream)
+        <button onClick={onImport} className={iconBtnClass} title="Import from Disk (*.dream)">
+            <FileInput className="w-5 h-5" />
         </button>
 
-        <div className="h-5 w-px bg-zinc-700 mx-1"></div>
-        <button onClick={onSaveToCloud} disabled={!isProjectActive || isCloudSaving} className={isProjectActive ? buttonClass.replace('text-zinc-300', 'text-blue-400').replace('hover:bg-zinc-800', 'hover:bg-blue-900/40') : disabledButtonClass}>
-            {isCloudSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CloudUpload className="w-4 h-4" />}
-            Save to Cloud
+        <div className="h-5 w-px bg-zinc-700 mx-1.5"></div>
+        <button onClick={onSaveToCloud} disabled={!isProjectActive || isCloudSaving} className={isProjectActive ? iconBtnClass.replace('text-zinc-300', 'text-blue-400').replace('hover:bg-zinc-800', 'hover:bg-blue-900/40') : disabledIconBtnClass} title="Save to Cloud">
+            {isCloudSaving ? <Loader2 className="w-5 h-5 animate-spin" /> : <CloudUpload className="w-5 h-5" />}
         </button>
-        <button onClick={onLoadFromCloud} className={buttonClass.replace('text-zinc-300', 'text-blue-400').replace('hover:bg-zinc-800', 'hover:bg-blue-900/40')}>
-            <CloudDownload className="w-4 h-4" /> Load from Cloud
+        <button onClick={onLoadFromCloud} className={iconBtnClass.replace('text-zinc-300', 'text-blue-400').replace('hover:bg-zinc-800', 'hover:bg-blue-900/40')} title="Load from Cloud">
+            <CloudDownload className="w-5 h-5" />
         </button>
-        <div className="h-5 w-px bg-zinc-700 mx-1"></div>
-        <button onClick={onExportStl} disabled={!isStlReady} className={isStlReady ? buttonClass : disabledButtonClass}>
-          <Box className="w-4 h-4" /> Export STL
+        <div className="h-5 w-px bg-zinc-700 mx-1.5"></div>
+        <button onClick={onExportStl} disabled={!isStlReady} className={isStlReady ? textBtnClass : disabledTextBtnClass} title="Export STL">
+          <Box className="w-5 h-5" /> STL
         </button>
-        <button onClick={onExportImages} disabled={!areImagesExportable} className={areImagesExportable ? buttonClass : disabledButtonClass}>
-          <ImageIcon className="w-4 h-4" /> Export Images
+        <button onClick={onExportImages} disabled={!areImagesExportable} className={areImagesExportable ? iconBtnClass : disabledIconBtnClass} title="Export Images">
+          <ImageIcon className="w-5 h-5" />
         </button>
-        <div className="h-5 w-px bg-zinc-700 mx-1"></div>
+        <div className="h-5 w-px bg-zinc-700 mx-1.5"></div>
 
-        <button onClick={onCloseProject} disabled={!isProjectActive} className={isProjectActive ? buttonClass : disabledButtonClass}>
-          <XSquare className="w-4 h-4" /> Close
+        <button onClick={onCloseProject} disabled={!isProjectActive} className={isProjectActive ? iconBtnClass : disabledIconBtnClass} title="Close Project">
+          <XSquare className="w-5 h-5" />
         </button>
       </div>
 
-      <div className="flex items-center gap-4 bg-black/40 px-4 py-1.5 rounded-lg border border-zinc-800">
-        <div className="text-right">
-            <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Global Quota</div>
-            <div className="font-mono text-xs text-zinc-300">{(cloudStorageUsed / 1000000).toFixed(2)} / 50.0 MB</div>
+      <div className="flex items-center gap-6">
+
+        {/* Global Quota Engine */}
+        <div className="flex items-center gap-4 bg-black/40 px-4 py-1.5 rounded-lg border border-zinc-800">
+          <div className="text-right">
+            <h2 className="text-body font-bold text-zinc-500 uppercase tracking-widest">Global Quota</h2>
+            <div className="text-detail text-zinc-300">{(cloudStorageUsed / 1000000).toFixed(2)} / 50.0 MB</div>
         </div>
         <div className="w-32 h-2.5 bg-zinc-800 rounded-full overflow-hidden border border-zinc-700/50">
             <div 
                 className={`h-full ${cloudStorageUsed > 40000000 ? 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]' : 'bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]'} transition-all duration-500 ease-out`}
                 style={{ width: `${Math.min(100, (cloudStorageUsed / 50000000) * 100)}%` }}
             />
+        </div>
         </div>
       </div>
     </div>

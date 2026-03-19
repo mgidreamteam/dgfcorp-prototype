@@ -86,7 +86,7 @@ const ParameterDialog: React.FC<ParameterDialogProps> = ({ missingParams, origin
                     id={param}
                     name={param}
                     onChange={(e) => handleInputChange(param, e.target.value)}
-                    className="w-full bg-zinc-800 border border-zinc-700 text-white rounded-lg p-2 focus:ring-2 focus:ring-white focus:border-transparent outline-none transition-all font-kido"
+                    className="w-full bg-zinc-800 border border-zinc-700 text-white rounded-lg p-2 focus:ring-2 focus:ring-white focus:border-transparent outline-none transition-all"
                     placeholder="Enter value..."
                   />
                 </div>

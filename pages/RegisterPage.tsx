@@ -4,6 +4,9 @@ import { ArrowRight, UserPlus } from 'lucide-react';
 import { auth, db } from '../services/firebase';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
+import { useTheme } from '../contexts/ThemeContext';
+import ThemePanel from '../components/ThemePanel';
+import AnimatedGrid from '../components/AnimatedGrid';
 
 const RegisterPage: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -16,6 +19,7 @@ const RegisterPage: React.FC = () => {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const { dashboardTheme } = useTheme();
   const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -63,8 +67,9 @@ const RegisterPage: React.FC = () => {
   };
 
   return (
-    <main className="min-h-[60vh] flex flex-col items-center justify-center relative overflow-hidden py-12">
-      <div className="relative z-10 w-full max-w-xl p-8 bg-zinc-900/50 border border-zinc-700/80 rounded-2xl backdrop-blur-md shadow-2xl animate-fade-in-up">
+    <main className="flex-1 flex flex-col items-center justify-center relative overflow-hidden py-12">
+      <AnimatedGrid />
+      <ThemePanel className="w-full max-w-xl p-8 animate-fade-in-up relative z-10 my-8 mx-auto" interactive={false}>
         <div className="text-center mb-6">
           <div className="inline-flex justify-center items-center w-12 h-12 rounded-full bg-white/10 mb-4">
             <UserPlus className="w-6 h-6 text-white" />
@@ -148,7 +153,7 @@ const RegisterPage: React.FC = () => {
             </Link>
           </p>
         </div>
-      </div>
+      </ThemePanel>
     </main>
   );
 };

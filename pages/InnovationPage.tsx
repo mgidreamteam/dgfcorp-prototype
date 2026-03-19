@@ -1,7 +1,6 @@
 import React from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import Breadcrumb from '../components/Breadcrumb';
-import AuthorInfo from '../components/AuthorInfo';
 
 const InnovationPage: React.FC = () => {
     const navigate = useNavigate();
@@ -13,6 +12,9 @@ const InnovationPage: React.FC = () => {
                 <div className="text-center mt-8 mb-16">
                      <p className="mt-6 text-2xl text-zinc-200 max-w-3xl mx-auto leading-relaxed">
                         D.R.E.A.M. Gigafactory Corp. is building the software stack that connects a decentralized industrial base into a trusted ecosystem for product design, prototyping and manufacturing.
+                     </p>
+                     <p className="mt-6 text-lg text-zinc-400 max-w-3xl mx-auto leading-relaxed">
+                        D.R.E.A.M. (Decentralized Resource Engineering and Agentic Manufacturing) is a forthcoming platform designed to integrate a fragmented network of manufacturers into a cohesive ecosystem. By leveraging agentic AI, D.R.E.A.M. will streamline design, sourcing, and production, directly fortifying the US Industrial Base for the challenges of tomorrow.
                      </p>
 
                     <div className="my-20 flex flex-col items-center justify-center gap-12">
@@ -126,14 +128,10 @@ const InnovationPage: React.FC = () => {
                         </div>
                         <p className="mt-8 text-lg font-kido text-zinc-300 tracking-wider">Training to Perfection.</p>
                     </div>
-
-                    <div className="my-20 py-20 border-t border-zinc-800">
-                      <AuthorInfo />
-                    </div>
                      
                      <p className="mt-12 text-zinc-400 text-lg">
-                        <Link to="/about" className="font-semibold text-white hover:underline transition-colors">
-                            Request Access
+                        Meet our <Link to="/about" className="font-semibold text-white hover:underline transition-colors">
+                            Leadership
                         </Link>
                         {' '}to learn more.
                      </p>

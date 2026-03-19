@@ -38,7 +38,7 @@ const RetryDialog: React.FC<RetryDialogProps> = ({ project, onCancel, onSubmit }
             </div>
             <div>
               <h2 id="dialog-title" className="text-xl font-bold text-white">Generation Failed</h2>
-              <p className="text-zinc-400 text-sm">Step <span className="font-kido text-red-400">{project.failedStep}</span> encountered an error.</p>
+              <p className="text-zinc-400 text-sm">Step <span className="text-red-400">{project.failedStep}</span> encountered an error.</p>
             </div>
           </div>
         </div>
@@ -49,7 +49,7 @@ const RetryDialog: React.FC<RetryDialogProps> = ({ project, onCancel, onSubmit }
               <h3 className="text-sm font-bold text-zinc-400 uppercase tracking-wider mb-2 flex items-center gap-2">
                 <MessageSquare className="w-4 h-4" /> Last Input
               </h3>
-              <p className="text-zinc-300 text-sm bg-zinc-800/50 border border-zinc-700 p-3 rounded-lg max-h-24 overflow-y-auto font-kido">
+              <p className="text-zinc-300 text-sm bg-zinc-800/50 border border-zinc-700 p-3 rounded-lg max-h-24 overflow-y-auto">
                 {originalPrompt}
               </p>
             </div>
@@ -64,7 +64,7 @@ const RetryDialog: React.FC<RetryDialogProps> = ({ project, onCancel, onSubmit }
                 rows={4}
                 value={guidance}
                 onChange={(e) => setGuidance(e.target.value)}
-                className="w-full bg-zinc-800 border border-zinc-700 text-white rounded-lg p-2 focus:ring-2 focus:ring-white focus:border-transparent outline-none transition-all font-kido"
+                className="w-full bg-zinc-800 border border-zinc-700 text-white rounded-lg p-2 focus:ring-2 focus:ring-white focus:border-transparent outline-none transition-all"
                 placeholder="e.g., 'Make the casing metallic silver, not black.' or 'The circuit diagram is missing a power regulator.'"
                 autoFocus
               />

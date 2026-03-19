@@ -16,11 +16,56 @@
         --accent-bg: #27272a;
         --border-color: #27272a;
         --glass-border: rgba(255, 255, 255, 0.1);
+
+        /* Unified Semantic Typography Scale */
+        --fs-heading: 1.25rem;       /* 20px - text-xl */
+        --fs-subheading: 0.625rem;   /* 10px - tracking labels */
+        --fs-panel-title: 1.125rem;  /* 18px - text-lg */
+        --fs-panel-label: 0.625rem;  /* 10px - docked header tracking */
+        --fs-body: 0.875rem;         /* 14px - text-sm inputs/descriptions */
+        --fs-detail: 0.75rem;        /* 12px - text-xs logs/lists */
+        --fs-micro: 0.625rem;        /* 10px - timestamps/badges */
       }
+      
+      .text-heading { font-size: var(--fs-heading) !important; }
+      .text-subheading { font-size: var(--fs-subheading) !important; }
+      .text-panel-title { font-size: var(--fs-panel-title) !important; }
+      .text-panel-label { font-size: var(--fs-panel-label) !important; line-height: 1.2 !important; }
+      .text-body { font-size: var(--fs-body) !important; }
+      .text-detail { font-size: var(--fs-detail) !important; }
+      .text-micro { font-size: var(--fs-micro) !important; }
       body {
         font-family: 'Mulish', sans-serif;
         background-color: var(--stage-bg);
         color: var(--text-primary);
+      }
+
+      /* DREAM Giga Brutalist Typography Toggle */
+      .theme-dream-giga {
+        --dream-giga-font: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      }
+      .theme-dream-giga * {
+        font-family: var(--dream-giga-font) !important;
+      }
+      
+      /* Blueprint Typography Override */
+      .theme-blueprint * {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
+      }
+      .theme-blueprint h1, .theme-blueprint h2, .theme-blueprint h3, .theme-blueprint h4, .theme-blueprint h5, .theme-blueprint h6 {
+        text-transform: uppercase !important;
+        letter-spacing: 0.05em !important;
+        font-weight: 500 !important;
+      }
+      
+      /* Global Theme Backgrounds */
+      .bg-theme-blueprint {
+        background-image: linear-gradient(rgba(0, 255, 204, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 255, 204, 0.05) 1px, transparent 1px);
+        background-size: 40px 40px;
+        background-color: #001a33;
+      }
+      .bg-theme-dream-giga {
+        background-color: #09090b;
       }
       /* Globally reduce boldness */
       body .font-bold {

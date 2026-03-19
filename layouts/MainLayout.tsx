@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { BookOpen, LayoutGrid, Globe, Shield, LogOut } from 'lucide-react';
+import { useTheme } from '../contexts/ThemeContext';
+import { BookOpen, LayoutGrid, Globe, Shield, LogOut, Rocket, Layers } from 'lucide-react';
 import UserManual from '../components/UserManual';
 
 const MainLayout: React.FC = () => {
     const { profile, logout } = useAuth();
+    const { dashboardTheme, setDashboardTheme } = useTheme();
     const [isManualOpen, setIsManualOpen] = useState(false);
 
     return (
-        <div className="h-screen w-screen flex flex-col bg-zinc-900 main-layout">
+        <div className="h-screen w-screen flex flex-col main-layout">
             <header className="w-full px-8 py-4 flex justify-between items-center bg-[#09090b]/80 backdrop-blur-md border-b border-zinc-800 shrink-0 z-10">
                 <div className="flex items-center gap-8">
                     <div className="flex items-center gap-3">
@@ -42,22 +44,25 @@ const MainLayout: React.FC = () => {
                             <LayoutGrid className="w-4 h-4" />
                             Studio
                         </NavLink>
-                        <NavLink
-                            to="/gigafactory"
-                            className={({ isActive }) =>
-                                `px-3 py-2 rounded-md flex items-center gap-2 transition-all text-sm font-medium ${
-                                isActive
-                                    ? 'bg-white/10 text-white'
-                                    : 'text-zinc-400 hover:bg-zinc-800 hover:text-white'
-                                }`
-                            }
-                        >
-                            <Globe className="w-4 h-4" />
-                            Virtual Gigafactory
-                        </NavLink>
                     </nav>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center">
+                    <div className="flex items-center gap-1 mr-6 border-r border-zinc-800 pr-6">
+                        <button 
+                            onClick={() => setDashboardTheme('dream-giga')}
+                            className={`px-3 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 transition-all ${dashboardTheme === 'dream-giga' ? 'bg-zinc-800 text-white shadow-inner border border-zinc-700' : 'text-zinc-500 hover:text-zinc-300'}`}
+                        >
+                            <Rocket className="w-3 h-3" /> DREAM Giga
+                        </button>
+                        <button 
+                            onClick={() => setDashboardTheme('blueprint')}
+                            className={`px-3 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 transition-all ${dashboardTheme === 'blueprint' ? 'bg-zinc-800 text-white shadow-inner border border-zinc-700' : 'text-zinc-500 hover:text-zinc-300'}`}
+                        >
+                            <Layers className="w-3 h-3" /> Blueprint
+                        </button>
+                    </div>
+
+                    <div className="flex items-center gap-4">
                     <button onClick={() => setIsManualOpen(true)} className="text-zinc-400 hover:text-white transition-colors flex items-center gap-2 text-sm">
                         <BookOpen className="w-4 h-4" />
                         User Manual
@@ -66,6 +71,7 @@ const MainLayout: React.FC = () => {
                         <LogOut className="w-4 h-4" />
                         Log Out
                     </button>
+                    </div>
                 </div>
             </header>
             

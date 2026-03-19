@@ -73,12 +73,12 @@ const DesignInput: React.FC<DesignInputProps> = ({ onSubmit, isGenerating, agent
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           placeholder={!activeProject ? "Create or select a project to begin..." : "Enter your input... and upload your specs from a text file"}
-          className="w-full bg-zinc-900/80 border border-zinc-800 text-white placeholder-zinc-500 rounded-xl p-4 text-base focus:ring-2 focus:ring-white focus:border-transparent outline-none resize-none shadow-inner backdrop-blur-sm transition-all disabled:opacity-50"
+          className="w-full bg-zinc-900/80 border border-zinc-800 text-white placeholder-zinc-500 rounded-xl p-4 text-body focus:ring-2 focus:ring-white focus:border-transparent outline-none resize-none shadow-inner backdrop-blur-sm transition-all disabled:opacity-50"
           disabled={isInputDisabled}
         />
         <div className="mt-3 flex justify-between items-center">
             <div className="flex items-center gap-4">
-                <label htmlFor="file-upload" className={`flex items-center gap-2 text-sm transition-colors ${isInputDisabled ? 'text-zinc-600 cursor-not-allowed' : 'text-zinc-400 hover:text-white cursor-pointer'}`}>
+                <label htmlFor="file-upload" className={`flex items-center gap-2 text-detail transition-colors ${isInputDisabled ? 'text-zinc-600 cursor-not-allowed' : 'text-zinc-400 hover:text-white cursor-pointer'}`}>
                     <Paperclip className="w-4 h-4" />
                     <span>Upload Specs</span>
                 </label>
@@ -101,7 +101,7 @@ const DesignInput: React.FC<DesignInputProps> = ({ onSubmit, isGenerating, agent
                     />
                     <label 
                         htmlFor="constrained-mode" 
-                        className={`text-sm select-none transition-colors ${isInputDisabled ? 'text-zinc-600' : 'text-zinc-400 cursor-pointer'}`}
+                        className={`text-detail select-none transition-colors ${isInputDisabled ? 'text-zinc-600' : 'text-zinc-400 cursor-pointer'}`}
                     >
                         Constrained
                     </label>
@@ -130,13 +130,13 @@ const DesignInput: React.FC<DesignInputProps> = ({ onSubmit, isGenerating, agent
         {agentLogs.map(log => (
             <div 
                 key={log.id} 
-                className={`p-3 rounded-lg border text-sm animate-fade-in ${log.type === 'error' ? 'bg-red-900/20 border-red-500/20 text-red-300' : 'bg-zinc-900/50 border-zinc-800 text-zinc-300'} ${log.type === 'input' && 'bg-zinc-800/60 border-zinc-700'}`}
+                className={`p-3 rounded-lg border text-detail animate-fade-in ${log.type === 'error' ? 'bg-red-900/20 border-red-500/20 text-red-300' : 'bg-zinc-900/50 border-zinc-800 text-zinc-300'} ${log.type === 'input' && 'bg-zinc-800/60 border-zinc-700'}`}
             >
                 <div className="flex items-start gap-3">
                     {getLogIcon(log.type)}
                     <div className="flex-1 min-w-0">
                         <p className="whitespace-pre-wrap break-words">{log.content}</p>
-                        <p className="text-xs text-zinc-500 mt-2 text-right">{new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                        <p className="text-micro text-zinc-500 mt-2 text-right">{new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                     </div>
                 </div>
             </div>

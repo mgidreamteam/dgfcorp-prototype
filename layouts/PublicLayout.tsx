@@ -7,7 +7,7 @@ const PublicLayout: React.FC = () => {
     const isLoginPage = location.pathname === '/login';
     
     return (
-        <div className="h-screen bg-zinc-900 text-white flex flex-col">
+        <div className="h-screen flex flex-col">
             <header className="shrink-0 top-0 z-20 bg-zinc-900/80 backdrop-blur-md border-b border-zinc-800">
                 <nav className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
                     <div className="flex items-center gap-6">

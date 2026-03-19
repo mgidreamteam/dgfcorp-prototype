@@ -18,9 +18,9 @@ if ([string]::IsNullOrEmpty($apiKey)) {
     exit 1
 }
 
-Write-Host "Deploying mgi-d-r-e-a-m to Google Cloud Run in us-west1..."
+Write-Host "Deploying dream-giga to Google Cloud Run in us-west1..."
 
-gcloud run deploy mgi-d-r-e-a-m `
+gcloud run deploy dream-giga `
     --source . `
     --allow-unauthenticated `
     --set-env-vars="DREAM_API=$apiKey" `

@@ -41,7 +41,7 @@ const ImageModal: React.FC<{ imageUrl: string; onClose: () => void }> = ({ image
 
 const CircuitComponentTable: React.FC<{ components: CircuitComponent[] }> = ({ components }) => (
     <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-black/70 backdrop-blur-sm p-2 overflow-y-auto border-t border-zinc-700">
-        <table className="w-full text-xs">
+        <table className="w-full text-detail">
             <thead className="text-zinc-400">
                 <tr>
                     <th className="px-2 py-1 text-left">ID</th>
@@ -49,7 +49,7 @@ const CircuitComponentTable: React.FC<{ components: CircuitComponent[] }> = ({ c
                     <th className="px-2 py-1 text-left">Value</th>
                 </tr>
             </thead>
-            <tbody className="text-zinc-200 font-kido">
+            <tbody className="text-zinc-200">
                 {components.map((c, i) => (
                     <tr key={i} className="border-t border-zinc-800">
                         <td className="px-2 py-1">{c.designator}</td>
@@ -80,7 +80,7 @@ const QuadViewPanel: React.FC<{
             return (
                 <div className="flex flex-col items-center justify-center h-full text-zinc-600">
                     <XCircle className="w-8 h-8 mb-2" />
-                    <p className="text-sm font-medium">Not Applicable</p>
+                    <p className="text-body font-medium">Not Applicable</p>
                 </div>
             );
         }
@@ -89,7 +89,7 @@ const QuadViewPanel: React.FC<{
             return (
                 <div className="flex flex-col items-center justify-center h-full text-zinc-500">
                     <Loader2 className="w-8 h-8 animate-spin text-white mb-3" />
-                    <p className="text-sm font-medium animate-pulse">Generating...</p>
+                    <p className="text-body font-medium animate-pulse">Generating...</p>
                 </div>
             );
         }
@@ -131,7 +131,7 @@ const QuadViewPanel: React.FC<{
                 <div className="w-12 h-12 border-2 border-dashed border-zinc-800 rounded-lg mb-3 flex items-center justify-center">
                     <Icon className="w-6 h-6" />
                 </div>
-                <p className="text-xs">Pending</p>
+                <p className="text-detail">Pending</p>
             </div>
         );
     };
@@ -139,7 +139,7 @@ const QuadViewPanel: React.FC<{
     return (
         <div className="relative aspect-square bg-black border border-zinc-800 rounded-lg overflow-hidden group">
             <div className="absolute top-0 left-0 p-3 z-10">
-                <h3 className="flex items-center gap-2 text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                <h3 className="flex items-center gap-2 text-detail font-bold text-zinc-400 uppercase tracking-wider">
                     <Icon className="w-3 h-3 text-zinc-500" />
                     {title}
                 </h3>
@@ -222,8 +222,8 @@ const AssetViewer: React.FC<AssetViewerProps> = ({ assetUrls, status, productNam
         <div className="w-full aspect-video bg-zinc-900 rounded-xl border-2 border-dashed border-zinc-800 flex items-center justify-center text-center p-8">
             <div className="text-zinc-600">
                 <div className="w-16 h-16 bg-zinc-800 rounded-lg mx-auto mb-4"></div>
-                 <p className="text-sm">Visualizations will appear here</p>
-                <p className="text-xs opacity-70">Submit a design prompt to begin generation</p>
+                 <p className="text-body">Visualizations will appear here</p>
+                <p className="text-detail opacity-70">Submit a design prompt to begin generation</p>
             </div>
         </div>
     );

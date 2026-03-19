@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { collection, getDocs, doc, setDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../services/firebase';
-import { ShieldCheck, Users, Mail, AlertTriangle, Check, X } from 'lucide-react';
+import { ShieldCheck, Users, Mail, AlertTriangle, Check, X, ArrowLeft } from 'lucide-react';
+import ThemePanel from '../components/ThemePanel';
+import { useNavigate } from 'react-router-dom';
 
 interface ManagedUser {
     id: string;
@@ -13,6 +15,7 @@ interface ManagedUser {
 }
 
 const UserManagementPage: React.FC = () => {
+    const navigate = useNavigate();
     const [users, setUsers] = useState<ManagedUser[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -113,13 +116,14 @@ const UserManagementPage: React.FC = () => {
     return (
         <div className="min-h-full p-8 overflow-y-auto">
             <div className="max-w-6xl mx-auto">
+                <button onClick={() => navigate('/dashboard')} className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors mb-6 text-detail uppercase tracking-widest"><ArrowLeft className="w-4 h-4" /> Return to Dashboard</button>
                 <div className="mb-8 border-b border-zinc-800 pb-6 flex items-start justify-between">
                     <div>
-                        <h1 className="text-3xl font-bold text-white flex items-center gap-3">
+                        <h1 className="text-heading font-normal text-white uppercase tracking-tighter flex items-center gap-3">
                             <ShieldCheck className="w-8 h-8 text-blue-500" />
                             User Management
                         </h1>
-                        <p className="text-zinc-400 mt-2 text-sm max-w-2xl leading-relaxed">
+                        <p className="text-zinc-400 mt-2 text-body max-w-2xl leading-relaxed">
                             Configure user access levels across the D.R.E.A.M. system. Modifying a user's role 
                             will directly alter their interface options and backend resource privileges instantly on their next navigation. You can also actively approve pending new registrations from the portal.
                         </p>
@@ -136,10 +140,10 @@ const UserManagementPage: React.FC = () => {
                     </div>
                 )}
 
-                <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden shadow-2xl">
+                <ThemePanel translucent interactive={false} className="shadow-2xl">
                     <div className="overflow-x-auto">
-                        <table className="w-full text-left text-sm text-zinc-400 min-w-max">
-                            <thead className="bg-zinc-800/50 text-xs uppercase text-zinc-500 font-bold tracking-wider hidden sm:table-header-group">
+                        <table className="w-full text-left text-body text-zinc-400 min-w-max">
+                            <thead className="bg-zinc-800/50 text-panel-label uppercase text-zinc-500 tracking-wider hidden sm:table-header-group">
                                 <tr>
                                     <th scope="col" className="px-6 py-4">User Details</th>
                                     <th scope="col" className="px-6 py-4">Status & Access Level</th>
@@ -165,8 +169,8 @@ const UserManagementPage: React.FC = () => {
                                                     <Users className="w-5 h-5 text-zinc-500" />
                                                 </div>
                                                 <div>
-                                                    <div className="font-bold text-white text-base">{u.name}</div>
-                                                    <div className="flex items-center gap-1.5 text-zinc-500 text-xs mt-1">
+                                                    <div className="font-bold text-white text-panel-title">{u.name}</div>
+                                                    <div className="flex items-center gap-1.5 text-zinc-500 text-detail mt-1">
                                                         <Mail className="w-3 h-3" />
                                                         {u.email}
                                                     </div>
@@ -175,7 +179,7 @@ const UserManagementPage: React.FC = () => {
                                         </td>
                                         <td className="px-6 py-4 sm:align-middle">
                                             <div className="flex flex-col gap-2 items-start">
-                                                <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide uppercase border ${
+                                                <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-micro font-bold tracking-wide uppercase border ${
                                                     u.role === 'admin' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
                                                     u.role === 'serviceProvider' ? 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20' :
                                                     'bg-zinc-800 text-zinc-400 border-zinc-700'
@@ -183,7 +187,7 @@ const UserManagementPage: React.FC = () => {
                                                     {u.role === 'serviceProvider' ? 'Service Provider' : u.role}
                                                 </span>
                                                 {u.status === 'pending' && (
-                                                    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide uppercase border bg-red-500/10 text-red-500 border-red-500/20">
+                                                    <span className="inline-flex items-center px-2.5 py-1 text-micro rounded-full font-bold tracking-wide uppercase border bg-red-500/10 text-red-500 border-red-500/20">
                                                         Pending Review
                                                     </span>
                                                 )}
@@ -198,7 +202,7 @@ const UserManagementPage: React.FC = () => {
                                                     <button 
                                                         onClick={() => handleApprove(u.id)}
                                                         disabled={updatingId === u.id}
-                                                        className="bg-green-600 hover:bg-green-500 text-white shadow-lg shadow-green-900/20 text-xs font-bold py-2 px-3 rounded-lg transition-colors border border-green-500"
+                                                        className="bg-green-600 hover:bg-green-500 text-white shadow-lg shadow-green-900/20 text-detail font-bold py-2 px-3 rounded-lg transition-colors border border-green-500"
                                                     >
                                                         Approve Access
                                                     </button>
@@ -209,7 +213,7 @@ const UserManagementPage: React.FC = () => {
                                                         value={pendingRoles[u.id] || u.role}
                                                         onChange={(e) => setPendingRoles(prev => ({ ...prev, [u.id]: e.target.value }))}
                                                         disabled={updatingId === u.id}
-                                                        className="bg-black border border-zinc-700 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2 disabled:opacity-50"
+                                                        className="bg-black border border-zinc-700 text-white text-body rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2 disabled:opacity-50"
                                                     >
                                                         <option value="user">Standard User</option>
                                                         <option value="serviceProvider">Service Provider</option>
@@ -242,7 +246,7 @@ const UserManagementPage: React.FC = () => {
                             </tbody>
                         </table>
                     </div>
-                </div>
+                </ThemePanel>
             </div>
         </div>
     );

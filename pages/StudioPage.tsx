@@ -13,6 +13,8 @@ import { analyzeUserIntent, getAnswerFromSpec, generateHardwareSpecs, generatePr
 import { AlertCircle, Cloud, X, CloudDownload, Trash2, Loader2 } from 'lucide-react';
 import { useAutoSave, loadStateFromStorage } from '../hooks/useAutoSave';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
+import ThemePanel from '../components/ThemePanel';
 import { auth, db, storage } from '../services/firebase';
 import { collection, doc, setDoc, getDocs, deleteDoc } from 'firebase/firestore';
 import { ref, uploadString, getDownloadURL, deleteObject } from 'firebase/storage';
@@ -28,8 +30,8 @@ const CloudLoadModal: React.FC<{
     if (!isOpen) return null;
     return (
         <div className="fixed inset-0 bg-black/80 z-[100] flex items-center justify-center p-4" onClick={onClose}>
-            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl w-full max-w-2xl shadow-2xl flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
-                <div className="p-6 border-b border-zinc-800 flex justify-between items-center">
+            <ThemePanel translucent interactive={false} className="rounded-2xl w-full max-w-2xl shadow-2xl flex flex-col max-h-[90vh]">
+                <div className="p-6 border-b border-zinc-800 flex justify-between items-center" onClick={e => e.stopPropagation()}>
                     <h2 className="text-xl font-bold text-white flex items-center gap-2"><Cloud className="w-5 h-5 text-blue-500" /> Cloud Storage Directory</h2>
                      <button onClick={onClose} className="p-2 rounded-full hover:bg-zinc-800"><X className="w-5 h-5" /></button>
                 </div>
@@ -66,7 +68,7 @@ const CloudLoadModal: React.FC<{
                         ))
                     )}
                 </div>
-            </div>
+            </ThemePanel>
         </div>
     );
 };
@@ -91,6 +93,7 @@ const isPromptProhibited = (prompt: string): boolean => {
 const StudioPage: React.FC = () => {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
+  const { dashboardTheme } = useTheme();
 
   const [projects, setProjects] = useState<DesignProject[]>(() => loadStateFromStorage().projects);
   const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
@@ -626,7 +629,8 @@ const StudioPage: React.FC = () => {
         loadingAction={cloudLoadingAction} 
       />
       
-      <div className="h-full flex flex-col">
+      <div className="h-full flex flex-col gap-2 p-2">
+        <ThemePanel className="w-full shrink-0">
         <FileMenuBar 
           onNewProject={handleNewProject}
           onSave={handleSaveProject}
@@ -644,11 +648,12 @@ const StudioPage: React.FC = () => {
           isCloudSaving={isCloudSaving}
           cloudStorageUsed={cloudStorageUsed}
         />
-        <div className="flex-1 grid overflow-hidden p-2 gap-2" style={{ gridTemplateColumns }}>
+        </ThemePanel>
+        <div className="flex-1 grid overflow-hidden gap-2" style={{ gridTemplateColumns }}>
           <ProjectSidebar projects={projects} activeProjectId={activeProjectId} onNewProject={handleNewProject} onRenameProject={handleRenameProject} triggerHierarchyView={triggerHierarchyView} onHierarchyViewClosed={() => setTriggerHierarchyView(null)} />
-          <main className="flex flex-col h-full overflow-hidden rounded-lg border border-zinc-800">
-            <div className="px-4 py-2 border-b border-zinc-800 shrink-0">
-                <h2 className="text-sm font-semibold text-zinc-400 font-kido tracking-wider">CANVAS</h2>
+          <ThemePanel translucent className="flex flex-col h-full overflow-hidden relative z-10">
+            <div className="px-4 py-3 border-b border-zinc-800 shrink-0 bg-transparent">
+                <h2 className="text-subheading font-normal text-white uppercase tracking-tighter">CANVAS</h2>
             </div>
             <div className="flex-1 w-full overflow-y-auto printable-area">
               <div className="print-only">
@@ -670,18 +675,18 @@ const StudioPage: React.FC = () => {
                 )}
               </div>
             </div>
-          </main>
-          <div onMouseDown={handleMouseDown} className="resize-handle w-1.5 h-full cursor-col-resize bg-zinc-800 hover:bg-zinc-700 transition-colors flex-shrink-0"></div>
-          <aside className="h-full overflow-hidden font-kido">
-             <div className="flex flex-col h-full bg-zinc-900/50 border border-zinc-800 rounded-lg overflow-hidden">
-                <div className="px-4 py-2 border-b border-zinc-800 shrink-0">
-                    <h2 className="text-sm font-semibold text-zinc-400 tracking-wider">ALON</h2>
+          </ThemePanel>
+          <div onMouseDown={handleMouseDown} className="resize-handle w-1.5 h-full cursor-col-resize bg-zinc-800 hover:bg-zinc-700 transition-colors flex-shrink-0 rounded-full"></div>
+          <ThemePanel translucent className="h-full overflow-hidden relative z-10">
+             <div className="flex flex-col h-full overflow-hidden">
+                <div className="px-4 py-3 border-b border-zinc-800 shrink-0 bg-transparent">
+                    <h2 className="text-subheading font-normal text-white uppercase tracking-tighter">ALON</h2>
                 </div>
                 <div className="flex-1 p-4 overflow-hidden">
                     <DesignInput onSubmit={handleCreateDesign} isGenerating={isGenerating} agentLogs={agentLogs.filter(log => !log.projectId || log.projectId === activeProjectId)} activeProject={activeProject} onUpdateProjectConstraint={handleUpdateProjectConstraint} />
                 </div>
              </div>
-          </aside>
+          </ThemePanel>
         </div>
       </div>
     </>
