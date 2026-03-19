@@ -18,6 +18,14 @@ if ([string]::IsNullOrEmpty($apiKey)) {
     exit 1
 }
 
+Write-Host "Compiling the latest Vite production architecture..."
+pnpm run build
+
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "Error: Production build crashed. Halting deployment."
+    exit 1
+}
+
 Write-Host "Deploying dream-giga to Google Cloud Run in us-west1..."
 
 gcloud run deploy dream-giga `
