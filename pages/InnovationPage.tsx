@@ -20,7 +20,7 @@ const InnovationPage: React.FC = () => {
                             D.R.E.A.M. Gigafactory Corp. is building the software stack that connects a decentralized industrial base into a trusted ecosystem for product design, prototyping and manufacturing.
                          </p>
                          <p className="mt-4 text-body text-zinc-400 leading-relaxed w-full xl:w-3/4">
-                            D.R.E.A.M. (Decentralized Resource Engineering and Agentic Manufacturing) is a forthcoming platform designed to integrate a fragmented network of manufacturers into a cohesive ecosystem. By leveraging agentic AI, D.R.E.A.M. will streamline design, sourcing, and production, directly fortifying the US Industrial Base for the challenges of tomorrow.
+                            D.R.E.A.M. (Decentralized Resource Engineering and Agentic Manufacturing) is a recently launched platform designed to integrate a fragmented network of manufacturers into a cohesive ecosystem. By leveraging agentic AI, D.R.E.A.M. streamlines design, sourcing, and production, directly fortifying the US Industrial Base for the challenges of tomorrow.
                          </p>
                      </ThemePanel>
 
