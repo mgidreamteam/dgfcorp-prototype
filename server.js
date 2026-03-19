@@ -24,9 +24,12 @@ const allowedOrigins = [
   'https://mgidream.com',
   'https://www.mgidream.com',
   'https://studio.mgidream.com',
+  'https://dream-giga-16824413345.us-west1.run.app',
   'https://mgi-d-r-e-a-m-16824413345.us-west1.run.app',
   'https://dgfcorp.ai',
-  'https://www.dgfcorp.ai'
+  'https://www.dgfcorp.ai',
+  'https://dreamgiga.ai',
+  'https://www.dreamgiga.ai'
 ];
 
 app.use(cors({
@@ -62,7 +65,7 @@ app.post('/api/gemini', async (req, res) => {
       apiKey,
       httpOptions: {
         headers: {
-          'Referer': 'https://studio.mgidream.com/'
+          'Referer': 'https://dreamgiga.ai/'
         }
       }
     });
