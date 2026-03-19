@@ -16,10 +16,10 @@ const InnovationPage: React.FC = () => {
                          <h2 className="text-heading font-normal text-white uppercase tracking-tighter mb-4 border-b border-zinc-800 pb-2">
                              System Architecture
                          </h2>
-                         <p className="text-subheading text-zinc-300 leading-relaxed w-full xl:w-3/4">
+                         <p className="text-subheading text-zinc-300 leading-relaxed w-full">
                             D.R.E.A.M. Gigafactory Corp. is building the software stack that connects a decentralized industrial base into a trusted ecosystem for product design, prototyping and manufacturing.
                          </p>
-                         <p className="mt-4 text-body text-zinc-400 leading-relaxed w-full xl:w-3/4">
+                         <p className="mt-4 text-body text-zinc-400 leading-relaxed w-full">
                             D.R.E.A.M. (Decentralized Resource Engineering and Agentic Manufacturing) is a recently launched platform designed to integrate a fragmented network of manufacturers into a cohesive ecosystem. By leveraging agentic AI, D.R.E.A.M. streamlines design, sourcing, and production, directly fortifying the US Industrial Base for the challenges of tomorrow.
                          </p>
                      </ThemePanel>
