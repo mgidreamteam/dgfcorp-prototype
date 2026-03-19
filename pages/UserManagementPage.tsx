@@ -113,6 +113,8 @@ const UserManagementPage: React.FC = () => {
         }
     }
 
+    const pendingUsers = users.filter(u => u.status === 'pending');
+
     return (
         <div className="min-h-full p-8 overflow-y-auto">
             <div className="max-w-6xl mx-auto">
@@ -136,6 +138,16 @@ const UserManagementPage: React.FC = () => {
                         <div>
                             <h3 className="text-red-400 font-bold">Failed to load registry</h3>
                             <p className="text-red-300 text-sm mt-1">{error}</p>
+                        </div>
+                    </div>
+                )}
+
+                {pendingUsers.length > 0 && (
+                    <div className="mb-6 p-4 bg-yellow-900/20 border-l-4 border-yellow-500 rounded-lg flex items-start gap-3 shadow-lg shadow-yellow-900/10">
+                        <AlertTriangle className="w-5 h-5 text-yellow-500 mt-0.5 shrink-0" />
+                        <div>
+                            <h3 className="text-yellow-500 font-bold uppercase tracking-wider text-sm">Action Required</h3>
+                            <p className="text-yellow-200/80 text-sm mt-1">There {pendingUsers.length === 1 ? 'is' : 'are'} {pendingUsers.length} pending user registration{pendingUsers.length === 1 ? '' : 's'} awaiting clearance.</p>
                         </div>
                     </div>
                 )}

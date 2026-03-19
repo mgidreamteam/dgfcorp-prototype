@@ -17,8 +17,8 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 const admins = [
-  { email: 'vishnu@dgfcorp.ai', password: 'Password123!', name: 'Vishnu', username: 'vishnu' },
-  { email: 'alan@dgfcorp.ai', password: 'Password123!', name: 'Alan', username: 'alan' }
+  { email: 'vishnu@dreamgiga.ai', password: 'Password123!', name: 'Vishnu', username: 'vishnu' },
+  { email: 'alan@dreamgiga.ai', password: 'Password123!', name: 'Alan', username: 'alan' }
 ];
 
 async function setupAdmins() {

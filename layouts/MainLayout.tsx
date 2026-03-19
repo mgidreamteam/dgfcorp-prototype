@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
-import { BookOpen, LayoutGrid, Globe, Shield, LogOut, Rocket, Layers } from 'lucide-react';
+import { BookOpen, LayoutGrid, Globe, Shield, LogOut, Rocket, Layers, User } from 'lucide-react';
 import UserManual from '../components/UserManual';
 
 const MainLayout: React.FC = () => {
@@ -63,6 +63,10 @@ const MainLayout: React.FC = () => {
                     </div>
 
                     <div className="flex items-center gap-4">
+                    <NavLink to="/profile" className={({ isActive }) => `text-zinc-400 hover:text-white transition-colors flex items-center gap-2 text-sm ${isActive ? 'text-white font-medium' : ''}`}>
+                        <User className="w-4 h-4" />
+                        Profile
+                    </NavLink>
                     <button onClick={() => setIsManualOpen(true)} className="text-zinc-400 hover:text-white transition-colors flex items-center gap-2 text-sm">
                         <BookOpen className="w-4 h-4" />
                         User Manual

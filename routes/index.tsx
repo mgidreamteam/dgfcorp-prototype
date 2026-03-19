@@ -8,6 +8,7 @@ import UserManagementPage from '../pages/UserManagementPage';
 import VendorAdminPage from '../pages/VendorAdminPage';
 import StudioPage from '../pages/StudioPage';
 import MainLayout from '../layouts/MainLayout';
+import ProfilePage from '../pages/ProfilePage';
 import AboutPage from '../pages/AboutPage';
 import InnovationPage from '../pages/InnovationPage';
 import PublicLayout from '../layouts/PublicLayout';
@@ -27,7 +28,7 @@ const ProtectedRoute: React.FC = () => {
                     Your registration has been securely submitted. A system administrator must review and approve your account before you can access the D.R.E.A.M. platform.
                 </p>
                 <div className="mt-8 text-zinc-500 text-sm border border-zinc-800 bg-zinc-900 rounded-lg p-4 max-w-sm">
-                    Waiting for administrators <strong>vishnu@dgfcorp.ai</strong> or <strong>alan@dgfcorp.ai</strong> to clear your credentials.
+                    Waiting for administrators <strong>vishnu@dreamgiga.ai</strong> or <strong>alan@dreamgiga.ai</strong> to clear your credentials.
                 </div>
             </div>
         );
@@ -51,6 +52,7 @@ const AppRouter: React.FC = () => {
                 <Route element={<MainLayout />}>
                     <Route path="/dashboard" element={<DashboardPage />} />
                     <Route path="/admin/users" element={<UserManagementPage />} />
+                    <Route path="/profile" element={<ProfilePage />} />
                     <Route path="/admin/gigafactory" element={<VendorAdminPage />} />
                     <Route path="/studio" element={<StudioPage />} />
                     <Route path="/studio/:projectId" element={<StudioPage />} />

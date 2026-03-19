@@ -27,7 +27,7 @@ const LoginPage: React.FC = () => {
     <>
       <main className="flex-1 flex flex-col items-center justify-center relative overflow-hidden py-12">
           <AnimatedGrid />
-          <div className="relative z-10 w-full max-w-md p-8 text-center animate-fade-in-up my-8 mx-auto bg-zinc-900/40 backdrop-blur-md border border-zinc-800 rounded-2xl overflow-hidden shadow-2xl">
+          <div className="relative z-10 w-full max-w-md p-8 text-center animate-fade-in-up my-8 mx-auto bg-zinc-900/40 backdrop-blur-md border border-zinc-800 rounded-none overflow-hidden shadow-2xl">
               <div className="spotlight-effect opacity-50 pointer-events-none"></div>
               <div className="relative z-10">
                   <h2 className="text-2xl font-bold text-white mb-2 font-kido tracking-wider">D.R.E.A.M. STUDIO</h2>
