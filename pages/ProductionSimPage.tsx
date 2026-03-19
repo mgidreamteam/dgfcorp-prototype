@@ -1,5 +1,5 @@
-import React, { useState, useRef } from 'react';
-import { Loader2, Factory } from 'lucide-react';
+import React, { useState } from 'react';
+import { Factory } from 'lucide-react';
 import ThemePanel from '../components/ThemePanel';
 
 const ProductionSimPage: React.FC = () => {
@@ -15,39 +15,34 @@ const ProductionSimPage: React.FC = () => {
         </h1>
       </ThemePanel>
       <div className="flex-1 grid overflow-hidden gap-2" style={{ gridTemplateColumns }}>
+        
+        {/* Left Sidebar */}
         <ThemePanel translucent className="flex flex-col h-full overflow-hidden p-6">
             <h2 className="text-subheading font-normal text-zinc-500 uppercase tracking-tighter mb-4">Vendor Node Topology</h2>
-            <div className="text-sm text-zinc-600 italic">Scanning global industrial footprints...</div>
         </ThemePanel>
         
+        {/* Central Map / Canvas Area */}
         <ThemePanel translucent className="flex flex-col h-full overflow-hidden relative z-10 border border-yellow-500/10 shadow-[inset_0_0_50px_rgba(234,179,8,0.02)]">
             <div className="px-6 py-4 border-b border-zinc-800 shrink-0 bg-black/40 backdrop-blur-md">
-                <h2 className="text-subheading font-normal text-yellow-500 uppercase tracking-tighter flex items-center gap-3">
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Visualizing Global Supply Chain Logistics
+                <h2 className="text-subheading font-normal text-yellow-500 uppercase tracking-tighter">
+                    Global Supply Chain Logistics
                 </h2>
             </div>
-            <div className="flex-1 w-full h-full flex flex-col items-center justify-center bg-[url('https://www.transparenttextures.com/patterns/microbial-mat.png')] bg-repeat opacity-30">
-                <div className="max-w-md text-center relative z-20">
-                    <h3 className="text-2xl font-black text-white tracking-widest uppercase mb-4">Orchestration Active</h3>
-                    <p className="text-zinc-400 leading-relaxed text-sm">Aggregating the production visualization datasets. This canvas will securely lock downstream vendor assemblies rendering physical component routing directly onto the GIS tracking maps.</p>
-                </div>
-            </div>
+            {/* Blank Canvas for future components */}
+            <div className="flex-1 w-full h-full bg-black/20"></div>
         </ThemePanel>
 
         <div className="resize-handle w-1.5 h-full bg-zinc-800 flex-shrink-0 rounded-full"></div>
         
+        {/* Right Sidebar */}
         <ThemePanel translucent className="h-full overflow-hidden relative z-10">
             <div className="px-6 py-4 border-b border-zinc-800 shrink-0">
                 <h2 className="text-subheading font-normal text-white uppercase tracking-tighter">BOM Analytics</h2>
             </div>
-            <div className="flex-1 p-6 flex flex-col gap-4 justify-center items-center">
-                <div className="w-full h-2 bg-zinc-800 rounded-full overflow-hidden">
-                    <div className="h-full bg-yellow-500/50 w-1/3 animate-pulse"></div>
-                </div>
-                <div className="text-zinc-600 text-sm font-mono text-center">Calculating production routing...</div>
-            </div>
+            {/* Blank Data Area */}
+            <div className="flex-1 p-6"></div>
         </ThemePanel>
+        
       </div>
     </div>
   );
