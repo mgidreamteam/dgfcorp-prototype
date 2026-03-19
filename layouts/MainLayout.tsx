@@ -44,6 +44,19 @@ const MainLayout: React.FC = () => {
                             <LayoutGrid className="w-4 h-4" />
                             Studio
                         </NavLink>
+                        <NavLink
+                            to="/simstudio"
+                            className={({ isActive }) =>
+                                `px-3 py-2 rounded-md flex items-center gap-2 transition-all text-sm font-medium ${
+                                isActive
+                                    ? 'bg-white/10 text-white'
+                                    : 'text-zinc-400 hover:bg-zinc-800 hover:text-white'
+                                }`
+                            }
+                        >
+                            <Globe className="w-4 h-4" />
+                            SimStudio
+                        </NavLink>
                     </nav>
                 </div>
                 <div className="flex items-center">
