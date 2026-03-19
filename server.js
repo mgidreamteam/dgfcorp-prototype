@@ -24,7 +24,9 @@ const allowedOrigins = [
   'https://mgidream.com',
   'https://www.mgidream.com',
   'https://studio.mgidream.com',
-  'https://mgi-d-r-e-a-m-16824413345.us-west1.run.app'
+  'https://mgi-d-r-e-a-m-16824413345.us-west1.run.app',
+  'https://dgfcorp.ai',
+  'https://www.dgfcorp.ai'
 ];
 
 app.use(cors({
