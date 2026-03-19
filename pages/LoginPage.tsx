@@ -32,7 +32,7 @@ const LoginPage: React.FC = () => {
           <AnimatedGrid />
           <ThemePanel className="relative z-10 w-full max-w-md p-8 text-center animate-fade-in-up my-8 mx-auto" interactive={false}>
               <h2 className="text-2xl font-bold text-white mb-2 font-kido tracking-wider">D.R.E.A.M. STUDIO</h2>
-              <p className="text-zinc-500 mb-8 text-sm">DREAM Gigafactories Corp. Authorization</p>
+              <p className="text-zinc-500 mb-8 text-sm">DREAM Gigafactories Corp. Product</p>
               
               <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                 <input
@@ -70,12 +70,15 @@ const LoginPage: React.FC = () => {
                           Register
                       </Link>
                   </p>
-                  <p className="text-zinc-400 text-sm">
+                  <p className="text-zinc-400 text-sm leading-relaxed">
                       Meet our{' '}
                       <Link to="/about" className="font-semibold text-white hover:underline transition-colors">
                           Leadership
                       </Link>
-                      {' '}to learn more.
+                      {' '}and learn more about our{' '}
+                      <Link to="/innovation" className="font-semibold text-white hover:underline transition-colors">
+                          Innovation
+                      </Link>.
                   </p>
                 </div>
                 <p className="text-yellow-600 text-xs font-kido tracking-wide pt-2 mt-4">

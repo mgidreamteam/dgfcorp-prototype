@@ -16,8 +16,8 @@ const PublicLayout: React.FC = () => {
                         </NavLink>
                         <div className="hidden md:flex items-center gap-6 border-l border-zinc-700 ml-2 pl-6">
                             <NavLink to="/about" className={({isActive}) => `flex items-center gap-2 transition-colors ${isActive ? 'text-white' : 'text-zinc-400 hover:text-white'}`}>
-                                <img src="/Icons/AboutUs.png" alt="Request Access Icon" className="h-5" />
-                                <span className="text-sm font-medium">Request Access</span>
+                                <img src="/Icons/AboutUs.png" alt="Leadership Icon" className="h-5" />
+                                <span className="text-sm font-medium">Leadership</span>
                             </NavLink>
                             <NavLink to="/innovation" className={({isActive}) => `flex items-center gap-2 transition-colors ${isActive ? 'text-white' : 'text-zinc-400 hover:text-white'}`}>
                                 <img src="/Icons/Innovation.png" alt="Innovation Icon" className="h-5" />
