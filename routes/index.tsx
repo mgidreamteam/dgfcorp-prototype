@@ -11,7 +11,9 @@ import MainLayout from '../layouts/MainLayout';
 import ProfilePage from '../pages/ProfilePage';
 import AboutPage from '../pages/AboutPage';
 import InnovationPage from '../pages/InnovationPage';
-import SimStudioPage from '../pages/SimStudioPage';
+import WorldSimPage from '../pages/WorldSimPage';
+import StudioSimPage from '../pages/StudioSimPage';
+import ProductionSimPage from '../pages/ProductionSimPage';
 import PublicLayout from '../layouts/PublicLayout';
 
 const ProtectedRoute: React.FC = () => {
@@ -64,8 +66,10 @@ const AppRouter: React.FC = () => {
                     <Route path="/admin/gigafactory" element={<VendorAdminPage />} />
                     <Route path="/studio" element={<StudioPage />} />
                     <Route path="/studio/:projectId" element={<StudioPage />} />
-                    <Route path="/simstudio" element={<SimStudioPage />} />
-                    <Route path="/simstudio/:projectId" element={<SimStudioPage />} />
+                    <Route path="/studiosim" element={<StudioSimPage />} />
+                    <Route path="/worldsim" element={<WorldSimPage />} />
+                    <Route path="/worldsim/:projectId" element={<WorldSimPage />} />
+                    <Route path="/productionsim" element={<ProductionSimPage />} />
                 </Route>
             </Route>
 

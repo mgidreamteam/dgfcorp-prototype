@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
-import { BookOpen, LayoutGrid, Globe, Shield, LogOut, Rocket, Layers, User } from 'lucide-react';
+import { BookOpen, LayoutGrid, Globe, Shield, LogOut, Rocket, Layers, User, Factory, Box } from 'lucide-react';
 import UserManual from '../components/UserManual';
 
 const MainLayout: React.FC = () => {
@@ -42,10 +42,23 @@ const MainLayout: React.FC = () => {
                             }
                         >
                             <LayoutGrid className="w-4 h-4" />
-                            Studio
+                            Design Studio
                         </NavLink>
                         <NavLink
-                            to="/simstudio"
+                            to="/studiosim"
+                            className={({ isActive }) =>
+                                `px-3 py-2 rounded-md flex items-center gap-2 transition-all text-sm font-medium ${
+                                isActive
+                                    ? 'bg-white/10 text-white'
+                                    : 'text-zinc-400 hover:bg-zinc-800 hover:text-white'
+                                }`
+                            }
+                        >
+                            <Box className="w-4 h-4" />
+                            StudioSim
+                        </NavLink>
+                        <NavLink
+                            to="/worldsim"
                             className={({ isActive }) =>
                                 `px-3 py-2 rounded-md flex items-center gap-2 transition-all text-sm font-medium ${
                                 isActive
@@ -55,7 +68,20 @@ const MainLayout: React.FC = () => {
                             }
                         >
                             <Globe className="w-4 h-4" />
-                            SimStudio
+                            WorldSim
+                        </NavLink>
+                        <NavLink
+                            to="/productionsim"
+                            className={({ isActive }) =>
+                                `px-3 py-2 rounded-md flex items-center gap-2 transition-all text-sm font-medium text-yellow-500/80 ${
+                                isActive
+                                    ? 'bg-yellow-500/10 text-yellow-500 border border-yellow-500/20'
+                                    : 'hover:bg-zinc-800 hover:text-yellow-400'
+                                }`
+                            }
+                        >
+                            <Factory className="w-4 h-4" />
+                            ProductionSim
                         </NavLink>
                     </nav>
                 </div>
