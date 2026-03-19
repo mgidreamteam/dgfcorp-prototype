@@ -137,14 +137,14 @@ const RegisterPage: React.FC = () => {
             disabled={loading}
             className="w-full mt-2 bg-white text-black font-bold rounded-lg px-4 py-3 hover:bg-zinc-200 transition-colors disabled:bg-zinc-600 disabled:text-zinc-400 flex justify-center items-center gap-2"
           >
-            {loading ? 'Registering...' : 'Register Route'} 
+            {loading ? 'Registering...' : 'Submit your Registration'} 
             {!loading && <ArrowRight className="w-4 h-4" />}
           </button>
         </form>
 
         <div className="mt-6 space-y-4">
           <p className="text-zinc-400 text-xs text-center px-4 leading-relaxed">
-            By creating an account, you agree to abide by the terms of our NDA and acknowledge you are accessing a confidential system.
+            By requesting access, you agree to abide by the beta user agreement, and sign on to our non-disclosure policy during your first log on.
           </p>
           <p className="text-zinc-400 text-sm text-center">
             Already have an account?{' '}
