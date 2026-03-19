@@ -142,9 +142,11 @@ const ProfilePage: React.FC = () => {
                                  <label className="block text-zinc-500 text-detail font-bold uppercase tracking-wider mb-1">Physical Address</label>
                                  <textarea value={formData.address} onChange={e => setFormData({ ...formData, address: e.target.value })} className="w-full bg-black/50 border border-zinc-700 text-white placeholder-zinc-500 rounded-lg px-4 py-3 outline-none focus:border-white transition-colors min-h-[80px]" />
                              </div>
-                             <button type="submit" disabled={loading} className="mt-4 bg-white text-black text-body font-bold uppercase tracking-widest py-3 px-4 rounded-lg hover:bg-zinc-200 transition-colors flex items-center justify-center gap-2 w-full">
-                                 <Save className="w-4 h-4" /> Commit Metadata
-                             </button>
+                             <div className="flex justify-end pt-2">
+                                <button type="submit" disabled={loading} className="w-12 h-12 bg-white text-black rounded-full hover:bg-zinc-200 transition-transform hover:scale-105 disabled:bg-zinc-800 disabled:text-zinc-600 disabled:hover:scale-100 flex items-center justify-center shadow-lg shadow-white/10" title="Commit Metadata">
+                                    {loading ? <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" /> : <Save className="w-5 h-5" />}
+                                </button>
+                             </div>
                          </form>
                      </ThemePanel>
 
@@ -170,9 +172,11 @@ const ProfilePage: React.FC = () => {
                                  <label className="block text-zinc-500 text-detail font-bold uppercase tracking-wider mb-1">Confirm Password</label>
                                  <input type="password" value={passwords.confirmPassword} onChange={e => setPasswords({ ...passwords, confirmPassword: e.target.value })} className="w-full bg-black/50 border border-zinc-700 text-white placeholder-zinc-500 rounded-lg px-4 py-3 outline-none focus:border-white transition-colors" />
                              </div>
-                             <button type="submit" disabled={loading || !passwords.newPassword} className="mt-4 bg-zinc-800 hover:bg-zinc-700 text-white text-body font-bold py-3 px-4 uppercase tracking-widest rounded-lg transition-colors border border-zinc-700 disabled:opacity-50 flex items-center justify-center gap-2 w-full">
-                                 <Lock className="w-4 h-4" /> Cycle Key
-                             </button>
+                             <div className="flex justify-end pt-2">
+                                <button type="submit" disabled={loading || !passwords.newPassword} className="w-12 h-12 bg-zinc-800 hover:bg-zinc-700 text-white rounded-full transition-transform hover:scale-105 disabled:opacity-50 disabled:hover:scale-100 flex items-center justify-center shadow-lg" title="Cycle Key">
+                                    {loading ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <Lock className="w-5 h-5" />}
+                                </button>
+                             </div>
                          </form>
                      </ThemePanel>
                  </div>

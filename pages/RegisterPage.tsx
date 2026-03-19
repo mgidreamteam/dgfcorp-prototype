@@ -135,10 +135,10 @@ const RegisterPage: React.FC = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full mt-2 bg-white text-black font-bold rounded-lg px-4 py-3 hover:bg-zinc-200 transition-colors disabled:bg-zinc-600 disabled:text-zinc-400 flex justify-center items-center gap-2"
+            className="w-14 h-14 mt-4 mx-auto bg-white text-black rounded-full hover:bg-zinc-200 transition-transform hover:scale-105 disabled:bg-zinc-800 disabled:text-zinc-600 disabled:hover:scale-100 disabled:cursor-not-allowed flex justify-center items-center shadow-lg shadow-white/10"
+            title="Submit your Registration"
           >
-            {loading ? 'Registering...' : 'Submit your Registration'} 
-            {!loading && <ArrowRight className="w-4 h-4" />}
+            {loading ? <div className="w-6 h-6 border-2 border-black border-t-transparent rounded-full animate-spin" /> : <ArrowRight className="w-6 h-6" />}
           </button>
         </form>
 

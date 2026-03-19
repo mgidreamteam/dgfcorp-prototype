@@ -51,9 +51,10 @@ const LoginPage: React.FC = () => {
                 <button
                     type="submit"
                     disabled={!email || !password}
-                    className="w-full mt-4 bg-white text-black font-bold uppercase tracking-widest p-3 hover:bg-zinc-200 transition-colors disabled:bg-zinc-800 disabled:text-zinc-600 disabled:cursor-not-allowed flex justify-center items-center gap-2"
+                    className="w-14 h-14 mt-4 mx-auto bg-white text-black rounded-full hover:bg-zinc-200 transition-transform hover:scale-105 disabled:bg-zinc-800 disabled:text-zinc-600 disabled:hover:scale-100 disabled:cursor-not-allowed flex justify-center items-center shadow-lg shadow-white/10"
+                    title="Login"
                 >
-                    Login <ArrowRight className="w-4 h-4" />
+                    <ArrowRight className="w-6 h-6" />
                 </button>
               </form>
               

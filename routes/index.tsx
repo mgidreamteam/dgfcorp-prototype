@@ -14,7 +14,7 @@ import InnovationPage from '../pages/InnovationPage';
 import PublicLayout from '../layouts/PublicLayout';
 
 const ProtectedRoute: React.FC = () => {
-    const { isAuthenticated, profile } = useAuth();
+    const { isAuthenticated, profile, logout } = useAuth();
     if (!isAuthenticated) return <Navigate to="/login" replace />;
     
     if (profile?.status === 'pending') {
@@ -30,6 +30,13 @@ const ProtectedRoute: React.FC = () => {
                 <div className="mt-8 text-zinc-500 text-sm border border-zinc-800 bg-zinc-900 rounded-lg p-4 max-w-sm">
                     Waiting for administrators <strong>vishnu@dreamgiga.ai</strong> or <strong>alan@dreamgiga.ai</strong> to clear your credentials.
                 </div>
+                <button 
+                  onClick={() => { logout(); window.location.href = '/login'; }}
+                  className="mt-12 flex items-center gap-2 text-zinc-400 hover:text-white transition-colors text-sm uppercase tracking-widest"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+                  Return to Homepage
+                </button>
             </div>
         );
     }
