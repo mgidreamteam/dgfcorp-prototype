@@ -82,7 +82,7 @@ const LoginPage: React.FC = () => {
                   </p>
                 </div>
                 <p className="text-yellow-600 text-xs font-kido tracking-wide pt-2 mt-4">
-                    prototype product
+                    Limited trial alpha
                 </p>
               </div>
               </div>

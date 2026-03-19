@@ -187,8 +187,8 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
       </div>
       
       <div className="p-4 border-t border-zinc-800 text-micro relative z-10">
-        <p className="text-zinc-500">A Materiel Group Inc., Product</p>
-        <p className="text-yellow-600 tracking-wide mt-1">prototype product</p>
+        <p className="text-zinc-500">A DREAM Gigafactories Corp. Product</p>
+        <p className="text-yellow-600 tracking-wide mt-1">Limited trial alpha</p>
       </div>
     </ThemePanel>
   );
