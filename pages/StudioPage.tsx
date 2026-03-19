@@ -368,7 +368,7 @@ const StudioPage: React.FC = () => {
               setValidationState({ missingParams: analysis.missingParams, prompt });
               return;
             }
-            addLog({ content: `Unconstrained: Alon will assume values for: ${analysis.missingParams.join(', ')}.`, type: 'output', projectId: activeProjectId });
+            addLog({ content: `Unconstrained: Ñolmo will assume values for: ${analysis.missingParams.join(', ')}.`, type: 'output', projectId: activeProjectId });
           }
           await runFullGenerationFlow(prompt, activeProjectId, DesignStatus.GENERATING_SPECS, project.specs);
           break;
@@ -680,7 +680,7 @@ const StudioPage: React.FC = () => {
           <ThemePanel translucent className="h-full overflow-hidden relative z-10">
              <div className="flex flex-col h-full overflow-hidden">
                 <div className="px-4 py-3 border-b border-zinc-800 shrink-0 bg-transparent">
-                    <h2 className="text-subheading font-normal text-white uppercase tracking-tighter">ALON</h2>
+                    <h2 className="text-subheading font-normal text-white uppercase tracking-tighter">ÑOLMO</h2>
                 </div>
                 <div className="flex-1 p-4 overflow-hidden">
                     <DesignInput onSubmit={handleCreateDesign} isGenerating={isGenerating} agentLogs={agentLogs.filter(log => !log.projectId || log.projectId === activeProjectId)} activeProject={activeProject} onUpdateProjectConstraint={handleUpdateProjectConstraint} />
