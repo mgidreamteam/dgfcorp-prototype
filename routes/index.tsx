@@ -12,6 +12,7 @@ import ProfilePage from '../pages/ProfilePage';
 import AboutPage from '../pages/AboutPage';
 import InnovationPage from '../pages/InnovationPage';
 import WorldSimPage from '../pages/WorldSimPage';
+import WorldSim3DPage from '../pages/WorldSim3DPage';
 import StudioSimPage from '../pages/StudioSimPage';
 import ProductionSimPage from '../pages/ProductionSimPage';
 import PublicLayout from '../layouts/PublicLayout';
@@ -69,6 +70,8 @@ const AppRouter: React.FC = () => {
                     <Route path="/studiosim" element={<StudioSimPage />} />
                     <Route path="/worldsim" element={<WorldSimPage />} />
                     <Route path="/worldsim/:projectId" element={<WorldSimPage />} />
+                    <Route path="/worldsim3d" element={<WorldSim3DPage />} />
+                    <Route path="/worldsim3d/:projectId" element={<WorldSim3DPage />} />
                     <Route path="/productionsim" element={<ProductionSimPage />} />
                 </Route>
             </Route>

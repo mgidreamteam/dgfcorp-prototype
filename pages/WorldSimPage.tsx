@@ -7,12 +7,12 @@ import FileMenuBar from '../components/MenuBar';
 import DeleteConfirmationDialog from '../components/DeleteConfirmationDialog';
 import { CloudProject, DesignProject, DesignStatus, AgentLog } from '../types';
 import { generateHardwareSpecs } from '../services/gemini';
-import { AlertCircle, Loader2, Map as MapIcon, Globe, Navigation, Search, ZoomIn, ZoomOut, Compass, Wind, Plane, Eye } from 'lucide-react';
+import { AlertCircle, Loader2, Map as MapIcon, Globe, Navigation, ZoomIn, ZoomOut, Compass, Wind, Plane, Eye } from 'lucide-react';
 import { useAutoSave, loadStateFromStorage } from '../hooks/useAutoSave';
 import { useAuth } from '../contexts/AuthContext';
 import { auth, db } from '../services/firebase';
 import { collection, getDocs } from 'firebase/firestore';
-import { APIProvider } from '@vis.gl/react-google-maps';
+import { GoogleMap, useJsApiLoader } from '@react-google-maps/api';
 import ThemePanel from '../components/ThemePanel';
 
 const generateId = () => (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') ? crypto.randomUUID() : Math.random().toString(36).substring(2) + Date.now().toString(36);
@@ -20,10 +20,16 @@ const generateId = () => (typeof crypto !== 'undefined' && typeof crypto.randomU
 const PROHIBITED_KEYWORDS = ['weapon', 'gun', 'firearm', 'missile', 'bomb', 'classified'];
 const isPromptProhibited = (prompt: string) => PROHIBITED_KEYWORDS.some(k => prompt.toLowerCase().includes(k));
 
+const mapContainerStyle = { width: '100%', height: '100%' };
+const defaultCenter = { lat: 38.8977, lng: -77.0365 };
+
 const WorldSimPage: React.FC = () => {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
+  const { isLoaded } = useJsApiLoader({ id: 'google-map-script', googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '' });
 
+  const [mapType, setMapType] = useState<google.maps.MapTypeId | 'hybrid' | 'roadmap' | 'satellite'>('satellite');
+  
   const [projects, setProjects] = useState<DesignProject[]>(() => loadStateFromStorage().projects);
   const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -31,13 +37,12 @@ const WorldSimPage: React.FC = () => {
   const [triggerHierarchyView, setTriggerHierarchyView] = useState<string | null>(null);
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
   
-  // Camera State Arrays (X-Plane Logic Mechanics)
-  const [camera, setCamera] = useState({
-      center: { lat: 38.8977, lng: -77.0365, altitude: 0 },
-      tilt: 45,
-      heading: 0,
-      range: 5000000 // 5000km altitude from local ground, heavily zoomed out orbital initialization
-  });
+  const [mapCenter, setMapCenter] = useState(defaultCenter);
+  const [mapZoom, setMapZoom] = useState(16);
+  const [mapHeading, setMapHeading] = useState(0);
+  const [mapTilt, setMapTilt] = useState(45);
+  
+  const mapRef = useRef<google.maps.Map | null>(null);
   
   const [isSpinning, setIsSpinning] = useState(false);
   const [isFlyby, setIsFlyby] = useState(false);
@@ -150,19 +155,26 @@ const WorldSimPage: React.FC = () => {
   const handleHomeLocation = () => {
       if (navigator.geolocation) {
           navigator.geolocation.getCurrentPosition((position) => {
-              setCamera(prev => ({ ...prev, center: { lat: position.coords.latitude, lng: position.coords.longitude, altitude: 0 }, range: 2000, tilt: 45 }));
+              setMapCenter({ lat: position.coords.latitude, lng: position.coords.longitude });
+              setMapZoom(16);
+              setMapTilt(45);
           }, (err) => setError(`Geolocation Failed: ${err.message}`));
       } else {
           setError("Geolocation API unsupported.");
       }
   };
 
-  const flybyRef = useRef<number | null>(null);
   const spinRef = useRef<number | null>(null);
+  const flybyRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (isSpinning) {
-        const spin = () => { setCamera(c => ({ ...c, heading: (c.heading + 0.5) % 360 })); spinRef.current = requestAnimationFrame(spin); };
+        let currentHeading = mapHeading;
+        const spin = () => { 
+            currentHeading = (currentHeading + 1) % 360;
+            setMapHeading(currentHeading);
+            spinRef.current = requestAnimationFrame(spin); 
+        };
         spinRef.current = requestAnimationFrame(spin);
     } else if (spinRef.current) cancelAnimationFrame(spinRef.current);
     return () => { if (spinRef.current) cancelAnimationFrame(spinRef.current); };
@@ -170,33 +182,35 @@ const WorldSimPage: React.FC = () => {
 
   useEffect(() => {
     if (isFlyby) {
-        const fly = () => { setCamera(c => ({ ...c, center: { ...c.center, lat: c.center.lat + 0.005 }, heading: (c.heading + 0.1) % 360 })); flybyRef.current = requestAnimationFrame(fly); };
+        let currentHeading = mapHeading;
+        let lat = mapCenter.lat;
+        let lng = mapCenter.lng;
+        const fly = () => { 
+            currentHeading = (currentHeading + 0.2) % 360;
+            lat += 0.0001; 
+            lng += 0.0001;
+            setMapHeading(currentHeading);
+            setMapCenter({lat, lng});
+            flybyRef.current = requestAnimationFrame(fly); 
+        };
         flybyRef.current = requestAnimationFrame(fly);
     } else if (flybyRef.current) cancelAnimationFrame(flybyRef.current);
     return () => { if (flybyRef.current) cancelAnimationFrame(flybyRef.current); };
-  }, [isFlyby]);
+  }, [isFlyby, mapCenter.lat, mapCenter.lng]);
 
   useEffect(() => {
       const handleKeyDown = (e: KeyboardEvent) => {
           if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
-          const STEP_TILT = 5;
-          const STEP_HEADING = 5;
-          const STEP_RANGE_MULT = 0.8; 
+          const STEP = 5;
 
-          setCamera(c => {
-              let newC = { ...c };
-              switch(e.key.toLowerCase()) {
-                  case 'w': newC.tilt = Math.min(newC.tilt + STEP_TILT, 90); break;
-                  case 's': newC.tilt = Math.max(newC.tilt - STEP_TILT, 0); break;
-                  case 'a': newC.heading = (newC.heading - STEP_HEADING + 360) % 360; break;
-                  case 'd': newC.heading = (newC.heading + STEP_HEADING) % 360; break;
-                  case '=': case '+': newC.range = Math.max(newC.range * STEP_RANGE_MULT, 100); break;
-                  case '-': case '_': newC.range = Math.min(newC.range / STEP_RANGE_MULT, 20000000); break;
-                  case 'n': newC.heading = 0; break;
-                  case 'c': newC.tilt = 75; newC.range = 500; break; // Chase View Snap
-              }
-              return newC;
-          });
+          switch(e.key.toLowerCase()) {
+              case 'a': setMapHeading(h => (h - STEP + 360) % 360); break;
+              case 'd': setMapHeading(h => (h + STEP) % 360); break;
+              case '=': case '+': setMapZoom(z => Math.min(z + 1, 22)); break;
+              case '-': case '_': setMapZoom(z => Math.max(z - 1, 0)); break;
+              case 'n': setMapHeading(0); break;
+              case 'c': setMapTilt(45); setMapZoom(18); break; 
+          }
       };
       window.addEventListener('keydown', handleKeyDown);
       return () => window.removeEventListener('keydown', handleKeyDown);
@@ -228,34 +242,31 @@ const WorldSimPage: React.FC = () => {
           <ProjectSidebar projects={projects} activeProjectId={activeProjectId} onNewProject={handleNewProject} onRenameProject={handleRenameProject} triggerHierarchyView={triggerHierarchyView} onHierarchyViewClosed={() => setTriggerHierarchyView(null)} />
           
           <ThemePanel translucent className="flex flex-col h-full overflow-hidden relative z-10 p-0">
-            {/* X-Plane Style HUD Controls */}
+            {/* 2D Vector Stabilized HUD Controls */}
             <div className="absolute top-4 left-4 right-4 z-50 flex flex-wrap justify-between gap-2 pointer-events-none">
                 <div className="flex gap-2 pointer-events-auto">
                     <button onClick={handleHomeLocation} className={`px-4 py-2 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 rounded-lg transition-all shadow-lg backdrop-blur-md bg-white/10 text-white border border-white/20 hover:bg-white/20`}>
                         <Navigation className="w-3 h-3" /> Home (Geolocate)
                     </button>
-                    <button onClick={() => setCamera(c => ({...c, heading: 0}))} className={`px-4 py-2 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 rounded-lg transition-all shadow-lg backdrop-blur-md bg-zinc-900/80 text-zinc-300 border border-zinc-700 hover:bg-zinc-800`} title="Hotkey: N">
+                    <button onClick={() => setMapHeading(0)} className={`px-4 py-2 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 rounded-lg transition-all shadow-lg backdrop-blur-md bg-zinc-900/80 text-zinc-300 border border-zinc-700 hover:bg-zinc-800`} title="Hotkey: N">
                         <Compass className="w-3 h-3" /> North Up [N]
                     </button>
                 </div>
                 <div className="flex gap-2 pointer-events-auto">
-                    <button onClick={() => setCamera(c => ({...c, range: c.range * 0.5}))} className={`px-3 py-2 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 rounded-lg transition-all shadow-lg backdrop-blur-md bg-[#00ffcc]/10 text-[#00ffcc] border border-[#00ffcc]/30 hover:bg-[#00ffcc]/20`} title="Hotkey: +">
+                    <button onClick={() => setMapZoom(z => Math.min(z + 1, 22))} className={`px-3 py-2 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 rounded-lg transition-all shadow-lg backdrop-blur-md bg-[#00ffcc]/10 text-[#00ffcc] border border-[#00ffcc]/30 hover:bg-[#00ffcc]/20`} title="Hotkey: +">
                         <ZoomIn className="w-3 h-3" />
                     </button>
-                    <button onClick={() => setCamera(c => ({...c, range: c.range * 1.5}))} className={`px-3 py-2 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 rounded-lg transition-all shadow-lg backdrop-blur-md bg-[#00ffcc]/10 text-[#00ffcc] border border-[#00ffcc]/30 hover:bg-[#00ffcc]/20`} title="Hotkey: -">
+                    <button onClick={() => setMapZoom(z => Math.max(z - 1, 0))} className={`px-3 py-2 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 rounded-lg transition-all shadow-lg backdrop-blur-md bg-[#00ffcc]/10 text-[#00ffcc] border border-[#00ffcc]/30 hover:bg-[#00ffcc]/20`} title="Hotkey: -">
                         <ZoomOut className="w-3 h-3" />
                     </button>
                 </div>
             </div>
 
             <div className="absolute bottom-4 left-4 z-50 flex gap-2 pointer-events-auto">
-                <button onClick={() => setCamera(c => ({...c, tilt: c.tilt >= 45 ? 0 : 75}))} className={`px-4 py-2 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 rounded-lg transition-all shadow-lg backdrop-blur-md ${camera.tilt > 0 ? 'bg-[#00ffcc] text-black shadow-[0_0_15px_rgba(0,255,204,0.4)]' : 'bg-zinc-900/80 text-zinc-300 border border-zinc-700 hover:bg-zinc-800'}`} title="Hotkey: W/S">
-                    <Eye className="w-3 h-3" /> Perspective [W/S]
-                </button>
                 <button onClick={() => setIsSpinning(s => !s)} className={`px-4 py-2 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 rounded-lg transition-all shadow-lg backdrop-blur-md ${isSpinning ? 'bg-yellow-500 text-black shadow-[0_0_15px_rgba(234,179,8,0.4)]' : 'bg-zinc-900/80 text-zinc-300 border border-zinc-700 hover:bg-zinc-800'}`}>
                     <Globe className="w-3 h-3" /> Spin View [A/D]
                 </button>
-                <button onClick={() => { setCamera(c => ({...c, tilt: 75, range: 400})); setIsFlyby(false); }} className={`px-4 py-2 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 rounded-lg transition-all shadow-lg backdrop-blur-md bg-zinc-900/80 text-zinc-300 border border-zinc-700 hover:bg-zinc-800`} title="Hotkey: C">
+                <button onClick={() => { setMapTilt(45); setMapZoom(18); setIsFlyby(false); }} className={`px-4 py-2 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 rounded-lg transition-all shadow-lg backdrop-blur-md bg-zinc-900/80 text-zinc-300 border border-zinc-700 hover:bg-zinc-800`} title="Hotkey: C">
                     <Plane className="w-3 h-3" /> Chase View [C]
                 </button>
                 <button onClick={() => setIsFlyby(f => !f)} className={`px-4 py-2 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 rounded-lg transition-all shadow-lg backdrop-blur-md ${isFlyby ? 'bg-red-500 text-black shadow-[0_0_15px_rgba(239,68,68,0.4)]' : 'bg-zinc-900/80 text-zinc-300 border border-zinc-700 hover:bg-zinc-800'}`}>
@@ -263,24 +274,25 @@ const WorldSimPage: React.FC = () => {
                 </button>
             </div>
 
-            <div className="w-full h-full bg-black">
-                <APIProvider apiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY || ''} version="alpha">
-                    {/* @ts-ignore */}
-                    <gmp-map-3d 
-                        center={`${camera.center.lat},${camera.center.lng},${camera.center.altitude}`}
-                        heading={camera.heading} 
-                        tilt={camera.tilt} 
-                        range={camera.range} 
-                    ></gmp-map-3d>
-                </APIProvider>
+            <div className="w-full h-full bg-zinc-950">
+                {isLoaded ? (
+                    <GoogleMap
+                        mapContainerStyle={mapContainerStyle}
+                        center={mapCenter}
+                        zoom={mapZoom}
+                        heading={mapHeading}
+                        tilt={mapTilt}
+                        mapTypeId={mapType}
+                        options={{ disableDefaultUI: true }}
+                        onLoad={map => { mapRef.current = map; }}
+                    />
+                ) : (
+                    <div className="w-full h-full flex flex-col items-center justify-center text-zinc-500">
+                        <Loader2 className="w-8 h-8 animate-spin mb-4" />
+                        Initializing 2D Vector Matrices...
+                    </div>
+                )}
             </div>
-
-            {error && !isGenerating && (
-                <div className="absolute top-16 left-4 right-4 z-50 bg-red-900/90 backdrop-blur-md border border-red-500/50 p-4 rounded-lg flex items-start gap-3 text-white shadow-2xl pointer-events-auto">
-                    <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
-                    <div><p className="font-bold tracking-widest uppercase">Simulation Failed</p><p className="text-sm opacity-90">{error}</p></div>
-                </div>
-            )}
           </ThemePanel>
 
           <div onMouseDown={handleMouseDown} className="resize-handle w-1.5 h-full cursor-col-resize bg-zinc-800 hover:bg-zinc-700 transition-colors flex-shrink-0 rounded-full"></div>
@@ -288,7 +300,7 @@ const WorldSimPage: React.FC = () => {
           <ThemePanel translucent className="h-full overflow-hidden relative z-10">
              <div className="flex flex-col h-full overflow-hidden">
                 <div className="px-4 py-3 border-b border-zinc-800 shrink-0 bg-transparent">
-                    <h2 className="text-subheading font-normal text-white uppercase tracking-tighter">WORLDSIM ORCHESTRATION</h2>
+                    <h2 className="text-subheading font-normal text-white uppercase tracking-tighter">WORLDSIM DOMAIN</h2>
                 </div>
                 <div className="flex-1 p-4 overflow-hidden">
                     <DesignInput onSubmit={handleCreateDesign} isGenerating={isGenerating} agentLogs={agentLogs.filter(log => !log.projectId || log.projectId === activeProjectId)} activeProject={activeProject} onUpdateProjectConstraint={() => {}} />
