@@ -1,5 +1,6 @@
-import React, { useState, useMemo } from 'react';
-import { vendors as initialVendors } from '../data/vendors';
+import React, { useState, useMemo, useEffect } from 'react';
+import { collection, getDocs, doc, setDoc } from 'firebase/firestore';
+import { db } from '../services/firebase';
 import { Search, MapPin, Award, Clock, Package, Star, ShieldCheck, Globe, ArrowLeft, ExternalLink, CheckCircle, Plus, X, LayoutGrid, List } from 'lucide-react';
 import { VendorCategory, Vendor, ComponentCategory, ServiceType, GigafactoryFilter } from '../types';
 
@@ -99,7 +100,8 @@ const AddVendorModal: React.FC<{ onClose: () => void; onAddVendor: (vendor: Vend
 
 
 const DWeb: React.FC<{ filter: GigafactoryFilter }> = ({ filter }) => {
-  const [vendors, setVendors] = useState<Vendor[]>(initialVendors);
+  const [vendors, setVendors] = useState<Vendor[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedVendor, setSelectedVendor] = useState<Vendor | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -107,9 +109,30 @@ const DWeb: React.FC<{ filter: GigafactoryFilter }> = ({ filter }) => {
 
   const categories: VendorCategory[] = ['Injection Molding', 'PCB & Electronics', 'CNC Machining', '3D Printing', 'Assembly', 'Materials'];
 
-  const handleAddVendor = (vendor: Vendor) => {
-    setVendors(prev => [vendor, ...prev]);
-    setIsAddModalOpen(false);
+  useEffect(() => {
+      const fetchVendors = async () => {
+          try {
+              const snap = await getDocs(collection(db, 'vendors'));
+              const liveVendors = snap.docs.map(d => d.data() as Vendor);
+              setVendors(liveVendors);
+          } catch (err) {
+              console.error(err);
+          } finally {
+              setLoading(false);
+          }
+      };
+      fetchVendors();
+  }, []);
+
+  const handleAddVendor = async (vendor: Vendor) => {
+    try {
+        await setDoc(doc(db, 'vendors', vendor.id), vendor);
+        setVendors(prev => [vendor, ...prev]);
+        setIsAddModalOpen(false);
+    } catch (err) {
+        console.error("Failed to inject vendor object", err);
+        alert("Permission Denied: Must be an Administrator.");
+    }
   };
 
   const filteredVendors = useMemo(() => {
@@ -302,7 +325,11 @@ const DWeb: React.FC<{ filter: GigafactoryFilter }> = ({ filter }) => {
 
         {/* Results */}
         <div>
-            {viewMode === 'grid' ? (
+            {loading ? (
+                <div className="py-24 text-center text-zinc-500 animate-pulse">
+                    Connecting to Global Database... retrieving Manufacturer matrix.
+                </div>
+            ) : viewMode === 'grid' ? (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     {filteredVendors.map(vendor => (
                     <div key={vendor.id} className="bg-zinc-800/40 border border-zinc-700/50 rounded-xl p-4 hover:border-white/50 transition-all hover:bg-zinc-800/60 group flex flex-col">

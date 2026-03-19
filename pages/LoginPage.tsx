@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, ShieldAlert, AlertTriangle } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 const WavyBackground = () => (
@@ -56,70 +56,28 @@ const WavyBackground = () => (
     </div>
 );
 
-const NdaModal: React.FC<{ onAgree: () => void; onCancel: () => void }> = ({ onAgree, onCancel }) => (
-    <div 
-      className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 animate-fade-in"
-      role="dialog" aria-modal="true" aria-labelledby="nda-title"
-    >
-      <div className="bg-zinc-900 border border-zinc-800 rounded-2xl w-full max-w-md shadow-2xl">
-        <div className="p-6 border-b border-zinc-800">
-          <div className="flex items-center gap-3">
-            <div className="bg-yellow-500/10 p-2 rounded-lg border border-yellow-500/20">
-              <ShieldAlert className="w-6 h-6 text-yellow-400" />
-            </div>
-            <div>
-              <h2 id="nda-title" className="text-xl font-bold text-white">Confidentiality Agreement</h2>
-              <p className="text-zinc-400 text-sm">Please review and agree to the terms.</p>
-            </div>
-          </div>
-        </div>
-        <div className="p-6">
-          <p className="text-zinc-300">
-            By signing in, you acknowledge that you are accessing a confidential system. You agree to abide by the terms of the Non-Disclosure Agreement (NDA) and will not disclose any proprietary information, trade secrets, or project details viewed within the D.R.E.A.M. Studio to any third party.
-          </p>
-        </div>
-        <div className="p-4 bg-zinc-900/50 border-t border-zinc-800 flex justify-end items-center gap-4">
-          <button onClick={onCancel} className="text-zinc-400 hover:text-white text-sm font-medium px-4 py-2 transition-colors">
-            Cancel
-          </button>
-          <button onClick={onAgree} className="bg-white hover:bg-zinc-200 text-black px-5 py-2.5 rounded-lg font-bold text-sm shadow-lg shadow-white/10 transition-all">
-            Agree & Continue
-          </button>
-        </div>
-      </div>
-    </div>
-);
-
 
 const LoginPage: React.FC = () => {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [isNdaModalVisible, setIsNdaModalVisible] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!username || !password) return;
-    setIsNdaModalVisible(true);
-  };
-
-  const handleNdaAgree = () => {
-    setIsNdaModalVisible(false);
+    if (!email || !password) return;
     setError('');
-    const success = login(username, password);
+    const success = await login(email, password);
     if (success) {
-      navigate('/studio');
+      navigate('/dashboard');
     } else {
-      setError('Invalid username or password.');
+      setError('Invalid email or password.');
     }
   };
 
-
   return (
     <>
-      {isNdaModalVisible && <NdaModal onAgree={handleNdaAgree} onCancel={() => setIsNdaModalVisible(false)} />}
       <main className="min-h-[40vh] flex flex-col items-center justify-center relative overflow-hidden">
           <WavyBackground />
           <div className="relative z-10 w-full max-w-xl p-8 text-center animate-fade-in-up">
@@ -127,10 +85,10 @@ const LoginPage: React.FC = () => {
               <p className="text-zinc-400 mb-8">A D.R.E.A.M. Gigafactory Corp. Product</p>
               <form onSubmit={handleSubmit} className="flex items-center gap-2 bg-zinc-900/50 border border-zinc-700/80 rounded-full p-2 backdrop-blur-md shadow-2xl">
               <input
-                  type="text"
-                  placeholder="Username"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  type="email"
+                  placeholder="Email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   className="flex-1 bg-transparent text-white placeholder-zinc-500 px-4 py-2 outline-none font-kido"
               />
               <div className="w-px h-6 bg-zinc-700"></div>
@@ -143,21 +101,26 @@ const LoginPage: React.FC = () => {
               />
               <button
                   type="submit"
-                  disabled={!username || !password}
+                  disabled={!email || !password}
                   className="bg-white text-black rounded-full p-3 hover:bg-zinc-200 transition-colors disabled:bg-zinc-700 disabled:text-zinc-500 disabled:cursor-not-allowed"
               >
                   <ArrowRight className="w-5 h-5" />
               </button>
               </form>
               {error && <p className="text-red-400 text-sm mt-4">{error}</p>}
-              <div className="mt-6 space-y-2">
-                <p className="text-zinc-400 text-sm">
-                    Don't have an account?{' '}
-                    <Link to="/about" className="font-semibold text-white hover:underline">
-                        Request Access
-                    </Link>
+              <div className="mt-4 pt-4 border-t border-zinc-700/50">
+                <p className="text-zinc-400 text-xs leading-relaxed max-w-sm mx-auto mb-4">
+                  By logging in, you agree to abide by the terms of our NDA and acknowledge that you are accessing a confidential, proprietary system.
                 </p>
-                <p className="text-yellow-600 text-xs font-kido tracking-wide pt-2">
+                <div className="space-y-1">
+                  <p className="text-zinc-400 text-sm">
+                      Don't have an account?{' '}
+                      <Link to="/register" className="font-semibold text-white hover:underline">
+                          Register
+                      </Link>
+                  </p>
+                </div>
+                <p className="text-yellow-600 text-xs font-kido tracking-wide pt-2 mt-4">
                     prototype product
                 </p>
               </div>

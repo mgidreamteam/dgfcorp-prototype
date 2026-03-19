@@ -2,6 +2,10 @@ import React from 'react';
 import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import LoginPage from '../pages/LoginPage';
+import RegisterPage from '../pages/RegisterPage';
+import DashboardPage from '../pages/DashboardPage';
+import UserManagementPage from '../pages/UserManagementPage';
+import VendorAdminPage from '../pages/VendorAdminPage';
 import StudioPage from '../pages/StudioPage';
 import GigafactoryPage from '../pages/GigafactoryPage';
 import MainLayout from '../layouts/MainLayout';
@@ -10,8 +14,27 @@ import InnovationPage from '../pages/InnovationPage';
 import PublicLayout from '../layouts/PublicLayout';
 
 const ProtectedRoute: React.FC = () => {
-    const { isAuthenticated } = useAuth();
-    return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
+    const { isAuthenticated, profile } = useAuth();
+    if (!isAuthenticated) return <Navigate to="/login" replace />;
+    
+    if (profile?.status === 'pending') {
+        return (
+            <div className="min-h-screen bg-black flex flex-col items-center justify-center p-8 text-center animate-fade-in">
+                <div className="w-16 h-16 bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 shadow-xl shadow-yellow-500/10 rounded-full flex items-center justify-center mb-6">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                </div>
+                <h1 className="text-3xl font-bold text-white mb-4">Account Pending Approval</h1>
+                <p className="text-zinc-400 max-w-md leading-relaxed">
+                    Your registration has been securely submitted. A system administrator must review and approve your account before you can access the D.R.E.A.M. platform.
+                </p>
+                <div className="mt-8 text-zinc-500 text-sm border border-zinc-800 bg-zinc-900 rounded-lg p-4 max-w-sm">
+                    Waiting for administrators <strong>vishnu@dgfcorp.ai</strong> or <strong>alan@dgfcorp.ai</strong> to clear your credentials.
+                </div>
+            </div>
+        );
+    }
+    
+    return <Outlet />;
 };
 
 const AppRouter: React.FC = () => {
@@ -19,20 +42,25 @@ const AppRouter: React.FC = () => {
     return (
         <Routes>
             <Route element={<PublicLayout />}>
-                <Route path="/login" element={<LoginPage />} />
+                <Route path="/login" element={isAuthenticated ? <Navigate to="/studio" replace /> : <LoginPage />} />
+                <Route path="/register" element={isAuthenticated ? <Navigate to="/studio" replace /> : <RegisterPage />} />
                 <Route path="/about" element={<AboutPage />} />
                 <Route path="/innovation" element={<InnovationPage />} />
             </Route>
-            
+
             <Route element={<ProtectedRoute />}>
                 <Route element={<MainLayout />}>
+                    <Route path="/dashboard" element={<DashboardPage />} />
+                    <Route path="/admin/users" element={<UserManagementPage />} />
+                    <Route path="/admin/gigafactory" element={<VendorAdminPage />} />
                     <Route path="/studio" element={<StudioPage />} />
                     <Route path="/studio/:projectId" element={<StudioPage />} />
                     <Route path="/gigafactory" element={<GigafactoryPage />} />
+                    
                 </Route>
             </Route>
 
-            <Route path="*" element={<Navigate to={isAuthenticated ? "/studio" : "/login"} replace />} />
+            <Route path="*" element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />} />
         </Routes>
     );
 };

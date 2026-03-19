@@ -1,0 +1,42 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Gibraltar Base Logic
+    function hasAnyRole(roles) {
+      return request.auth != null &&
+             exists(/databases/$(database)/documents/authUidToRole/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/authUidToRole/$(request.auth.uid)).data.roles is list &&
+             get(/databases/$(database)/documents/authUidToRole/$(request.auth.uid)).data.roles.hasAny(roles);
+    }
+
+    function isAdmin() {
+      return hasAnyRole(['admin']);
+    }
+
+    match /authUidToRole/{uid} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin() || (request.auth != null && request.auth.uid == uid);
+    }
+
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && request.auth.uid == userId;
+      allow update: if isAdmin() || (request.auth != null && request.auth.uid == userId);
+      allow delete: if isAdmin();
+      
+      match /cloudProjects/{projectId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+    
+    match /vendors/{vendorId} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
+    }
+    
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

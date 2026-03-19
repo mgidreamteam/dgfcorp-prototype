@@ -8,11 +8,68 @@ import LandingPage from '../components/LandingPage';
 import FileMenuBar from '../components/MenuBar';
 import DeleteConfirmationDialog from '../components/DeleteConfirmationDialog';
 import ProjectView from '../components/ProjectView';
-import { DesignProject, DesignStatus, HardwareSpec, AgentLog } from '../types';
+import { CloudProject, DesignProject, DesignStatus, HardwareSpec, AgentLog } from '../types';
 import { analyzeUserIntent, getAnswerFromSpec, generateHardwareSpecs, generateProductRenderImage, generateProductExplodedViewImage, generateCircuitDiagramImage, generatePcbLayoutImage, generateOpenScadCode, generateStlFile, generateSkidlCode, runCircuitSimulation, rerunCircuitSimulation } from '../services/gemini';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Cloud, X, CloudDownload, Trash2, Loader2 } from 'lucide-react';
 import { useAutoSave, loadStateFromStorage } from '../hooks/useAutoSave';
 import { useAuth } from '../contexts/AuthContext';
+import { auth, db, storage } from '../services/firebase';
+import { collection, doc, setDoc, getDocs, deleteDoc } from 'firebase/firestore';
+import { ref, uploadString, getDownloadURL, deleteObject } from 'firebase/storage';
+
+const CloudLoadModal: React.FC<{ 
+    isOpen: boolean; 
+    onClose: () => void;
+    projects: CloudProject[];
+    onLoad: (p: CloudProject) => void;
+    onDelete: (p: CloudProject) => void;
+    loadingAction: string | null;
+}> = ({ isOpen, onClose, projects, onLoad, onDelete, loadingAction }) => {
+    if (!isOpen) return null;
+    return (
+        <div className="fixed inset-0 bg-black/80 z-[100] flex items-center justify-center p-4" onClick={onClose}>
+            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl w-full max-w-2xl shadow-2xl flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
+                <div className="p-6 border-b border-zinc-800 flex justify-between items-center">
+                    <h2 className="text-xl font-bold text-white flex items-center gap-2"><Cloud className="w-5 h-5 text-blue-500" /> Cloud Storage Directory</h2>
+                     <button onClick={onClose} className="p-2 rounded-full hover:bg-zinc-800"><X className="w-5 h-5" /></button>
+                </div>
+                <div className="p-6 overflow-y-auto space-y-3">
+                    {projects.length === 0 ? (
+                        <div className="text-center text-zinc-500 py-12">No global models located in your Cloud boundary.</div>
+                    ) : (
+                        projects.sort((a,b) => b.uploadedAt - a.uploadedAt).map(p => (
+                            <div key={p.id} className="bg-zinc-800/40 border border-zinc-700/50 p-4 rounded-xl flex items-center justify-between hover:border-zinc-500 transition-colors">
+                                <div>
+                                    <div className="font-bold text-white mb-1">{p.name}</div>
+                                    <div className="text-xs text-zinc-400 flex gap-4">
+                                        <span>{(p.sizeBytes / 1000000).toFixed(2)} MB</span>
+                                        <span>{new Date(p.uploadedAt).toLocaleString()}</span>
+                                    </div>
+                                </div>
+                                <div className="flex gap-2">
+                                    <button 
+                                        onClick={() => onLoad(p)}
+                                        disabled={loadingAction === p.id}
+                                        className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 flex items-center gap-2"
+                                    >
+                                        {loadingAction === p.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <CloudDownload className="w-4 h-4" />} Stream
+                                    </button>
+                                    <button 
+                                        onClick={() => onDelete(p)}
+                                        disabled={loadingAction === p.id}
+                                        className="bg-red-900/30 text-red-400 hover:bg-red-900/60 px-3 py-2 rounded-lg transition-colors border border-red-900/50 disabled:opacity-50"
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            </div>
+                        ))
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+};
 
 // FIX: Correctly check for crypto.randomUUID as a function to prevent runtime errors
 // if it's defined but not a function. This could happen in some environments and
@@ -34,7 +91,6 @@ const isPromptProhibited = (prompt: string): boolean => {
 const StudioPage: React.FC = () => {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
-  const { logout } = useAuth();
 
   const [projects, setProjects] = useState<DesignProject[]>(() => loadStateFromStorage().projects);
   const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
@@ -44,6 +100,13 @@ const StudioPage: React.FC = () => {
   const [retryState, setRetryState] = useState<DesignProject | null>(null);
   const [triggerHierarchyView, setTriggerHierarchyView] = useState<string | null>(null);
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
+  
+  // Cloud Hooks
+  const [cloudProjects, setCloudProjects] = useState<CloudProject[]>([]);
+  const [isCloudSaving, setIsCloudSaving] = useState(false);
+  const [isCloudModalOpen, setIsCloudModalOpen] = useState(false);
+  const [cloudLoadingAction, setCloudLoadingAction] = useState<string | null>(null);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [alonPanelWidth, setAlonPanelWidth] = useState(400);
@@ -73,6 +136,25 @@ const StudioPage: React.FC = () => {
       }
     }
   }, [projectId, projects, navigate]);
+
+  const fetchCloudProjects = useCallback(async () => {
+    if (!auth.currentUser) return;
+    try {
+        const snap = await getDocs(collection(db, `users/${auth.currentUser.uid}/cloudProjects`));
+        const fetched = snap.docs.map(d => d.data() as CloudProject);
+        setCloudProjects(fetched);
+    } catch (err) {
+        console.error("Failed to sync cloud registry", err);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchCloudProjects();
+  }, [fetchCloudProjects]);
+
+  const cloudStorageUsed = useMemo(() => {
+    return cloudProjects.reduce((acc, p) => acc + p.sizeBytes, 0);
+  }, [cloudProjects]);
 
   const activeProject = useMemo(() => projects.find(p => p.id === activeProjectId), [projects, activeProjectId]);
   const isGenerating = useMemo(() => projects.some(p => p.status.startsWith('GENERATING_')), [projects]);
@@ -347,6 +429,93 @@ const StudioPage: React.FC = () => {
     addLog({ content: `Project "${activeProject.name}" downloaded to file.`, type: 'output', projectId: activeProject.id });
   };
 
+  const handleSaveToCloud = async () => {
+    if (!activeProject || !auth.currentUser) return;
+    try {
+        setIsCloudSaving(true);
+        const dataStr = JSON.stringify(activeProject);
+        const sizeBytes = new Blob([dataStr]).size;
+
+        const existingProject = cloudProjects.find(p => p.id === activeProject.id);
+        const newTotalSize = cloudStorageUsed - (existingProject?.sizeBytes || 0) + sizeBytes;
+
+        const MAX_QUOTA = 50000000;
+        if (newTotalSize > MAX_QUOTA) {
+            throw new Error(`Storage Quota Exceeded. You have used ${(cloudStorageUsed/1000000).toFixed(2)}MB. This payload requires ${(sizeBytes/1000000).toFixed(2)}MB. Limit: 50MB.`);
+        }
+
+        const fileRef = ref(storage, `users/${auth.currentUser.uid}/projects/${activeProject.id}.dream`);
+        await uploadString(fileRef, dataStr, 'raw');
+
+        const cloudMeta: CloudProject = {
+            id: activeProject.id,
+            name: activeProject.name,
+            sizeBytes,
+            uploadedAt: Date.now()
+        };
+        await setDoc(doc(db, `users/${auth.currentUser.uid}/cloudProjects`, activeProject.id), cloudMeta);
+        
+        addLog({ content: `Project "${activeProject.name}" synchronized with Global Storage Directory.`, type: 'output', projectId: activeProject.id });
+        await fetchCloudProjects();
+    } catch (err: any) {
+        const payloadMsg = err.message || "Unknown error";
+        setError(`Cloud Delivery Blocked: ${payloadMsg}`);
+        addLog({ content: `Cloud Delivery Blocked: ${payloadMsg}`, type: 'error', projectId: activeProject.id });
+    } finally {
+        setIsCloudSaving(false);
+    }
+  };
+
+  const handleDownloadFromCloud = async (cloudProj: CloudProject) => {
+      if (!auth.currentUser) return;
+      try {
+          setCloudLoadingAction(cloudProj.id);
+          const fileRef = ref(storage, `users/${auth.currentUser.uid}/projects/${cloudProj.id}.dream`);
+          const url = await getDownloadURL(fileRef);
+          
+          const response = await fetch(url);
+          if (!response.ok) throw new Error("Failed to pull from Google Storage endpoints.");
+          
+          const text = await response.text();
+          const projectData = JSON.parse(text) as DesignProject;
+          
+          // Verify struct
+          if (projectData.id && projectData.name) {
+              // Upsert local
+              setProjects(prev => {
+                  const filtered = prev.filter(p => p.id !== projectData.id);
+                  return [projectData, ...filtered];
+              });
+              navigate(`/studio/${projectData.id}`);
+              addLog({ content: `Recovered global asset "${projectData.name}" via binary stream.`, type: 'output' });
+              setIsCloudModalOpen(false);
+          } else {
+              throw new Error("Corrupted asset architecture.");
+          }
+      } catch (err: any) {
+          setError(`Cloud Retrieval Failed: ${err.message}`);
+          addLog({ content: `Cloud Fetch Corrupt: ${err.message}`, type: 'error' });
+      } finally {
+          setCloudLoadingAction(null);
+      }
+  };
+
+  const handleDeleteFromCloud = async (cloudProj: CloudProject) => {
+      if (!auth.currentUser) return;
+      try {
+          setCloudLoadingAction(cloudProj.id);
+          const fileRef = ref(storage, `users/${auth.currentUser.uid}/projects/${cloudProj.id}.dream`);
+          await deleteObject(fileRef);
+          await deleteDoc(doc(db, `users/${auth.currentUser.uid}/cloudProjects`, cloudProj.id));
+          addLog({ content: `Permanently unlinked "${cloudProj.name}" from the global bucket.`, type: 'output' });
+          await fetchCloudProjects();
+      } catch (err: any) {
+          setError(`Cloud Purge Blocked: ${err.message}`);
+      } finally {
+          setCloudLoadingAction(null);
+      }
+  };
+
   const handleFileSelected = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -448,6 +617,15 @@ const StudioPage: React.FC = () => {
       {validationState && activeProject && <ParameterDialog missingParams={validationState.missingParams} originalPrompt={validationState.prompt} onCancel={() => setValidationState(null)} onSubmit={(p) => { setValidationState(null); handleCreateDesign(p); }} isConstrained={activeProject.isConstrained} />}
       {retryState && <RetryDialog project={retryState} onCancel={() => setRetryState(null)} onSubmit={handleRetryWithGuidance} />}
       {isDeleteModalVisible && activeProject && <DeleteConfirmationDialog projectName={activeProject.name} onConfirm={confirmDeleteProject} onCancel={() => setIsDeleteModalVisible(false)} />}
+      <CloudLoadModal 
+        isOpen={isCloudModalOpen} 
+        onClose={() => setIsCloudModalOpen(false)} 
+        projects={cloudProjects} 
+        onLoad={handleDownloadFromCloud} 
+        onDelete={handleDeleteFromCloud} 
+        loadingAction={cloudLoadingAction} 
+      />
+      
       <div className="h-full flex flex-col">
         <FileMenuBar 
           onNewProject={handleNewProject}
@@ -460,8 +638,11 @@ const StudioPage: React.FC = () => {
           isStlReady={!!activeProject?.assetUrls?.stl}
           onExportImages={handleExportImages}
           areImagesExportable={!!(activeProject?.assetUrls?.rendered || activeProject?.assetUrls?.exploded)}
-          onLogout={logout} 
           isProjectActive={!!activeProject} 
+          onSaveToCloud={handleSaveToCloud}
+          onLoadFromCloud={() => setIsCloudModalOpen(true)}
+          isCloudSaving={isCloudSaving}
+          cloudStorageUsed={cloudStorageUsed}
         />
         <div className="flex-1 grid overflow-hidden p-2 gap-2" style={{ gridTemplateColumns }}>
           <ProjectSidebar projects={projects} activeProjectId={activeProjectId} onNewProject={handleNewProject} onRenameProject={handleRenameProject} triggerHierarchyView={triggerHierarchyView} onHierarchyViewClosed={() => setTriggerHierarchyView(null)} />

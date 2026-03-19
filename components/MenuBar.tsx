@@ -1,5 +1,5 @@
 import React from 'react';
-import { PlusCircle, Save, Trash2, FileInput, FileOutput, Box, ImageIcon, XSquare, LogOut } from 'lucide-react';
+import { PlusCircle, Save, Trash2, FileInput, FileOutput, Box, ImageIcon, XSquare, CloudUpload, CloudDownload, Loader2 } from 'lucide-react';
 
 interface FileMenuBarProps {
   onNewProject: () => void;
@@ -12,8 +12,11 @@ interface FileMenuBarProps {
   isStlReady: boolean;
   onExportImages: () => void;
   areImagesExportable: boolean;
-  onLogout: () => void;
   isProjectActive: boolean;
+  onSaveToCloud: () => void;
+  onLoadFromCloud: () => void;
+  isCloudSaving: boolean;
+  cloudStorageUsed: number;
 }
 
 const FileMenuBar: React.FC<FileMenuBarProps> = ({ 
@@ -27,8 +30,11 @@ const FileMenuBar: React.FC<FileMenuBarProps> = ({
     isStlReady, 
     onExportImages, 
     areImagesExportable, 
-    onLogout, 
-    isProjectActive 
+    isProjectActive,
+    onSaveToCloud,
+    onLoadFromCloud,
+    isCloudSaving,
+    cloudStorageUsed
 }) => {
     
   const buttonClass = "flex items-center gap-2 px-3 py-1.5 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-white rounded-md transition-colors";
@@ -54,6 +60,16 @@ const FileMenuBar: React.FC<FileMenuBarProps> = ({
         <button onClick={onImport} className={buttonClass}>
             <FileInput className="w-4 h-4" /> Import from Disk (*.dream)
         </button>
+
+        <div className="h-5 w-px bg-zinc-700 mx-1"></div>
+        <button onClick={onSaveToCloud} disabled={!isProjectActive || isCloudSaving} className={isProjectActive ? buttonClass.replace('text-zinc-300', 'text-blue-400').replace('hover:bg-zinc-800', 'hover:bg-blue-900/40') : disabledButtonClass}>
+            {isCloudSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CloudUpload className="w-4 h-4" />}
+            Save to Cloud
+        </button>
+        <button onClick={onLoadFromCloud} className={buttonClass.replace('text-zinc-300', 'text-blue-400').replace('hover:bg-zinc-800', 'hover:bg-blue-900/40')}>
+            <CloudDownload className="w-4 h-4" /> Load from Cloud
+        </button>
+        <div className="h-5 w-px bg-zinc-700 mx-1"></div>
         <button onClick={onExportStl} disabled={!isStlReady} className={isStlReady ? buttonClass : disabledButtonClass}>
           <Box className="w-4 h-4" /> Export STL
         </button>
@@ -66,9 +82,19 @@ const FileMenuBar: React.FC<FileMenuBarProps> = ({
           <XSquare className="w-4 h-4" /> Close
         </button>
       </div>
-      <button onClick={onLogout} className={buttonClass}>
-        <LogOut className="w-4 h-4" /> Logout
-      </button>
+
+      <div className="flex items-center gap-4 bg-black/40 px-4 py-1.5 rounded-lg border border-zinc-800">
+        <div className="text-right">
+            <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Global Quota</div>
+            <div className="font-mono text-xs text-zinc-300">{(cloudStorageUsed / 1000000).toFixed(2)} / 50.0 MB</div>
+        </div>
+        <div className="w-32 h-2.5 bg-zinc-800 rounded-full overflow-hidden border border-zinc-700/50">
+            <div 
+                className={`h-full ${cloudStorageUsed > 40000000 ? 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]' : 'bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]'} transition-all duration-500 ease-out`}
+                style={{ width: `${Math.min(100, (cloudStorageUsed / 50000000) * 100)}%` }}
+            />
+        </div>
+      </div>
     </div>
   );
 };

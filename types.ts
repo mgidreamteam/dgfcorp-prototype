@@ -118,3 +118,10 @@ export interface GigafactoryFilter {
   component: ComponentCategory | null;
   services: ServiceType[] | null;
 }
+
+export interface CloudProject {
+  id: string;
+  name: string;
+  sizeBytes: number;
+  uploadedAt: number;
+}

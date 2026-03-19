@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { BookOpen, LayoutGrid, Globe } from 'lucide-react';
+import { BookOpen, LayoutGrid, Globe, Shield, LogOut } from 'lucide-react';
 import UserManual from '../components/UserManual';
 
 const MainLayout: React.FC = () => {
-    const { logout } = useAuth();
+    const { profile, logout } = useAuth();
     const [isManualOpen, setIsManualOpen] = useState(false);
 
     return (
@@ -16,6 +16,19 @@ const MainLayout: React.FC = () => {
                         <span className="text-xl font-medium text-white tracking-wider font-kido">D.R.E.A.M.</span>
                     </div>
                      <nav className="flex items-center gap-2">
+                        <NavLink
+                            to="/dashboard"
+                            className={({ isActive }) =>
+                                `px-3 py-2 rounded-md flex items-center gap-2 transition-all text-sm font-medium ${
+                                isActive
+                                    ? 'bg-white/10 text-white'
+                                    : 'text-zinc-400 hover:bg-zinc-800 hover:text-white'
+                                }`
+                            }
+                        >
+                            <LayoutGrid className="w-4 h-4" />
+                            Dashboard
+                        </NavLink>
                         <NavLink
                             to="/studio"
                             className={({ isActive }) =>
@@ -48,6 +61,10 @@ const MainLayout: React.FC = () => {
                     <button onClick={() => setIsManualOpen(true)} className="text-zinc-400 hover:text-white transition-colors flex items-center gap-2 text-sm">
                         <BookOpen className="w-4 h-4" />
                         User Manual
+                    </button>
+                    <button onClick={logout} className="text-zinc-400 hover:text-white transition-colors flex items-center gap-2 text-sm ml-4">
+                        <LogOut className="w-4 h-4" />
+                        Log Out
                     </button>
                 </div>
             </header>
