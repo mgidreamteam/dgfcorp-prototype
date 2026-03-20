@@ -1,7 +1,7 @@
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 import { auth, db } from '../services/firebase';
 import { onAuthStateChanged, signInWithEmailAndPassword, signOut, User } from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc, increment } from 'firebase/firestore';
 
 export interface UserProfile {
   name: string;
@@ -11,6 +11,9 @@ export interface UserProfile {
   email: string;
   role: 'admin' | 'user' | 'serviceProvider';
   status: string;
+  loginCount?: number;
+  lastLogin?: string;
+  totalSessionDuration?: number;
 }
 
 interface AuthContextType {
@@ -30,6 +33,22 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let sessionInterval: ReturnType<typeof setInterval>;
+    
+    if (user && profile && (profile.status === 'approved' || profile.role === 'admin')) {
+        // Track continuous total session duration accurately ticking 60 cumulative seconds into Firebase securely.
+        sessionInterval = setInterval(() => {
+            const userRef = doc(db, 'users', user.uid);
+            updateDoc(userRef, {
+                totalSessionDuration: increment(60)
+            }).catch(() => {});
+        }, 60000);
+    }
+
+    return () => { if (sessionInterval) clearInterval(sessionInterval); };
+  }, [user, profile]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
@@ -75,6 +94,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
              
              data.role = activeRole;
              data.status = data.status || 'approved'; // Inherit or default
+             
+             // Track login session exactly once per explicit browser tab load
+             let metricsPayload: any = {};
+             if (!sessionStorage.getItem('dream_session_' + firebaseUser.uid)) {
+                 metricsPayload.loginCount = increment(1);
+                 metricsPayload.lastLogin = new Date().toISOString();
+                 sessionStorage.setItem('dream_session_' + firebaseUser.uid, 'active');
+             }
+             if (Object.keys(metricsPayload).length > 0) {
+                 updateDoc(docRef, metricsPayload).catch(()=>{});
+             }
+             
              setProfile(data);
           } else {
              const fallbackProfile: UserProfile = {
@@ -84,7 +115,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                username: firebaseUser.email?.split('@')[0] || 'user',
                email: firebaseUser.email || '',
                role: activeRole,
-               status: 'approved' // Hardcoded emails get an instant bypass
+               status: 'approved', // Hardcoded emails get an instant bypass
+               loginCount: 1,
+               lastLogin: new Date().toISOString(),
+               totalSessionDuration: 0
              };
              setProfile(fallbackProfile);
              setDoc(docRef, fallbackProfile, { merge: true }).catch(() => {});

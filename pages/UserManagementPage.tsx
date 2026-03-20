@@ -12,6 +12,9 @@ interface ManagedUser {
     role: string;
     status: string;
     createdAt: string;
+    loginCount: number;
+    lastLogin: string;
+    totalSessionDuration: number;
 }
 
 const UserManagementPage: React.FC = () => {
@@ -49,9 +52,16 @@ const UserManagementPage: React.FC = () => {
                     email: data.email || 'No email',
                     role: activeRole,
                     status: data.status || 'approved',
-                    createdAt: data.createdAt ? new Date(data.createdAt).toLocaleDateString() : 'N/A'
+                    createdAt: data.createdAt ? new Date(data.createdAt).toLocaleDateString() : 'N/A',
+                    loginCount: data.loginCount || 0,
+                    lastLogin: data.lastLogin ? new Date(data.lastLogin).toLocaleString() : 'Never',
+                    totalSessionDuration: data.totalSessionDuration || 0
                 };
             });
+
+            // Architect the Explicit UI Array Sorting Logic: Admin (1) -> User (2) -> Service Provider (3)
+            const roleOrder: Record<string, number> = { 'admin': 1, 'user': 2, 'serviceProvider': 3 };
+            mergedUsers.sort((a, b) => (roleOrder[a.role] || 99) - (roleOrder[b.role] || 99));
 
             setUsers(mergedUsers);
         } catch (err: any) {
@@ -188,6 +198,7 @@ const UserManagementPage: React.FC = () => {
                                 <tr>
                                     <th scope="col" className="px-6 py-4">User Details</th>
                                     <th scope="col" className="px-6 py-4">Status & Access Level</th>
+                                    <th scope="col" className="px-6 py-4">Telemetry Metrics</th>
                                     <th scope="col" className="px-6 py-4">Registered Date</th>
                                     <th scope="col" className="px-6 py-4 text-right">Administrative Action</th>
                                 </tr>
@@ -242,6 +253,13 @@ const UserManagementPage: React.FC = () => {
                                                         Severed / Deleted
                                                     </span>
                                                 )}
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 sm:align-middle font-medium text-zinc-400">
+                                            <div className="flex flex-col gap-1 text-xs">
+                                                <div><span className="text-zinc-500">Logins:</span> <span className="text-white font-bold">{u.loginCount}</span></div>
+                                                <div><span className="text-zinc-500">Duration:</span> <span className="text-white font-bold">{Math.floor(u.totalSessionDuration / 60)} min</span></div>
+                                                <div><span className="text-zinc-500">Latest Ping:</span> {u.lastLogin}</div>
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 sm:align-middle font-medium text-zinc-500">
