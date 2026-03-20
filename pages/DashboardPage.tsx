@@ -1,7 +1,7 @@
 import React from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
-import { LayoutGrid, Wrench, Settings, Users, Server, Shield, Inbox, FolderOpen, PlaySquare, Database } from 'lucide-react';
+import { LayoutGrid, Wrench, Settings, Users, Server, Shield, Inbox, FolderOpen, PlaySquare, Database, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import ThemePanel from '../components/ThemePanel';
 
@@ -36,8 +36,8 @@ const DashboardPage: React.FC = () => {
                             <p className="text-zinc-500 text-detail font-normal leading-relaxed mb-4">{description}</p>
                         </div>
                         <div className="mt-auto flex justify-end">
-                            <span className={`px-4 py-2 text-micro font-normal uppercase tracking-widest ${active ? `${ctaMap[colorTheme]} text-white` : 'bg-zinc-900 text-zinc-700'} transition-colors`}>
-                                {cta}
+                            <span className={`w-10 h-10 rounded-full flex items-center justify-center shadow-lg ${active ? `${ctaMap[colorTheme]} text-white group-hover:scale-110` : 'bg-zinc-900 border border-zinc-800 text-zinc-700'} transition-all duration-300`}>
+                                <ArrowRight className="w-5 h-5" />
                             </span>
                         </div>
                     </>
@@ -52,9 +52,9 @@ const DashboardPage: React.FC = () => {
                             </div>
                             <p className="text-zinc-500 font-mono text-detail uppercase tracking-wide leading-relaxed mb-4">{description}</p>
                         </div>
-                        <div className="mt-auto">
-                            <span className={`font-mono text-micro items-center flex gap-2 uppercase tracking-[0.2em] font-normal ${active ? 'text-[#00ffcc] group-hover:text-white' : 'text-zinc-600'}`}>
-                                [{cta}] <span className="text-[#00ffcc] opacity-0 group-hover:opacity-100 transition-opacity">→</span>
+                        <div className="mt-auto flex justify-end">
+                            <span className={`w-8 h-8 rounded-full border flex items-center justify-center transition-all ${active ? 'border-[#00ffcc] text-[#00ffcc] group-hover:bg-[#00ffcc] group-hover:text-black shadow-[0_0_10px_rgba(0,255,204,0.3)]' : 'border-zinc-800 text-zinc-700'}`}>
+                                <ArrowRight className="w-4 h-4" />
                             </span>
                         </div>
                     </>
@@ -99,7 +99,7 @@ const DashboardPage: React.FC = () => {
             <SectionHeader title="Creator Terminal" subtitle="Manage your active projects and manufacturing requests." />
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                 <PanelCard 
-                    title="Studio Canvas" 
+                    title="Studio" 
                     description="Access D.R.E.A.M. to automatically generate new mechanical and electrical hardware designs, or resume an existing project."
                     icon={LayoutGrid}
                     onClick={() => navigate('/studio')}
@@ -127,7 +127,7 @@ const DashboardPage: React.FC = () => {
 
     const renderServiceProviderPanels = () => (
         <>
-            <SectionHeader title="Manufacturer Gateway" subtitle="Review incoming RFQs and manage active fulfillment contracts." status="Status: Online" />
+            <SectionHeader title="Manufacturer Terminal" subtitle="Review incoming RFQs and manage active fulfillment contracts." status="Status: Online" />
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                 <PanelCard 
                     title="Incoming RFQs" 
