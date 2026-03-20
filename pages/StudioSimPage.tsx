@@ -19,15 +19,14 @@ const StudioSimPage: React.FC = () => {
         
         <ThemePanel translucent className="flex flex-col h-full overflow-hidden relative z-10 border border-[#00ffcc]/10 shadow-[inset_0_0_50px_rgba(0,255,204,0.02)]">
             <div className="px-6 py-4 border-b border-zinc-800 shrink-0 bg-black/40 backdrop-blur-md">
-                <h2 className="text-subheading font-normal text-[#00ffcc] uppercase tracking-tighter flex items-center gap-3">
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Initializing Simulation Runtime
+                <h2 className="text-subheading font-normal text-zinc-500 uppercase tracking-tighter flex items-center gap-3">
+                    Simulation Runtime Standby
                 </h2>
             </div>
             <div className="flex-1 w-full h-full flex flex-col items-center justify-center bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] bg-repeat opacity-40">
                 <div className="max-w-md text-center">
-                    <h3 className="text-2xl font-black text-white tracking-widest uppercase mb-4">StudioSim Sandbox</h3>
-                    <p className="text-zinc-400 leading-relaxed text-sm">This matrix is currently locked. The multi-physics capability engines are booting and will sequentially project simulated workflows traversing native geographic environments once synced.</p>
+                    <h3 className="text-2xl font-black text-zinc-600 tracking-widest uppercase mb-4">StudioSim Sandbox</h3>
+                    <p className="text-zinc-500 leading-relaxed text-sm">Awaiting payload drop. The multi-physics capability engines are locked into standby mode. Initialize a pipeline execution to trace native structural paths across the active ecosystem.</p>
                 </div>
             </div>
         </ThemePanel>

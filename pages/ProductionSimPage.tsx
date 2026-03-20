@@ -29,7 +29,11 @@ const ProductionSimPage: React.FC = () => {
                 </h2>
             </div>
             {/* Blank Canvas for future components */}
-            <div className="flex-1 w-full h-full bg-black/20"></div>
+            <div className="flex-1 w-full h-full bg-black/20 flex flex-col items-center justify-center">
+                <div className="text-zinc-600 font-mono text-sm uppercase tracking-widest">
+                    Fabrication network idle. Awaiting project payload.
+                </div>
+            </div>
         </ThemePanel>
 
         <div className="resize-handle w-1.5 h-full bg-zinc-800 flex-shrink-0 rounded-full"></div>
