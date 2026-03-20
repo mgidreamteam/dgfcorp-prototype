@@ -62,6 +62,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
           if (docSnap.exists()) {
              const data = docSnap.data() as UserProfile;
+             
+             // VIOLENT SESSION TERMINATION: Check for Administratively Banned Accounts
+             if (data.status === 'blocked' || data.status === 'deleted') {
+                 console.warn("Session rejected: Account administratively disabled.");
+                 await signOut(auth);
+                 setUser(null);
+                 setProfile(null);
+                 setLoading(false);
+                 return;
+             }
+             
              data.role = activeRole;
              data.status = data.status || 'approved'; // Inherit or default
              setProfile(data);
@@ -79,18 +90,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
              setDoc(docRef, fallbackProfile, { merge: true }).catch(() => {});
           }
         } catch (error) {
-          console.error("Error fetching profile from Firestore", error);
-          const fallbackRole = (firebaseUser.email && ADMIN_EMAILS.includes(firebaseUser.email.toLowerCase())) ? 'admin' : 'user';
-          // If Firestore is still uninitialized, simulate access locally!
-          setProfile({
-            name: firebaseUser.displayName || 'Unknown User',
-            address: '',
-            phone: '',
-            username: firebaseUser.email?.split('@')[0] || 'user',
-            email: firebaseUser.email || '',
-            role: fallbackRole,
-            status: 'approved'
-          });
+          console.error("Critical: Error synchronizing Firestore Security profile. Rejecting session inherently.", error);
+          await signOut(auth);
+          setUser(null);
+          setProfile(null);
         }
       } else {
         setProfile(null);

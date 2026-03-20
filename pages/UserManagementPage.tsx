@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { collection, getDocs, doc, setDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../services/firebase';
-import { ShieldCheck, Users, Mail, AlertTriangle, Check, X, ArrowLeft } from 'lucide-react';
+import { ShieldCheck, Users, Mail, AlertTriangle, Check, X, ArrowLeft, Ban, Trash2 } from 'lucide-react';
 import ThemePanel from '../components/ThemePanel';
 import { useNavigate } from 'react-router-dom';
 
@@ -113,6 +113,35 @@ const UserManagementPage: React.FC = () => {
         }
     }
 
+    const handleBlockUser = async (userId: string) => {
+        if (!confirm("Are you sure you want to completely block this user? They will be aggressively ejected resulting in a locked authentication chain.")) return;
+        try {
+            setUpdatingId(userId);
+            await updateDoc(doc(db, 'users', userId), { status: 'blocked' });
+            setUsers(prev => prev.map(u => u.id === userId ? { ...u, status: 'blocked' } : u));
+        } catch (err) {
+            console.error(err);
+            alert("Matrix lock rejected. Secure Firebase rights might be restricted.");
+        } finally {
+            setUpdatingId(null);
+        }
+    }
+
+    const handleDeleteUser = async (userId: string) => {
+        if (!confirm("DANGER: Are you absolutely certain you want to destroy this user schema? This will permanently sever their permissions, erase their internal role mappings, and lock them out identically to underlying database deletion!")) return;
+        try {
+            setUpdatingId(userId);
+            await updateDoc(doc(db, 'users', userId), { status: 'deleted' });
+            await setDoc(doc(db, 'authUidToRole', userId), { roles: [] }, { merge: false });
+            setUsers(prev => prev.map(u => u.id === userId ? { ...u, role: 'user', status: 'deleted' } : u));
+        } catch (err) {
+            console.error(err);
+            alert("Deletion parameters failed tracking the secure Node layer!");
+        } finally {
+            setUpdatingId(null);
+        }
+    }
+
     const pendingUsers = users.filter(u => u.status === 'pending');
 
     return (
@@ -199,8 +228,18 @@ const UserManagementPage: React.FC = () => {
                                                     {u.role === 'serviceProvider' ? 'Service Provider' : u.role}
                                                 </span>
                                                 {u.status === 'pending' && (
-                                                    <span className="inline-flex items-center px-2.5 py-1 text-micro rounded-full font-bold tracking-wide uppercase border bg-red-500/10 text-red-500 border-red-500/20">
+                                                    <span className="inline-flex items-center px-2.5 py-1 text-micro rounded-full font-bold tracking-wide uppercase border bg-yellow-500/10 text-yellow-500 border-yellow-500/20">
                                                         Pending Review
+                                                    </span>
+                                                )}
+                                                {u.status === 'blocked' && (
+                                                    <span className="inline-flex items-center px-2.5 py-1 text-micro rounded-full font-bold tracking-wide uppercase border bg-orange-500/10 text-orange-500 border-orange-500/20">
+                                                        Restricted / Blocked
+                                                    </span>
+                                                )}
+                                                {u.status === 'deleted' && (
+                                                    <span className="inline-flex items-center px-2.5 py-1 text-micro rounded-full font-bold tracking-wide uppercase border bg-red-500/10 text-red-500 border-red-500/20">
+                                                        Severed / Deleted
                                                     </span>
                                                 )}
                                             </div>
@@ -210,14 +249,33 @@ const UserManagementPage: React.FC = () => {
                                         </td>
                                         <td className="px-6 py-4 sm:align-middle text-right">
                                             <div className="flex items-center justify-end gap-3 flex-wrap">
-                                                {u.status === 'pending' && (
+                                                {(u.status === 'pending' || u.status === 'blocked' || u.status === 'deleted') && (
                                                     <button 
                                                         onClick={() => handleApprove(u.id)}
                                                         disabled={updatingId === u.id}
                                                         className="bg-green-600 hover:bg-green-500 text-white shadow-lg shadow-green-900/20 text-detail font-bold py-2 px-3 rounded-lg transition-colors border border-green-500"
                                                     >
-                                                        Approve Access
+                                                        {u.status === 'pending' ? 'Approve Access' : 'Restore Native Access'}
                                                     </button>
+                                                )}
+                                                
+                                                {(u.status === 'approved' || u.status === 'pending') && (
+                                                    <>
+                                                        <button 
+                                                            onClick={() => handleBlockUser(u.id)}
+                                                            disabled={updatingId === u.id}
+                                                            className="flex items-center gap-1.5 bg-orange-950/40 hover:bg-orange-900/60 text-orange-500 text-detail font-bold py-2 px-3 rounded-lg transition-colors border border-orange-900"
+                                                        >
+                                                            <Ban className="w-3.5 h-3.5" /> Block
+                                                        </button>
+                                                        <button 
+                                                            onClick={() => handleDeleteUser(u.id)}
+                                                            disabled={updatingId === u.id}
+                                                            className="flex items-center gap-1.5 bg-red-950/40 hover:bg-red-900/60 text-red-500 text-detail font-bold py-2 px-3 rounded-lg transition-colors border border-red-900"
+                                                        >
+                                                            <Trash2 className="w-3.5 h-3.5" /> Force Delete
+                                                        </button>
+                                                    </>
                                                 )}
                                                 
                                                 <div className="flex items-center gap-2">

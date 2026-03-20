@@ -6,11 +6,13 @@ gcloud config set run/region us-west1
 # Extract the API key securely from .env.local
 $envLines = Get-Content .env.local | Where-Object { $_ -match '=' }
 $apiKey = ""
+$mapsKey = ""
+$firebaseKey = ""
+
 foreach ($line in $envLines) {
-    if ($line.StartsWith("GEMINI_API_KEY=")) {
-        $apiKey = $line.Substring("GEMINI_API_KEY=".Length)
-        break
-    }
+    if ($line.StartsWith("GEMINI_API_KEY=")) { $apiKey = $line.Substring("GEMINI_API_KEY=".Length).Trim() }
+    if ($line.StartsWith("VITE_GOOGLE_MAPS_API_KEY=")) { $mapsKey = $line.Substring("VITE_GOOGLE_MAPS_API_KEY=".Length).Trim() }
+    if ($line.StartsWith("VITE_FIREBASE_API_KEY=")) { $firebaseKey = $line.Substring("VITE_FIREBASE_API_KEY=".Length).Trim() }
 }
 
 if ([string]::IsNullOrEmpty($apiKey)) {
@@ -32,6 +34,7 @@ gcloud run deploy dream-giga `
     --source . `
     --allow-unauthenticated `
     --set-env-vars="DREAM_API=$apiKey" `
+    --set-build-env-vars="VITE_GOOGLE_MAPS_API_KEY=$mapsKey,VITE_FIREBASE_API_KEY=$firebaseKey" `
     --quiet
 
 Write-Host "Deployment process complete."
