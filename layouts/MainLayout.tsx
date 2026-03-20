@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
-import { BookOpen, LayoutGrid, Globe, Shield, LogOut, Rocket, Layers, User, Factory, Box } from 'lucide-react';
+import { BookOpen, LayoutGrid, Globe, Shield, LogOut, Rocket, Layers, User, Factory, Box, PenTool } from 'lucide-react';
 import UserManual from '../components/UserManual';
 
 const MainLayout: React.FC = () => {
@@ -41,8 +41,8 @@ const MainLayout: React.FC = () => {
                                 }`
                             }
                         >
-                            <LayoutGrid className="w-4 h-4" />
-                            Design Studio
+                            <PenTool className="w-4 h-4" />
+                            Design
                         </NavLink>
                         <NavLink
                             to="/studiosim"
