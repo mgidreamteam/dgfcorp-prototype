@@ -11,7 +11,7 @@ const ProductionSimPage: React.FC = () => {
       <ThemePanel className="w-full shrink-0 h-16 flex items-center px-6 border-b border-yellow-500/20">
         <h1 className="text-xl font-bold tracking-widest uppercase text-yellow-500 opacity-90 flex items-center gap-3">
             <Factory className="w-5 h-5" />
-            Production Orchestration Sim
+            FabFlow: Production Orchestration
         </h1>
       </ThemePanel>
       <div className="flex-1 grid overflow-hidden gap-2" style={{ gridTemplateColumns }}>

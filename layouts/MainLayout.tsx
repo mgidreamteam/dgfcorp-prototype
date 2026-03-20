@@ -94,7 +94,7 @@ const MainLayout: React.FC = () => {
                             }
                         >
                             <Factory className="w-4 h-4" />
-                            ProductionSim
+                            FabFlow
                         </NavLink>
                     </nav>
                 </div>
