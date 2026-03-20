@@ -245,7 +245,7 @@ const WorldSimPage: React.FC = () => {
             {/* 2D Vector Stabilized HUD Controls */}
             <div className="absolute top-4 left-4 right-4 z-50 flex flex-wrap justify-between gap-2 pointer-events-none">
                 <div className="flex gap-2 pointer-events-auto">
-                    <button onClick={handleHomeLocation} className={`px-4 py-2 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 rounded-lg transition-all shadow-lg backdrop-blur-md bg-white/10 text-white border border-white/20 hover:bg-white/20`}>
+                    <button onClick={handleHomeLocation} className={`px-4 py-2 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 rounded-lg transition-all shadow-lg backdrop-blur-md bg-zinc-900/80 text-zinc-300 border border-zinc-700 hover:bg-zinc-800`}>
                         <Navigation className="w-3 h-3" /> Home (Geolocate)
                     </button>
                     <button onClick={() => setMapHeading(0)} className={`px-4 py-2 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 rounded-lg transition-all shadow-lg backdrop-blur-md bg-zinc-900/80 text-zinc-300 border border-zinc-700 hover:bg-zinc-800`} title="Hotkey: N">

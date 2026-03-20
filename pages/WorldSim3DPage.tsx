@@ -77,7 +77,7 @@ const WorldSim3DPage: React.FC = () => {
       <ThemePanel className="w-full shrink-0 h-16 flex items-center px-6 border-b border-blue-500/20">
         <h1 className="text-xl font-bold tracking-widest uppercase text-blue-400 opacity-90 flex items-center gap-3">
             <Rocket className="w-5 h-5" />
-            WorldSim3D: Advanced OpenGL Aviation
+            TacticalSim: Advanced OpenGL Aviation
         </h1>
       </ThemePanel>
       <div className="flex-1 grid overflow-hidden gap-2" style={{ gridTemplateColumns }}>

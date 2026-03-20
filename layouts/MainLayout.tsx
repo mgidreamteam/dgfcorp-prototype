@@ -58,6 +58,19 @@ const MainLayout: React.FC = () => {
                             StudioSim
                         </NavLink>
                         <NavLink
+                            to="/worldsim3d"
+                            className={({ isActive }) =>
+                                `px-3 py-2 rounded-md flex items-center gap-2 transition-all text-sm font-medium ${
+                                isActive
+                                    ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20 shadow-[0_0_10px_rgba(59,130,246,0.3)]'
+                                    : 'text-zinc-400 hover:bg-zinc-800 hover:text-blue-300'
+                                }`
+                            }
+                        >
+                            <Rocket className="w-4 h-4" />
+                            TacticalSim
+                        </NavLink>
+                        <NavLink
                             to="/worldsim"
                             className={({ isActive }) =>
                                 `px-3 py-2 rounded-md flex items-center gap-2 transition-all text-sm font-medium ${
@@ -69,19 +82,6 @@ const MainLayout: React.FC = () => {
                         >
                             <Globe className="w-4 h-4" />
                             WorldSim
-                        </NavLink>
-                        <NavLink
-                            to="/worldsim3d"
-                            className={({ isActive }) =>
-                                `px-3 py-2 rounded-md flex items-center gap-2 transition-all text-sm font-medium ${
-                                isActive
-                                    ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20 shadow-[0_0_10px_rgba(59,130,246,0.3)]'
-                                    : 'text-zinc-400 hover:bg-zinc-800 hover:text-blue-300'
-                                }`
-                            }
-                        >
-                            <Rocket className="w-4 h-4" />
-                            WorldSim3D
                         </NavLink>
                         <NavLink
                             to="/productionsim"
