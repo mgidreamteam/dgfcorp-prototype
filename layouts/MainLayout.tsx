@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Outlet, NavLink } from 'react-router-dom';
+import { Outlet, NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { BookOpen, LayoutGrid, Globe, Shield, LogOut, Rocket, Layers, User, Factory, Box, PenTool } from 'lucide-react';
@@ -9,6 +9,11 @@ const MainLayout: React.FC = () => {
     const { profile, logout } = useAuth();
     const { dashboardTheme, setDashboardTheme } = useTheme();
     const [isManualOpen, setIsManualOpen] = useState(false);
+    
+    const location = useLocation();
+    const match = location.pathname.match(/\/(?:studio|studiosim|worldsim|worldsim3d|productionsim)\/([^/]+)/);
+    const activeId = match ? match[1] : localStorage.getItem('lastActiveStudioProjectId');
+    const suffix = activeId ? `/${activeId}` : '';
 
     return (
         <div className="h-screen w-screen flex flex-col main-layout">
@@ -32,7 +37,7 @@ const MainLayout: React.FC = () => {
                             Dashboard
                         </NavLink>
                         <NavLink
-                            to="/studio"
+                            to={`/studio${suffix}`}
                             className={({ isActive }) =>
                                 `px-3 py-2 rounded-md flex items-center gap-2 transition-all text-sm font-medium ${
                                 isActive
@@ -45,7 +50,7 @@ const MainLayout: React.FC = () => {
                             Design
                         </NavLink>
                         <NavLink
-                            to="/studiosim"
+                            to={`/studiosim${suffix}`}
                             className={({ isActive }) =>
                                 `px-3 py-2 rounded-md flex items-center gap-2 transition-all text-sm font-medium ${
                                 isActive
@@ -58,7 +63,7 @@ const MainLayout: React.FC = () => {
                             StudioSim
                         </NavLink>
                         <NavLink
-                            to="/worldsim3d"
+                            to={`/worldsim3d${suffix}`}
                             className={({ isActive }) =>
                                 `px-3 py-2 rounded-md flex items-center gap-2 transition-all text-sm font-medium ${
                                 isActive
@@ -71,7 +76,7 @@ const MainLayout: React.FC = () => {
                             TacticalSim
                         </NavLink>
                         <NavLink
-                            to="/worldsim"
+                            to={`/worldsim${suffix}`}
                             className={({ isActive }) =>
                                 `px-3 py-2 rounded-md flex items-center gap-2 transition-all text-sm font-medium ${
                                 isActive
@@ -84,7 +89,7 @@ const MainLayout: React.FC = () => {
                             WorldSim
                         </NavLink>
                         <NavLink
-                            to="/productionsim"
+                            to={`/productionsim${suffix}`}
                             className={({ isActive }) =>
                                 `px-3 py-2 rounded-md flex items-center gap-2 transition-all text-sm font-medium text-yellow-500/80 ${
                                 isActive

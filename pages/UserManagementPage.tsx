@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { collection, getDocs, doc, setDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../services/firebase';
-import { ShieldCheck, Users, Mail, AlertTriangle, Check, X, ArrowLeft, Ban, Trash2 } from 'lucide-react';
+import { ShieldCheck, Users, Mail, AlertTriangle, Check, X, ArrowLeft, Ban, Trash2, Cpu } from 'lucide-react';
 import ThemePanel from '../components/ThemePanel';
 import { useNavigate } from 'react-router-dom';
 
@@ -15,6 +15,7 @@ interface ManagedUser {
     loginCount: number;
     lastLogin: string;
     totalSessionDuration: number;
+    cumulativeTokens: number;
 }
 
 const UserManagementPage: React.FC = () => {
@@ -55,7 +56,8 @@ const UserManagementPage: React.FC = () => {
                     createdAt: data.createdAt ? new Date(data.createdAt).toLocaleDateString() : 'N/A',
                     loginCount: data.loginCount || 0,
                     lastLogin: data.lastLogin ? new Date(data.lastLogin).toLocaleString() : 'Never',
-                    totalSessionDuration: data.totalSessionDuration || 0
+                    totalSessionDuration: data.totalSessionDuration || 0,
+                    cumulativeTokens: data.cumulativeTokens || 0
                 };
             });
 
@@ -152,6 +154,20 @@ const UserManagementPage: React.FC = () => {
         }
     }
 
+    const handleResetTokens = async (userId: string) => {
+        if (!confirm("Are you sure you want to reset this user's cumulative compute tokens? This will wipe their odometer back to zero.")) return;
+        try {
+            setUpdatingId(userId);
+            await updateDoc(doc(db, 'users', userId), { cumulativeTokens: 0 });
+            setUsers(prev => prev.map(u => u.id === userId ? { ...u, cumulativeTokens: 0 } : u));
+        } catch (err) {
+            console.error(err);
+            alert("Matrix lock rejected. Failed to wipe memory slice.");
+        } finally {
+            setUpdatingId(null);
+        }
+    }
+
     const pendingUsers = users.filter(u => u.status === 'pending');
     
     // Explicit array separation logic mapping authentic arrays statically
@@ -235,6 +251,7 @@ const UserManagementPage: React.FC = () => {
                                             <div className="flex flex-col gap-1 text-xs">
                                                 <div><span className="text-zinc-500">Logins:</span> <span className="text-white font-bold">{u.loginCount}</span></div>
                                                 <div><span className="text-zinc-500">Duration:</span> <span className="text-white font-bold">{Math.floor(u.totalSessionDuration / 60)} min</span></div>
+                                                <div><span className="text-purple-500/70 uppercase tracking-widest text-[10px]">Tokens:</span> <span className="text-purple-400 font-mono font-bold">{u.cumulativeTokens.toLocaleString()}</span></div>
                                                 <div className="truncate"><span className="text-zinc-500">Latest Ping:</span> {u.lastLogin}</div>
                                             </div>
                                         </td>
@@ -253,6 +270,15 @@ const UserManagementPage: React.FC = () => {
                                                         <ShieldCheck className="w-4 h-4" />
                                                     </button>
                                                 )}
+
+                                                <button 
+                                                    onClick={() => handleResetTokens(u.id)}
+                                                    disabled={updatingId === u.id}
+                                                    title="Reset Token Odometer"
+                                                    className="p-2 bg-purple-950/40 hover:bg-purple-900/60 text-purple-400 rounded-full transition-colors border border-purple-900/50"
+                                                >
+                                                    <Cpu className="w-4 h-4" />
+                                                </button>
                                                 
                                                 {(u.status === 'approved' || u.status === 'pending') && (
                                                     <>

@@ -172,6 +172,21 @@ const StudioPage: React.FC = () => {
   const addLog = useCallback((log: Omit<AgentLog, 'id' | 'timestamp'>) => {
     setAgentLogs(prev => [{ ...log, id: generateId(), timestamp: Date.now() }, ...prev]);
   }, []);
+
+  useEffect(() => {
+    const handleTokens = (e: Event) => {
+        const customEvent = e as CustomEvent;
+        if (!activeProjectId) return;
+        const { totalTokenCount, promptTokenCount, candidatesTokenCount } = customEvent.detail;
+        addLog({ 
+            content: `Tokens: ${totalTokenCount} Total [${promptTokenCount} in / ${candidatesTokenCount} out]`, 
+            type: 'system', 
+            projectId: activeProjectId 
+        });
+    };
+    window.addEventListener('gemini_token_usage', handleTokens);
+    return () => window.removeEventListener('gemini_token_usage', handleTokens);
+  }, [activeProjectId, addLog]);
   
   const handleMouseMove = useCallback((e: MouseEvent) => {
     if (!isResizing.current) return;

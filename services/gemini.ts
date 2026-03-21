@@ -12,7 +12,16 @@ const ai = {
       if (!response.ok) {
         throw new Error('Failed to generate content via backend: ' + response.statusText);
       }
-      return await response.json();
+      const data = await response.json();
+      if (data.usageMetadata && typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('gemini_token_usage', {
+              detail: {
+                  ...data.usageMetadata,
+                  model: requestBody.model
+              }
+          }));
+      }
+      return data;
     }
   }
 };const extractText = (response: any): string | null => {
@@ -21,6 +30,15 @@ const ai = {
     return response.candidates[0].content.parts[0].text;
   }
   return null;
+};
+
+const sanitizeCodeBlock = (text: string | null): string | null => {
+  if (!text) return null;
+  const match = text.match(/```[a-z]*\n([\s\S]*?)```/);
+  if (match && match[1]) {
+    return match[1].trim();
+  }
+  return text.trim();
 };
 
 export const analyzeUserIntent = async (prompt: string, previousSpec: HardwareSpec | null): Promise<IntentAnalysis> => {
@@ -113,6 +131,44 @@ export const getAnswerFromSpec = async (question: string, specs: HardwareSpec): 
     return extractedText;
 };
 
+export const extractSimulationConstraints = async (prompt: string): Promise<any[]> => {
+    const model = "gemini-3-flash-preview";
+    const extractionPrompt = `
+    You are an expert CAE (Computer Aided Engineering) AI. Extract physics boundary conditions from the user's natural language request.
+    
+    User's Request: "${prompt}"
+
+    Return ONLY a pure JSON array of objects matching this exact format:
+    [
+      {
+        "id": "generate-a-unique-uuid-here",
+        "type": "force" | "pressure" | "temperature" | "velocity" | "fixed_support" | "custom",
+        "magnitude": "100",
+        "unit": "N",
+        "targetGeometry": "top_face"
+      }
+    ]
+    
+    If no physics conditions are found, return []. DO NOT include any markdown formatting like \`\`\`json.
+    `;
+
+    const response = await ai.models.generateContent({
+        model,
+        contents: extractionPrompt,
+        config: {
+            responseMimeType: "application/json"
+        }
+    });
+
+    const text = extractText(response);
+    if (!text) return [];
+    try {
+        return JSON.parse(text);
+    } catch {
+        return [];
+    }
+};
+
 
 export const generateHardwareSpecs = async (prompt: string, previousSpec: HardwareSpec | null, projectName: string): Promise<HardwareSpec> => {
   const model = "gemini-3-flash-preview";
@@ -138,7 +194,12 @@ export const generateHardwareSpecs = async (prompt: string, previousSpec: Hardwa
   } else {
      generationPrompt = `You are Ñolmo (Nyo-Olmo), an agentic hardware designer. Design a hardware product based on this description: "${prompt}". 
     The product name is fixed and must be "${projectName}".
-    Provide a detailed technical specification. This includes dimensions, materials, BOM, and manufacturing advice.
+    Provide a highly detailed technical specification. This includes precise dimensions, mechanical architecture, wall thickness, tolerances, materials, BOM, and manufacturing advice.
+    
+    IMPORTANT GEOMETRY INSTRUCTIONS:
+    - You must output 'mechanicalArchitecture', describing the exact geometric primitives (e.g., "A main cylindrical body with R=20mm and a rectangular base 40x40mm").
+    - You must define 'wallThickness' (e.g. "2.0mm") and 'tolerances' (e.g. "+/- 0.1mm").
+    - Ensure your 'dimensions' field strictly aligns with the mathematical bounds of your 'mechanicalArchitecture'.
 
     IMPORTANT: When defining the Bill of Materials (BOM), you MUST prioritize using common off-the-shelf (COTS) components from established suppliers.
     - For electronic components (resistors, ICs, sensors), specify parts available from distributors like Digi-Key or Newark.
@@ -164,6 +225,9 @@ export const generateHardwareSpecs = async (prompt: string, previousSpec: Hardwa
           productName: { type: Type.STRING, description: `The product name. MUST be exactly '${projectName}'.` },
           tagline: { type: Type.STRING },
           description: { type: Type.STRING },
+          mechanicalArchitecture: { type: Type.STRING, description: "Highly detailed description of the core geometric primitives and shapes (e.g., Cylindrical main body with 20mm radius)." },
+          wallThickness: { type: Type.STRING, description: "Recommended shell/wall thickness in mm (e.g. '2.0mm')." },
+          tolerances: { type: Type.STRING, description: "Recommended manufacturing tolerances (e.g. '+/- 0.1mm')." },
           dimensions: { type: Type.STRING, description: "e.g. 120mm x 80mm x 40mm" },
           weight: { type: Type.STRING, description: "e.g. 250g" },
           powerSource: { type: Type.STRING },
@@ -371,25 +435,28 @@ export const generatePcbLayoutImage = async (prompt: string, specs: HardwareSpec
 export const generateOpenScadCode = async (specs: HardwareSpec): Promise<string> => {
   const model = "gemini-3-flash-preview";
   const scadPrompt = `
-  You are an expert 3D modeler specializing in OpenSCAD. Based on the following product specification, write a complete and runnable OpenSCAD script to create a 3D model of the product's main enclosure/body.
+  You are an expert 3D modeler specializing in OpenSCAD. Based on the following product specification, write a complete and runnable OpenSCAD script to create a high-fidelity 3D model of the product's main enclosure/body.
 
   Product Name: ${specs.productName}
-  Description: ${specs.description}
   Dimensions: ${specs.dimensions}
-  Key Mechanical/Casing Components from BOM: ${specs.bom.filter(i => ['Casing', 'Mechanical'].includes(i.type)).map(i => i.component).join(', ')}
+  Mechanical Architecture: ${specs.mechanicalArchitecture || 'Not specified'}
+  Wall Thickness: ${specs.wallThickness || '2mm'}
+  Tolerances: ${specs.tolerances || 'Standard'}
+  Key Mechanical Components: ${specs.bom.filter(i => ['Casing', 'Mechanical'].includes(i.type)).map(i => i.component).join(', ')}
 
   Your task:
-  1.  Create a well-structured OpenSCAD script.
-  2.  Use the specified dimensions to define the overall size of the model.
-  3.  Incorporate basic features mentioned in the description or BOM (e.g., if there's a button, create a cutout for it; if there's an LED, create a small hole).
-  4.  Add comments to explain key parts of the model and the design choices.
-  5.  The output must be ONLY the raw OpenSCAD code. Do not include markdown formatting like \`\`\`scad or any explanation.
+  1. Create a highly detailed OpenSCAD script using Constructive Solid Geometry (CSG).
+  2. Implement advanced modularity: Use \`difference()\` to hollow out the casing based on the specified wall thickness.
+  3. Use \`minkowski()\` or \`hull()\` to create sleek, rounded, aerodynamic edges where appropriate.
+  4. Design internal features like screw standoffs, battery compartments, or port cutouts if the BOM implies them.
+  5. The model MUST be strictly mathematically bounded by the listed dimensions and Architecture.
+  6. The output must be ONLY the raw OpenSCAD code. Do not include markdown formatting like \`\`\`scad.
   `;
   const response = await ai.models.generateContent({
     model,
     contents: scadPrompt,
   });
-    const extractedText = extractText(response);
+  const extractedText = sanitizeCodeBlock(extractText(response));
   if (!extractedText) {
     throw new Error("No OpenSCAD code generated");
   }
@@ -416,7 +483,7 @@ export const generateStlFile = async (specs: HardwareSpec, openScadCode: string)
     model,
     contents: stlPrompt,
   });
-    const extractedText = extractText(response);
+    const extractedText = sanitizeCodeBlock(extractText(response));
   if (!extractedText) {
     throw new Error("No STL content generated");
   }
@@ -451,7 +518,7 @@ export const generateSkidlCode = async (specs: HardwareSpec): Promise<string> =>
         contents: skidlPrompt,
     });
 
-    const extractedText = extractText(response);
+    const extractedText = sanitizeCodeBlock(extractText(response));
     if (!extractedText) {
         throw new Error("Failed to generate SKiDL code.");
     }

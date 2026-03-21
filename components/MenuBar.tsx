@@ -1,6 +1,7 @@
 import React from 'react';
+import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
-import { PlusCircle, Save, Trash2, FileInput, FileOutput, Box, ImageIcon, XSquare, CloudUpload, CloudDownload, Loader2, Moon, Sun } from 'lucide-react';
+import { PlusCircle, Save, Trash2, FileInput, FileOutput, Box, ImageIcon, XSquare, CloudUpload, CloudDownload, Loader2, Moon, Sun, Cpu } from 'lucide-react';
 
 interface FileMenuBarProps {
   onNewProject: () => void;
@@ -43,6 +44,9 @@ const FileMenuBar: React.FC<FileMenuBarProps> = ({
 
   const textBtnClass = "flex items-center gap-2 px-3 py-1.5 text-body text-zinc-300 hover:bg-zinc-800 hover:text-white rounded-md transition-colors";
   const disabledTextBtnClass = "flex items-center gap-2 px-3 py-1.5 text-body text-zinc-600 cursor-not-allowed";
+
+  const { profile } = useAuth();
+  const cumulativeTokens = profile?.cumulativeTokens || 0;
 
   return (
     <div className="w-full px-8 py-2 flex justify-between items-center bg-transparent shrink-0 relative z-10">
@@ -88,8 +92,18 @@ const FileMenuBar: React.FC<FileMenuBarProps> = ({
 
       <div className="flex items-center gap-6">
 
-        {/* Global Quota Engine */}
+        {/* Global Quota Engine & Token Odometer */}
         <div className="flex items-center gap-4 bg-black/40 px-4 py-1.5 rounded-lg border border-zinc-800">
+            <div className="flex items-center gap-3 pr-4 border-r border-zinc-800/80 mr-1">
+                <Cpu className="w-5 h-5 text-purple-500/70" />
+                <div className="flex flex-col text-right">
+                    <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest leading-none mb-1">Compute Used</span>
+                    <span className="text-sm font-mono text-purple-400 font-bold leading-none tracking-tight">
+                        {cumulativeTokens.toLocaleString()} <span className="text-zinc-500 text-[10px] uppercase ml-0.5 tracking-wider">TKNS</span>
+                    </span>
+                </div>
+            </div>
+
           <div className="text-right">
             <h2 className="text-body font-bold text-zinc-500 uppercase tracking-widest">Global Quota</h2>
             <div className="text-detail text-zinc-300">{(cloudStorageUsed / 1000000).toFixed(2)} / 50.0 MB</div>

@@ -21,7 +21,7 @@ const PROHIBITED_KEYWORDS = ['weapon', 'gun', 'firearm', 'missile', 'bomb', 'cla
 const isPromptProhibited = (prompt: string) => PROHIBITED_KEYWORDS.some(k => prompt.toLowerCase().includes(k));
 
 const mapContainerStyle = { width: '100%', height: '100%' };
-const defaultCenter = { lat: 38.8977, lng: -77.0365 };
+const defaultCenter = { lat: 35.0, lng: -72.0 }; // Center of Atlantic Coast
 
 const WorldSimPage: React.FC = () => {
   const { projectId } = useParams<{ projectId: string }>();
@@ -95,6 +95,21 @@ const WorldSimPage: React.FC = () => {
 
   const addLog = useCallback((log: Omit<AgentLog, 'id' | 'timestamp'>) => setAgentLogs(prev => [{ ...log, id: generateId(), timestamp: Date.now() }, ...prev]), []);
 
+  useEffect(() => {
+    const handleTokens = (e: Event) => {
+        const customEvent = e as CustomEvent;
+        if (!activeProjectId) return;
+        const { totalTokenCount, promptTokenCount, candidatesTokenCount } = customEvent.detail;
+        addLog({ 
+            content: `Tokens: ${totalTokenCount} Total [${promptTokenCount} in / ${candidatesTokenCount} out]`, 
+            type: 'system', 
+            projectId: activeProjectId 
+        });
+    };
+    window.addEventListener('gemini_token_usage', handleTokens);
+    return () => window.removeEventListener('gemini_token_usage', handleTokens);
+  }, [activeProjectId, addLog]);
+
   const handleMouseMove = useCallback((e: MouseEvent) => {
     if (!isResizing.current) return;
     const dx = e.clientX - dragStartX.current;
@@ -140,11 +155,32 @@ const WorldSimPage: React.FC = () => {
     setProjects(prev => prev.map(p => p.id === id ? { ...p, name: newName } : p));
   };
 
+  const geocodeLocation = async (query: string, currentProjectId: string) => {
+    if (!window.google) return false;
+    const geocoder = new window.google.maps.Geocoder();
+    try {
+      const results = await geocoder.geocode({ address: query });
+      if (results.results && results.results.length > 0) {
+        const loc = results.results[0].geometry.location;
+        setMapCenter({ lat: loc.lat(), lng: loc.lng() });
+        setMapZoom(16);
+        addLog({ content: `Navigating to: ${results.results[0].formatted_address}`, type: 'output', projectId: currentProjectId });
+        return true;
+      }
+    } catch (e) {
+      // Not a location, fallback to generation
+    }
+    return false;
+  };
+
   const handleCreateDesign = async (prompt: string) => {
     if (!activeProjectId) return;
     addLog({ content: prompt, type: 'input', projectId: activeProjectId });
     setError(null);
     if (isPromptProhibited(prompt)) return setError("Request rejected.");
+
+    const isLocation = await geocodeLocation(prompt, activeProjectId);
+    if (isLocation) return;
 
     try {
         setProjects(prev => prev.map(p => p.id === activeProjectId ? { ...p, status: DesignStatus.GENERATING_SPECS, prompt } : p));

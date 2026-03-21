@@ -68,11 +68,13 @@ const AppRouter: React.FC = () => {
                     <Route path="/studio" element={<StudioPage />} />
                     <Route path="/studio/:projectId" element={<StudioPage />} />
                     <Route path="/studiosim" element={<StudioSimPage />} />
+                    <Route path="/studiosim/:projectId" element={<StudioSimPage />} />
                     <Route path="/worldsim" element={<WorldSimPage />} />
                     <Route path="/worldsim/:projectId" element={<WorldSimPage />} />
                     <Route path="/worldsim3d" element={<WorldSim3DPage />} />
                     <Route path="/worldsim3d/:projectId" element={<WorldSim3DPage />} />
                     <Route path="/productionsim" element={<ProductionSimPage />} />
+                    <Route path="/productionsim/:projectId" element={<ProductionSimPage />} />
                 </Route>
             </Route>
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowRight, Sparkles, Paperclip, User, Bot, AlertTriangle } from 'lucide-react';
+import { ArrowRight, Sparkles, Paperclip, User, Bot, AlertTriangle, Activity } from 'lucide-react';
 import { AgentLog, DesignProject } from '../types';
 
 interface DesignInputProps {
@@ -61,6 +61,7 @@ const DesignInput: React.FC<DesignInputProps> = ({ onSubmit, isGenerating, agent
       case 'input': return <User className="w-4 h-4 text-zinc-400 shrink-0" />;
       case 'output': return <Bot className="w-4 h-4 text-emerald-400 shrink-0" />;
       case 'error': return <AlertTriangle className="w-4 h-4 text-red-400 shrink-0" />;
+      case 'system': return <Activity className="w-4 h-4 text-purple-400 shrink-0" />;
       default: return null;
     }
   }
@@ -130,7 +131,7 @@ const DesignInput: React.FC<DesignInputProps> = ({ onSubmit, isGenerating, agent
         {agentLogs.map(log => (
             <div 
                 key={log.id} 
-                className={`p-3 rounded-lg border text-detail animate-fade-in ${log.type === 'error' ? 'bg-red-900/20 border-red-500/20 text-red-300' : 'bg-zinc-900/50 border-zinc-800 text-zinc-300'} ${log.type === 'input' && 'bg-zinc-800/60 border-zinc-700'}`}
+                className={`p-3 rounded-lg border text-detail animate-fade-in ${log.type === 'error' ? 'bg-red-900/20 border-red-500/20 text-red-300' : log.type === 'system' ? 'bg-purple-900/10 border-purple-500/20 text-purple-300' : 'bg-zinc-900/50 border-zinc-800 text-zinc-300'} ${log.type === 'input' && 'bg-zinc-800/60 border-zinc-700'}`}
             >
                 <div className="flex items-start gap-3">
                     {getLogIcon(log.type)}

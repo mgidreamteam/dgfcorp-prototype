@@ -34,6 +34,9 @@ export interface HardwareSpec {
   productName: string;
   tagline: string;
   description: string;
+  mechanicalArchitecture?: string;
+  wallThickness?: string;
+  tolerances?: string;
   dimensions: string;
   weight: string;
   powerSource: string;
@@ -53,6 +56,14 @@ export interface SimulationData {
   skidlCode: string;
   analysis: string;
   plotData: { time: number; voltage: number; }[];
+}
+
+export interface SimulationBoundaryCondition {
+  id: string;
+  type: 'force' | 'pressure' | 'temperature' | 'velocity' | 'fixed_support' | 'custom';
+  magnitude: string;
+  unit: string;
+  targetGeometry: string;
 }
 
 export interface DesignProject {
@@ -101,7 +112,7 @@ export interface AgentLog {
   id: string;
   timestamp: number;
   content: string;
-  type: 'input' | 'output' | 'error';
+  type: 'input' | 'output' | 'error' | 'system';
   projectId?: string;
 }
 

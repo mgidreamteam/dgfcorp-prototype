@@ -133,4 +133,11 @@ graph TD
 
 ---
 
+## 🎨 6. UI/UX Standards
+
+To maintain a clean and dense interface suitable for complex engineering pipelines:
+- **Action Toolbars:** Buttons operating inside control planes, editors, or simulation trackers should **purely use icons** (`lucide-react`) without inline text labels. Explicit UX assistance must be relegated to the native HTML `title=""` attribute, triggering standard browser hover-tips to conserve screen real-estate.
+
+---
+
 > **Note to Future Developers:** When updating environment variables, ensure both `.env.local` (local development) and the corresponding `deploy.ps1` extraction loops are updated symmetrically to prevent missing variables bleeding into the GCP Cloud Run containers.

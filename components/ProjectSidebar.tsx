@@ -14,6 +14,7 @@ interface ProjectSidebarProps {
   cloudProjects?: import('../types').CloudProject[];
   onLoadCloudProject?: (proj: import('../types').CloudProject) => void;
   cloudLoadingAction?: string | null;
+  baseRoute?: string;
 }
 
 const classifyComponent = (item: BillOfMaterialItem): 'Structure' | 'Circuits' | 'Motion' | 'Other' => {
@@ -102,7 +103,8 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
   onHierarchyViewClosed,
   cloudProjects = [],
   onLoadCloudProject,
-  cloudLoadingAction
+  cloudLoadingAction,
+  baseRoute = "/studio"
 }) => {
   const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState('');
@@ -162,7 +164,7 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
                     {projects.map((project) => (
                     <NavLink
                         key={project.id}
-                        to={`/studio/${project.id}`}
+                        to={`${baseRoute}/${project.id}`}
                         onDoubleClick={() => handleRename(project)}
                         className={({ isActive }) => `w-full group px-3 py-3 rounded-md flex items-center gap-3 transition-all cursor-pointer ${
                             isActive

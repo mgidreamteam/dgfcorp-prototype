@@ -14,6 +14,7 @@ export interface UserProfile {
   loginCount?: number;
   lastLogin?: string;
   totalSessionDuration?: number;
+  cumulativeTokens?: number;
 }
 
 interface AuthContextType {
@@ -49,6 +50,23 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     return () => { if (sessionInterval) clearInterval(sessionInterval); };
   }, [user, profile]);
+
+  useEffect(() => {
+    if (!user) return;
+    const handleTokens = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      const { totalTokenCount } = customEvent.detail;
+      if (totalTokenCount) {
+        const userRef = doc(db, 'users', user.uid);
+        updateDoc(userRef, {
+          cumulativeTokens: increment(totalTokenCount)
+        }).catch(() => {});
+        setProfile(prev => prev ? { ...prev, cumulativeTokens: (prev.cumulativeTokens || 0) + totalTokenCount } : prev);
+      }
+    };
+    window.addEventListener('gemini_token_usage', handleTokens);
+    return () => window.removeEventListener('gemini_token_usage', handleTokens);
+  }, [user]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
