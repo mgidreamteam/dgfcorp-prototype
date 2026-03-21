@@ -37,6 +37,15 @@ const StlModel = ({ stlData }: { stlData: string }) => {
     return () => URL.revokeObjectURL(url);
   }, [stlData]);
 
+  // Garbage collect raw BufferGeometry off the GPU directly when unmounting or swapping STLs
+  useEffect(() => {
+    return () => {
+      if (geometry) {
+        geometry.dispose();
+      }
+    };
+  }, [geometry]);
+
   if (!geometry) return null;
   return (
     <mesh geometry={geometry} castShadow receiveShadow>

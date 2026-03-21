@@ -38,7 +38,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   useEffect(() => {
     let sessionInterval: ReturnType<typeof setInterval>;
     
-    if (user && profile && (profile.status === 'approved' || profile.role === 'admin')) {
+    if (user && profile?.status && (profile.status === 'approved' || profile.role === 'admin')) {
         // Track continuous total session duration accurately ticking 60 cumulative seconds into Firebase securely.
         sessionInterval = setInterval(() => {
             const userRef = doc(db, 'users', user.uid);
@@ -49,7 +49,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
 
     return () => { if (sessionInterval) clearInterval(sessionInterval); };
-  }, [user, profile]);
+  }, [user, profile?.status, profile?.role]);
 
   useEffect(() => {
     if (!user) return;

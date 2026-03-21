@@ -406,8 +406,8 @@ export const generateCircuitDiagramImage = async (specs: HardwareSpec): Promise<
         throw new Error("Generated content is not a valid SVG string.");
     }
     
-    // Fix for btoa Unicode error: encode the SVG string to handle non-Latin1 characters
-    const svgDataUrl = `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(rawSvg)))}`;
+    // Modern SVG URI encoding avoids `btoa` chunk limits and `unescape` deprecations inherently
+    const svgDataUrl = `data:image/svg+xml;utf8,${encodeURIComponent(rawSvg)}`;
     
     return { svgDataUrl, components: result.componentValues };
 };
