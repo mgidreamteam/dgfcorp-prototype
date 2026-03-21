@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, Eye, EyeOff } from 'lucide-react';
+import { ArrowRight, Eye, EyeOff, Rocket, Layers } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import AnimatedGrid from '../components/AnimatedGrid';
 
 const LoginPage: React.FC = () => {
@@ -10,6 +11,7 @@ const LoginPage: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const { login } = useAuth();
+  const { dashboardTheme, setDashboardTheme } = useTheme();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -27,12 +29,30 @@ const LoginPage: React.FC = () => {
   return (
     <>
       <main className="flex-1 flex flex-col items-center justify-center relative overflow-hidden py-12">
+          
+          {/* Top Right Theme Switcher */}
+          <div className="absolute top-6 right-8 flex items-center gap-1 border border-zinc-800/80 bg-black/40 backdrop-blur-md p-1 rounded-xl shadow-inner z-50">
+              <button 
+                  onClick={() => setDashboardTheme('dream-giga')}
+                  title="DREAM Giga Theme"
+                  className={`p-2 rounded-lg transition-all ${dashboardTheme === 'dream-giga' ? 'bg-zinc-800 text-white shadow-inner border border-zinc-700' : 'text-zinc-500 hover:text-zinc-300'}`}
+              >
+                  <Rocket className="w-4 h-4" />
+              </button>
+              <button 
+                  onClick={() => setDashboardTheme('blueprint')}
+                  title="Blueprint Theme"
+                  className={`p-2 rounded-lg transition-all ${dashboardTheme === 'blueprint' ? 'bg-zinc-800 text-white shadow-inner border border-zinc-700' : 'text-zinc-500 hover:text-zinc-300'}`}
+              >
+                  <Layers className="w-4 h-4" />
+              </button>
+          </div>
+
           <AnimatedGrid />
           <div className="relative z-10 w-full max-w-md p-8 text-center animate-fade-in-up my-8 mx-auto bg-zinc-900/40 backdrop-blur-md border border-zinc-800 rounded-none overflow-hidden shadow-2xl">
               <div className="spotlight-effect opacity-50 pointer-events-none"></div>
-              <div className="relative z-10">
-                  <h2 className="text-2xl font-bold text-white mb-2 font-kido tracking-wider">D.R.E.A.M. STUDIO</h2>
-              <p className="text-zinc-500 mb-8 text-sm">DREAM Gigafactories Corp. Product</p>
+              <div className="relative z-10 py-4">
+                  <h1 className="text-3xl font-ethereal text-white font-bold tracking-wider mb-6 drop-shadow-[0_0_15px_rgba(255,255,255,0.4)]">dream what you make, make what you dream</h1>
               
               <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                 <input

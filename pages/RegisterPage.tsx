@@ -72,11 +72,10 @@ const RegisterPage: React.FC = () => {
       <AnimatedGrid />
       <ThemePanel className="w-full max-w-xl p-8 animate-fade-in-up relative z-10 my-8 mx-auto" interactive={false}>
         <div className="text-center mb-6">
-          <div className="inline-flex justify-center items-center w-12 h-12 rounded-full bg-white/10 mb-4">
+          <div className="inline-flex justify-center items-center w-12 h-12 rounded-full bg-white/10 mb-4 shadow-[0_0_15px_rgba(255,255,255,0.2)]">
             <UserPlus className="w-6 h-6 text-white" />
           </div>
-          <h2 className="text-2xl font-bold text-white">Register for D.R.E.A.M.</h2>
-          <p className="text-zinc-400 mt-2 text-sm">Create your profile to request access to the Studio.</p>
+          <h1 className="text-3xl font-ethereal text-white font-bold tracking-wider mb-6 drop-shadow-[0_0_15px_rgba(255,255,255,0.4)]">dream what you make, make what you dream</h1>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">

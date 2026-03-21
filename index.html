@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>D.R.E.A.M. Gigafactory Corp. - Studio</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Alumni+Sans+Pinstripe&family=Mulish:wght@300;400;500;600;700&family=Kode+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Alumni+Sans+Pinstripe&family=Mulish:wght@300;400;500;600;700&family=Kode+Mono:wght@400;500;600;700&family=Corinthia:wght@400;700&family=Archivo+Narrow:wght@400;500;600;700&family=Permanent+Marker&display=swap" rel="stylesheet">
     <style>
       :root {
         --app-bg: #09090b; /* Deep dark background */
@@ -50,7 +50,7 @@
       
       /* Blueprint Typography Override */
       .theme-blueprint * {
-        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
+        font-family: 'Archivo Narrow', sans-serif !important;
       }
       .theme-blueprint h1, .theme-blueprint h2, .theme-blueprint h3, .theme-blueprint h4, .theme-blueprint h5, .theme-blueprint h6 {
         text-transform: uppercase !important;
@@ -78,6 +78,17 @@
 
       .font-kido {
           font-family: 'Kode Mono', monospace;
+      }
+      
+      .font-ethereal {
+          font-family: 'Corinthia', cursive !important;
+          text-transform: lowercase !important;
+      }
+      
+      .theme-blueprint h1.font-ethereal, .theme-blueprint .font-ethereal {
+          font-family: 'Permanent Marker', cursive !important;
+          text-transform: none !important;
+          font-size: 1rem !important;
       }
       
       /* Custom Scrollbar */
