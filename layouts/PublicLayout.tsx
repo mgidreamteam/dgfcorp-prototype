@@ -48,7 +48,7 @@ const PublicLayout: React.FC = () => {
                             CONTACT US
                         </NavLink>
                         <div className="h-4 w-px bg-zinc-700"></div>
-                        <a href="https://www.linkedin.com/company/materiel-group-inc" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
+                        <a href="https://www.linkedin.com/in/vbsundaresan/" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
                             LINKEDIN
                         </a>
                     </div>
