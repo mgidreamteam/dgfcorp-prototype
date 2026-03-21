@@ -482,6 +482,7 @@ const StudioPage: React.FC = () => {
         
         addLog({ content: `Project "${activeProject.name}" synchronized with Global Storage Directory.`, type: 'output', projectId: activeProject.id });
         await fetchCloudProjects();
+        window.dispatchEvent(new Event('update-cloud-quota'));
     } catch (err: any) {
         const payloadMsg = err.message || "Unknown error";
         setError(`Cloud Delivery Blocked: ${payloadMsg}`);
@@ -533,6 +534,7 @@ const StudioPage: React.FC = () => {
           await deleteDoc(doc(db, `users/${auth.currentUser.uid}/cloudProjects`, cloudProj.id));
           addLog({ content: `Permanently unlinked "${cloudProj.name}" from the global bucket.`, type: 'output' });
           await fetchCloudProjects();
+          window.dispatchEvent(new Event('update-cloud-quota'));
       } catch (err: any) {
           setError(`Cloud Purge Blocked: ${err.message}`);
       } finally {
@@ -712,7 +714,12 @@ const StudioPage: React.FC = () => {
             onHierarchyViewClosed={() => setTriggerHierarchyView(null)} 
             cloudProjects={cloudProjects}
             onLoadCloudProject={handleDownloadFromCloud}
+            onDeleteCloudProject={handleDeleteFromCloud}
             cloudLoadingAction={cloudLoadingAction}
+            onPrepareForSim={(project, target) => {
+                if (target === 'studiosim') navigate(`/studiosim/${project.id}`);
+                else if (target === 'fabflow') navigate(`/fabflow/${project.id}`);
+            }}
           />
           <ThemePanel translucent className="flex flex-col h-full overflow-hidden relative z-10">
             <div className="px-4 py-3 border-b border-zinc-800 shrink-0 bg-transparent">

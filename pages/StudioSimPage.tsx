@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Loader2, Box, Move, RefreshCw, Maximize, Play, Pause, SkipBack, SkipForward, MousePointer2, Save, Settings2, CloudUpload } from 'lucide-react';
+import { Loader2, Box, Move, RefreshCw, Maximize, Play, Pause, SkipBack, SkipForward, MousePointer2, Save, Settings2, CloudUpload, Binary, Hammer } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import ProjectSidebar from '../components/ProjectSidebar';
+import FileMenuBar from '../components/MenuBar';
 import { loadStateFromStorage, useAutoSave } from '../hooks/useAutoSave';
 import { DesignProject, CloudProject, DesignStatus, SimulationBoundaryCondition, AgentLog } from '../types';
 import { auth, db, storage } from '../services/firebase';
@@ -15,6 +16,10 @@ import { OrbitControls, Grid, Environment, ContactShadows, Center, GizmoHelper, 
 import * as THREE from 'three';
 // @ts-ignore
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
+import { CameraPresets, ViewMode } from '../components/CameraPresets';
+import { RoomWalls } from '../components/RoomWalls';
+import { SimHUD } from '../components/SimHUD';
+import { generateOpenScadCode, generateStlFile } from '../services/gemini';
 
 const StlModel = ({ stlData }: { stlData: string }) => {
   const [geometry, setGeometry] = useState<THREE.BufferGeometry | null>(null);
@@ -43,6 +48,7 @@ const StlModel = ({ stlData }: { stlData: string }) => {
 const StudioSimPage: React.FC = () => {
   const navigate = useNavigate();
   const [alonPanelWidth, setAlonPanelWidth] = useState(400);
+  const [viewMode, setViewMode] = useState<ViewMode>('3D');
   const gridTemplateColumns = `256px minmax(500px, 1fr) 6px ${alonPanelWidth}px`;
 
   const [projects, setProjects] = useState<DesignProject[]>(() => loadStateFromStorage().projects);
@@ -69,6 +75,8 @@ const StudioSimPage: React.FC = () => {
   
   const [isGeneratingNlp, setIsGeneratingNlp] = useState(false);
   const [boundaryConditions, setBoundaryConditions] = useState<SimulationBoundaryCondition[]>([]);
+  const [isGeneratingModel, setIsGeneratingModel] = useState(false);
+  const [triggerHierarchyView, setTriggerHierarchyView] = useState<string | null>(null);
 
   const { projectId } = useParams<{ projectId: string }>();
 
@@ -98,6 +106,30 @@ const StudioSimPage: React.FC = () => {
     }
   }, [projectId, navigate]);
 
+  const handleGenerateModel = async () => {
+      if (!activeProject || !activeProject.specs) {
+          alert("Project requires hardware specifications. Please generate a design in the Studio first.");
+          return;
+      }
+      try {
+          setIsGeneratingModel(true);
+          const scadCode = await generateOpenScadCode(activeProject.specs);
+          const stlData = await generateStlFile(activeProject.specs, scadCode);
+          
+          const updatedProj = { ...activeProject, assetUrls: { ...activeProject.assetUrls, stl: stlData }, openScadCode: scadCode };
+          setProjects(projects.map(p => p.id === activeProject.id ? updatedProj : p));
+          // Update activeProject reference if it's the one being modified
+          if (activeProject.id === updatedProj.id) {
+              setActiveProjectId(updatedProj.id); // This will trigger re-render with updated activeProject
+          }
+      } catch(err) {
+          console.error(err);
+          alert("Simulation conversion failed. " + (err as any).message);
+      } finally {
+          setIsGeneratingModel(false);
+      }
+  };
+
   const handleSaveToCloud = async () => {
       const dummyPayload = JSON.stringify({ telemetry: "sim_data", date: Date.now() });
       const size = new Blob([dummyPayload]).size;
@@ -109,12 +141,13 @@ const StudioSimPage: React.FC = () => {
       setTimeout(() => {
           setIsCloudSaving(false);
           alert("Simulation payload validated under 10MB and synced to Cloud Node.");
+          window.dispatchEvent(new Event('update-cloud-quota'));
       }, 600);
   };
 
   const handleSaveLocal = async (fileName: string) => {
+      const dummyPayload = JSON.stringify({ project: activeProjectId, customConditions: boundaryConditions, exportFormat: 'SIM.0' }, null, 2);
       try {
-          const dummyPayload = JSON.stringify({ telemetry: "sim_data", exportedAt: new Date().toISOString() }, null, 2);
           if ((window as any).showSaveFilePicker) {
               const handle = await (window as any).showSaveFilePicker({
                   suggestedName: fileName,
@@ -135,6 +168,20 @@ const StudioSimPage: React.FC = () => {
       } catch (err) {
           console.error(err);
       }
+  };
+
+  const handleDownloadProject = () => {
+    if (!activeProject) return;
+    const dataStr = JSON.stringify(activeProject, null, 2);
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.download = `${activeProject.name.replace(/ /g, '_')}.studioSim`;
+    link.href = url;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   const handleDownloadFromCloud = async (cloudProj: CloudProject) => {
@@ -172,6 +219,7 @@ const StudioSimPage: React.FC = () => {
           await deleteObject(fileRef);
           await deleteDoc(doc(db, `users/${auth.currentUser.uid}/cloudProjects`, cloudProj.id));
           await fetchCloudProjects();
+          window.dispatchEvent(new Event('update-cloud-quota'));
       } catch (err: any) {
           console.error(err);
           alert(`Cloud Purge Blocked: ${err.message}`);
@@ -208,56 +256,11 @@ const StudioSimPage: React.FC = () => {
   };
 
   return (
-    <div className="h-full flex flex-col gap-2 p-2">
-      <ThemePanel className="w-full shrink-0 h-16 flex items-center justify-between px-6 bg-zinc-950/80 border-b border-zinc-800">
-        
-        {/* Left: Viewport Manipulation Tools */}
-        <div className="flex items-center gap-1 bg-black/60 p-1 rounded-lg border border-zinc-800/80 shadow-inner">
-            <button className="p-2 bg-blue-600 text-white rounded cursor-pointer shadow-[0_0_15px_rgba(37,99,235,0.4)]" title="Select (Active)">
-                <MousePointer2 className="w-4 h-4" />
-            </button>
-            <button className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded transition-colors" title="Pan (G)">
-                <Move className="w-4 h-4" />
-            </button>
-            <button className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded transition-colors" title="Rotate (R)">
-                <RefreshCw className="w-4 h-4" />
-            </button>
-            <button className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded transition-colors" title="Scale (S)">
-                <Maximize className="w-4 h-4" />
-            </button>
-            <div className="w-px h-5 bg-zinc-700 mx-2"></div>
-            <button className="flex items-center gap-2 px-3 py-1.5 text-zinc-300 hover:bg-zinc-800 rounded transition-colors text-sm font-bold uppercase tracking-widest" title="Viewport Shading">
-                <Box className="w-4 h-4" /> Wireframe
-            </button>
-        </div>
-
-        {/* Center/Right: Simulation Timeline Playback */}
-        <div className="flex items-center gap-4">
-            <div className="text-xs font-mono text-zinc-500 bg-black/50 px-3 py-1.5 rounded border border-zinc-800 tracking-widest">
-                FRAME: <span className="text-emerald-400">0000</span> / 1200
-            </div>
-            
-            <div className="flex items-center gap-1 bg-black/60 p-1 rounded-lg border border-zinc-800/80">
-                <button className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded transition-colors" title="Jump to Start">
-                    <SkipBack className="w-4 h-4 fill-current" />
-                </button>
-                <button className="p-2 text-emerald-400 hover:text-emerald-300 hover:bg-emerald-900/30 rounded transition-colors" title="Play Simulation">
-                    <Play className="w-5 h-5 fill-current" />
-                </button>
-                <button className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded transition-colors" title="Pause">
-                    <Pause className="w-4 h-4 fill-current" />
-                </button>
-                <button className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded transition-colors" title="Jump to End">
-                    <SkipForward className="w-4 h-4 fill-current" />
-                </button>
-            </div>
-        </div>
-
-      </ThemePanel>
+    <div className="h-full flex flex-col p-2 relative bg-black/90">
       <div className="flex-1 grid overflow-hidden gap-2" style={{ gridTemplateColumns }}>
         
         {/* Real Project Registry Sidebar */}
-        <div className="flex flex-col h-full bg-black/40 backdrop-blur-md rounded-lg overflow-hidden border border-zinc-800/80 shadow-[inset_0_0_50px_rgba(0,0,0,0.5)]">
+        <div className="flex flex-col h-full bg-black/40 backdrop-blur-md rounded-lg overflow-hidden border border-zinc-800/80 shadow-[inset_0_0_50px_rgba(0,0,0,0.5)] z-20">
             <ProjectSidebar 
                 projects={projects}
                 activeProjectId={activeProjectId}
@@ -267,10 +270,14 @@ const StudioSimPage: React.FC = () => {
                     localStorage.setItem('lastActiveStudioProjectId', id);
                 }}
                 onNewProject={() => {}}
-                onRenameProject={() => {}}
-                onDeleteProject={() => {}}
-                onToggleConstraint={() => {}}
-                cloudProjects={cloudProjects}
+                onRenameProject={() => {}} 
+                triggerHierarchyView={triggerHierarchyView} 
+                onHierarchyViewClosed={() => setTriggerHierarchyView(null)} 
+                cloudProjects={projects.filter(p => false)} // Hide cloud projects here since we only manage local context
+                onPrepareForSim={(project, target) => {
+                    if (target === 'studiosim') navigate(`/studiosim/${project.id}`);
+                    else if (target === 'fabflow') navigate(`/fabflow/${project.id}`);
+                }}
                 onSaveToCloud={() => {}}
                 onLoadFromCloud={handleDownloadFromCloud}
                 onDeleteFromCloud={handleDeleteFromCloud}
@@ -279,38 +286,58 @@ const StudioSimPage: React.FC = () => {
         </div>
         
         <ThemePanel translucent className="flex flex-col h-full overflow-hidden relative z-10 border border-[#00ffcc]/10 shadow-[inset_0_0_50px_rgba(0,255,204,0.02)]">
-            <div className="px-6 py-4 border-b border-zinc-800 shrink-0 bg-black/40 backdrop-blur-md flex justify-between items-center">
-                <h2 className="text-subheading font-normal text-zinc-500 uppercase tracking-tighter flex items-center gap-3">
-                    Simulation Runtime Standby
-                </h2>
-                
-                {/* Archiving Tools */}
-                <div className="flex items-center gap-2">
-                    <button 
-                        onClick={() => handleSaveLocal('conditions_export.sim')}
-                        className="p-2 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 rounded border border-zinc-700 transition-colors"
-                        title="Save Condition Overrides Locally"
-                    >
-                        <Save className="w-4 h-4" />
-                    </button>
-                    <button 
-                        onClick={() => handleSaveLocal('default_settings.json')}
-                        className="p-2 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 rounded border border-zinc-700 transition-colors"
-                        title="Save Native Defaults"
-                    >
-                        <Settings2 className="w-4 h-4" />
-                    </button>
-                    <button 
-                        onClick={handleSaveToCloud}
-                        disabled={isCloudSaving}
-                        className="p-2 bg-blue-900/40 hover:bg-blue-900/60 text-blue-400 rounded border border-blue-900 transition-colors disabled:opacity-50"
-                        title="Upload Telemetry to Cloud (Max 10MB)"
-                    >
-                        {isCloudSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CloudUpload className="w-4 h-4" />} 
-                    </button>
-                </div>
+            <div className="border-b border-zinc-800 bg-black/40">
+                <FileMenuBar
+                    onNewProject={() => {}}
+                    onSave={() => {}}
+                    onImport={() => {}}
+                    onDownload={handleDownloadProject}
+                    onCloseProject={() => navigate('/studiosim')}
+                    onDeleteProject={() => {}}
+                    onExportStl={() => {}}
+                    isStlReady={!!activeProject?.assetUrls?.stl}
+                    onExportImages={() => {}}
+                    areImagesExportable={false}
+                    isProjectActive={!!activeProject}
+                    onSaveToCloud={() => {}}
+                    onLoadFromCloud={handleDownloadFromCloud}
+                    isCloudSaving={isCloudSaving}
+                    cloudStorageUsed={0}
+                    extension=".studioSim"
+                />
             </div>
-            <div className="flex-1 w-full h-full bg-zinc-950 relative cursor-move rounded-b-lg overflow-hidden">
+            <div className="px-4 py-2 border-b border-zinc-800/80 shrink-0 bg-transparent flex justify-between items-center bg-black/60 relative z-20">
+                 <div className="flex items-center gap-1 bg-black/60 p-1 rounded border border-[#00ffcc]/20 shadow-inner">
+                     <button onClick={() => setViewMode('3D')} className={`px-3 py-1 rounded transition-colors text-[10px] font-bold uppercase tracking-widest ${viewMode === '3D' ? 'bg-[#00ffcc]/10 text-[#00ffcc] border border-[#00ffcc]/30' : 'text-zinc-500 hover:text-zinc-300'}`}>3D</button>
+                     <button onClick={() => setViewMode('FRONT')} className={`px-3 py-1 rounded transition-colors text-[10px] font-bold uppercase tracking-widest ${viewMode === 'FRONT' ? 'bg-[#00ffcc]/10 text-[#00ffcc] border border-[#00ffcc]/30' : 'text-zinc-500 hover:text-zinc-300'}`}>FR.</button>
+                     <button onClick={() => setViewMode('TOP')} className={`px-3 py-1 rounded transition-colors text-[10px] font-bold uppercase tracking-widest ${viewMode === 'TOP' ? 'bg-[#00ffcc]/10 text-[#00ffcc] border border-[#00ffcc]/30' : 'text-zinc-500 hover:text-zinc-300'}`}>TOP</button>
+                 </div>
+                 
+                 <div className="flex items-center gap-4">
+                     <div className="text-xs font-mono text-zinc-500 bg-black/50 px-3 py-1.5 rounded border border-zinc-800 tracking-widest">
+                         FRAME: <span className="text-emerald-400">0000</span> / 1200
+                     </div>
+                     <div className="flex items-center gap-1 bg-black/60 p-1 rounded-lg border border-zinc-800/80 shadow-inner">
+                         <button className="p-2 bg-emerald-600/20 text-emerald-400 rounded cursor-pointer shadow-[0_0_15px_rgba(16,185,129,0.2)]" title="Select (Active)">
+                             <MousePointer2 className="w-4 h-4" />
+                         </button>
+                         <button className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded transition-colors" title="Pan (G)">
+                             <Move className="w-4 h-4" />
+                         </button>
+                         <button className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded transition-colors" title="Rotate (R)">
+                             <RefreshCw className="w-4 h-4" />
+                         </button>
+                         <button className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded transition-colors" title="Scale (S)">
+                             <Maximize className="w-4 h-4" />
+                         </button>
+                         <div className="w-px h-4 bg-zinc-700 mx-1"></div>
+                         <button className="p-2 text-zinc-400 hover:text-emerald-400 hover:bg-emerald-900/30 rounded transition-colors" title="Play Simulation">
+                             <Play className="w-4 h-4 fill-current" />
+                         </button>
+                     </div>
+                 </div>
+            </div>
+            <div className="flex-1 w-full h-full bg-[#09090b] relative cursor-move rounded-b-lg overflow-hidden z-0">
                 <Canvas camera={{ position: [150, 100, 150], fov: 45 }}>
                     <color attach="background" args={['#09090b']} />
                     <fog attach="fog" args={['#09090b', 50, 400]} />
@@ -330,7 +357,9 @@ const StudioSimPage: React.FC = () => {
                        sectionColor={'#3f3f46'} 
                        fadeDistance={400} 
                     />
-                    <primitive object={new THREE.AxesHelper(100)} position={[0, -49.9, 0]} />
+                    
+                    <CameraPresets mode={viewMode} />
+                    <RoomWalls />
 
                     <React.Suspense fallback={null}>
                         <Environment preset="city" />
@@ -342,7 +371,7 @@ const StudioSimPage: React.FC = () => {
                         )}
                     </React.Suspense>
                     
-                    <GizmoHelper alignment="bottom-right" margin={[60, 60]}>
+                    <GizmoHelper alignment="top-right" margin={[60, 60]}>
                         <GizmoViewport axisColors={['#ef4444', '#10b981', '#3b82f6']} labelColor="black" />
                     </GizmoHelper>
 
@@ -350,13 +379,28 @@ const StudioSimPage: React.FC = () => {
                 </Canvas>
                 
                 {!activeProject?.assetUrls?.stl && (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                        <div className="max-w-md text-center bg-black/60 backdrop-blur-md p-6 rounded-2xl border border-zinc-800">
+                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-30">
+                        <div className="max-w-md text-center bg-black/60 backdrop-blur-md p-6 rounded-2xl border border-zinc-800 pointer-events-auto shadow-2xl">
+                            <Binary className="w-12 h-12 text-zinc-600 mx-auto mb-4" />
                             <h3 className="text-xl font-black text-zinc-400 tracking-widest uppercase mb-3">StudioSim Sandbox</h3>
-                            <p className="text-zinc-500 leading-relaxed text-sm">Awaiting payload drop. Initialize a pipeline execution to trace native structural paths across the active ecosystem.</p>
+                            <p className="text-zinc-500 leading-relaxed text-sm mb-6">A solid geometric payload is required for structural simulation traces across the active ecosystem.</p>
+                            
+                            <button 
+                                onClick={handleGenerateModel}
+                                disabled={isGeneratingModel}
+                                className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold tracking-widest uppercase rounded-lg shadow-[0_0_20px_rgba(16,185,129,0.4)] transition-all flex justify-center items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {isGeneratingModel ? (
+                                    <><RefreshCw className="w-5 h-5 animate-spin" /> Synthesizing Solid STL Core...</>
+                                ) : (
+                                    <><Hammer className="w-5 h-5" /> Import & Convert Topology</>
+                                )}
+                            </button>
                         </div>
                     </div>
                 )}
+                
+                <SimHUD colorClass="emerald" />
             </div>
         </ThemePanel>
 

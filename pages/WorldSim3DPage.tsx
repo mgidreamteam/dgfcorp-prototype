@@ -3,6 +3,9 @@ import { Rocket, ShieldAlert, Crosshair, Radar, Globe2 } from 'lucide-react';
 import ThemePanel from '../components/ThemePanel';
 import { Canvas } from '@react-three/fiber';
 import { Box as DreiBox, Cylinder as DreiCylinder, Grid, Sky, Environment, MapControls, GizmoHelper, GizmoViewport } from '@react-three/drei';
+import { CameraPresets, ViewMode } from '../components/CameraPresets';
+import { RoomWalls } from '../components/RoomWalls';
+import { SimHUD } from '../components/SimHUD';
 
 // Procedural Drone/Plane constructed from primitives
 function DroneModel() {
@@ -26,7 +29,8 @@ function DroneModel() {
 
 const WorldSim3DPage: React.FC = () => {
   const [alonPanelWidth, setAlonPanelWidth] = useState(400);
-  const gridTemplateColumns = `280px minmax(500px, 1fr) 6px ${alonPanelWidth}px`;
+  const [viewMode, setViewMode] = useState<ViewMode>('3D');
+  const gridTemplateColumns = `256px minmax(500px, 1fr) 6px ${alonPanelWidth}px`;
 
   return (
     <div className="h-full flex flex-col gap-2 p-2 relative bg-black/90">
@@ -43,6 +47,10 @@ const WorldSim3DPage: React.FC = () => {
         
         {/* Right Side - Dummy Toggles */}
         <div className="flex items-center gap-2">
+            <button onClick={() => setViewMode('3D')} className={`px-3 py-1.5 rounded transition-colors text-xs font-bold uppercase tracking-widest ${viewMode === '3D' ? 'bg-blue-900/40 text-blue-400 border border-blue-500/30' : 'text-zinc-500 hover:text-zinc-300'}`}>3D</button>
+            <button onClick={() => setViewMode('FRONT')} className={`px-3 py-1.5 rounded transition-colors text-xs font-bold uppercase tracking-widest ${viewMode === 'FRONT' ? 'bg-blue-900/40 text-blue-400 border border-blue-500/30' : 'text-zinc-500 hover:text-zinc-300'}`}>FR.</button>
+            <button onClick={() => setViewMode('TOP')} className={`px-3 py-1.5 rounded transition-colors text-xs font-bold uppercase tracking-widest ${viewMode === 'TOP' ? 'bg-blue-900/40 text-blue-400 border border-blue-500/30' : 'text-zinc-500 hover:text-zinc-300'}`}>TOP</button>
+            <div className="w-px h-5 bg-zinc-800 mx-2"></div>
             <button className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded transition-colors" title="Global Satellite Network"><Globe2 className="w-4 h-4" /></button>
             <button className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded transition-colors" title="Radar Array"><Radar className="w-4 h-4" /></button>
             <button className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded transition-colors" title="Threat Vector Analyst"><ShieldAlert className="w-4 h-4" /></button>
@@ -88,25 +96,19 @@ const WorldSim3DPage: React.FC = () => {
                     
                     <DroneModel />
                     
+                    <CameraPresets mode={viewMode} />
+                    <RoomWalls />
+                    
                     {/* Full mouse navigation support */}
                     <MapControls makeDefault maxPolarAngle={Math.PI / 2 - 0.05} minDistance={5} maxDistance={200} />
                     
-                    <GizmoHelper alignment="bottom-right" margin={[60, 60]}>
+                    <GizmoHelper alignment="top-right" margin={[60, 60]}>
                         <GizmoViewport axisColors={['#ef4444', '#10b981', '#3b82f6']} labelColor="black" />
                     </GizmoHelper>
                 </Canvas>
 
                 {/* Overlaid Bottom HUD */}
-                <div className="absolute bottom-4 inset-x-0 w-full flex justify-center pointer-events-none">
-                     <div className="px-6 py-2 bg-black/60 backdrop-blur-md rounded-full border border-blue-500/30 flex items-center gap-6 shadow-[0_0_30px_rgba(59,130,246,0.2)]">
-                         <span className="text-[10px] font-bold uppercase tracking-widest text-blue-400 flex items-center gap-2">
-                             <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span> Kinematics: Active
-                         </span>
-                         <div className="w-px h-4 bg-zinc-800"></div>
-                         <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-widest">Left Click: Pan</span>
-                         <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-widest">Right Click: Orbit</span>
-                     </div>
-                </div>
+                <SimHUD colorClass="red" />
             </div>
         </ThemePanel>
 

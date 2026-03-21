@@ -19,6 +19,7 @@ interface FileMenuBarProps {
   onLoadFromCloud: () => void;
   isCloudSaving: boolean;
   cloudStorageUsed: number;
+  extension?: string;
 }
 
 const FileMenuBar: React.FC<FileMenuBarProps> = ({ 
@@ -36,7 +37,8 @@ const FileMenuBar: React.FC<FileMenuBarProps> = ({
     onSaveToCloud,
     onLoadFromCloud,
     isCloudSaving,
-    cloudStorageUsed
+    cloudStorageUsed,
+    extension = '.dream'
 }) => {
     
   const iconBtnClass = "flex items-center justify-center p-2 text-zinc-300 hover:bg-zinc-800 hover:text-white rounded-md transition-colors";
@@ -59,10 +61,10 @@ const FileMenuBar: React.FC<FileMenuBarProps> = ({
         </button>
         <div className="h-5 w-px bg-zinc-700 mx-1.5"></div>
 
-        <button onClick={onDownload} disabled={!isProjectActive} className={isProjectActive ? iconBtnClass : disabledIconBtnClass} title="Export to Disk (*.dream)">
+        <button onClick={onDownload} disabled={!isProjectActive} className={isProjectActive ? iconBtnClass : disabledIconBtnClass} title={`Export to Disk (*${extension})`}>
           <FileOutput className="w-5 h-5" />
         </button>
-        <button onClick={onImport} className={iconBtnClass} title="Import from Disk (*.dream)">
+        <button onClick={onImport} className={iconBtnClass} title={`Import from Disk (*${extension})`}>
             <FileInput className="w-5 h-5" />
         </button>
 

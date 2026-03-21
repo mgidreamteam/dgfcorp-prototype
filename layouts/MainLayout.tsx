@@ -24,10 +24,13 @@ const MainLayout: React.FC = () => {
             } catch (err) {}
         };
         fetchQuota();
+
+        window.addEventListener('update-cloud-quota', fetchQuota);
+        return () => window.removeEventListener('update-cloud-quota', fetchQuota);
     }, [auth.currentUser]);
 
     const location = useLocation();
-    const match = location.pathname.match(/\/(?:studio|studiosim|worldsim|worldsim3d|productionsim)\/([^/]+)/);
+    const match = location.pathname.match(/\/(?:studio|studiosim|worldsim|worldsim3d|fabflow)\/([^/]+)/);
     const activeId = match ? match[1] : localStorage.getItem('lastActiveStudioProjectId');
     const suffix = activeId ? `/${activeId}` : '';
     const cumulativeTokens = profile?.cumulativeTokens || 0;
@@ -58,16 +61,16 @@ const MainLayout: React.FC = () => {
                             className={({ isActive }) =>
                                 `px-3 py-2 rounded-md flex items-center gap-2 transition-all text-sm font-medium ${
                                 isActive
-                                    ? 'bg-white/10 text-white'
-                                    : 'text-zinc-400 hover:bg-zinc-800 hover:text-white'
+                                    ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20 shadow-[0_0_10px_rgba(168,85,247,0.3)]'
+                                    : 'text-zinc-400 hover:bg-zinc-800 hover:text-purple-300'
                                 }`
                             }
                         >
                             <PenTool className="w-4 h-4 shrink-0" />
-                            <span className="hidden xl:inline">Design</span>
+                            <span className="hidden xl:inline">Studio</span>
                         </NavLink>
                         <NavLink
-                            to={`/productionsim${suffix}`}
+                            to={`/fabflow${suffix}`}
                             className={({ isActive }) =>
                                 `px-3 py-2 rounded-md flex items-center gap-2 transition-all text-sm font-medium text-yellow-500/80 ${
                                 isActive
@@ -84,8 +87,8 @@ const MainLayout: React.FC = () => {
                             className={({ isActive }) =>
                                 `px-3 py-2 rounded-md flex items-center gap-2 transition-all text-sm font-medium ${
                                 isActive
-                                    ? 'bg-white/10 text-white'
-                                    : 'text-zinc-400 hover:bg-zinc-800 hover:text-white'
+                                    ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.3)]'
+                                    : 'text-zinc-400 hover:bg-zinc-800 hover:text-emerald-300'
                                 }`
                             }
                         >
@@ -97,8 +100,8 @@ const MainLayout: React.FC = () => {
                             className={({ isActive }) =>
                                 `px-3 py-2 rounded-md flex items-center gap-2 transition-all text-sm font-medium ${
                                 isActive
-                                    ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20 shadow-[0_0_10px_rgba(59,130,246,0.3)]'
-                                    : 'text-zinc-400 hover:bg-zinc-800 hover:text-blue-300'
+                                    ? 'bg-red-500/10 text-red-500 border border-red-500/20 shadow-[0_0_10px_rgba(239,68,68,0.3)]'
+                                    : 'text-zinc-400 hover:bg-zinc-800 hover:text-red-400'
                                 }`
                             }
                         >
@@ -110,8 +113,8 @@ const MainLayout: React.FC = () => {
                             className={({ isActive }) =>
                                 `px-3 py-2 rounded-md flex items-center gap-2 transition-all text-sm font-medium ${
                                 isActive
-                                    ? 'bg-white/10 text-white'
-                                    : 'text-zinc-400 hover:bg-zinc-800 hover:text-white'
+                                    ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 shadow-[0_0_10px_rgba(6,182,212,0.3)]'
+                                    : 'text-zinc-400 hover:bg-zinc-800 hover:text-cyan-300'
                                 }`
                             }
                         >
@@ -183,19 +186,16 @@ const MainLayout: React.FC = () => {
                         </button>
                     </div>
 
-                    <div className="flex items-center gap-4">
-                    <NavLink to="/profile" className={({ isActive }) => `text-zinc-400 hover:text-white transition-colors flex items-center gap-2 text-sm ${isActive ? 'text-white font-medium' : ''}`}>
-                        <User className="w-4 h-4" />
-                        Profile
-                    </NavLink>
-                    <button onClick={() => setIsManualOpen(true)} className="text-zinc-400 hover:text-white transition-colors flex items-center gap-2 text-sm">
-                        <BookOpen className="w-4 h-4" />
-                        User Manual
-                    </button>
-                    <button onClick={logout} className="text-zinc-400 hover:text-white transition-colors flex items-center gap-2 text-sm ml-4">
-                        <LogOut className="w-4 h-4" />
-                        Log Out
-                    </button>
+                    <div className="flex items-center gap-3">
+                        <NavLink to="/profile" title="Profile" className={({ isActive }) => `bg-black/40 border border-zinc-800/80 shadow-inner h-[48px] w-[48px] rounded-xl flex items-center justify-center transition-all ${isActive ? 'bg-zinc-800 border-zinc-600 text-white' : 'text-zinc-400 hover:bg-zinc-800 hover:text-white'}`}>
+                            <User className="w-5 h-5" />
+                        </NavLink>
+                        <button onClick={() => setIsManualOpen(true)} title="User Manual" className="bg-black/40 border border-zinc-800/80 shadow-inner h-[48px] w-[48px] rounded-xl flex items-center justify-center text-zinc-400 hover:bg-zinc-800 hover:text-white transition-all">
+                            <BookOpen className="w-5 h-5" />
+                        </button>
+                        <button onClick={logout} title="Log Out" className="bg-black/40 border border-zinc-800/80 shadow-inner h-[48px] w-[48px] rounded-xl flex items-center justify-center text-zinc-400 hover:bg-zinc-800 hover:text-white transition-all">
+                            <LogOut className="w-5 h-5" />
+                        </button>
                     </div>
                 </div>
             </header>

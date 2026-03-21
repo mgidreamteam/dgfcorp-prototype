@@ -14,7 +14,7 @@ import InnovationPage from '../pages/InnovationPage';
 import WorldSimPage from '../pages/WorldSimPage';
 import WorldSim3DPage from '../pages/WorldSim3DPage';
 import StudioSimPage from '../pages/StudioSimPage';
-import ProductionSimPage from '../pages/ProductionSimPage';
+import FabFlowPage from '../pages/FabFlowPage';
 import PublicLayout from '../layouts/PublicLayout';
 
 const ProtectedRoute: React.FC = () => {
@@ -73,8 +73,8 @@ const AppRouter: React.FC = () => {
                     <Route path="/worldsim/:projectId" element={<WorldSimPage />} />
                     <Route path="/worldsim3d" element={<WorldSim3DPage />} />
                     <Route path="/worldsim3d/:projectId" element={<WorldSim3DPage />} />
-                    <Route path="/productionsim" element={<ProductionSimPage />} />
-                    <Route path="/productionsim/:projectId" element={<ProductionSimPage />} />
+                    <Route path="/fabflow" element={<FabFlowPage />} />
+                    <Route path="/fabflow/:projectId" element={<FabFlowPage />} />
                 </Route>
             </Route>
 

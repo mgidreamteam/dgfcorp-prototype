@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import { DesignProject, BillOfMaterialItem } from '../types';
-import { Plus, Cpu, ChevronRight, ArrowLeft, Wrench, CircuitBoard, Cog, Package, Cloud } from 'lucide-react';
+import { Plus, Cpu, ChevronRight, ArrowLeft, Wrench, CircuitBoard, Cog, Package, Cloud, Box, Factory, Trash2 } from 'lucide-react';
 import ThemePanel from './ThemePanel';
 
 interface ProjectSidebarProps {
@@ -13,8 +13,10 @@ interface ProjectSidebarProps {
   onHierarchyViewClosed: () => void;
   cloudProjects?: import('../types').CloudProject[];
   onLoadCloudProject?: (proj: import('../types').CloudProject) => void;
+  onDeleteCloudProject?: (proj: import('../types').CloudProject) => void;
   cloudLoadingAction?: string | null;
   baseRoute?: string;
+  onPrepareForSim?: (project: DesignProject, target: 'studiosim' | 'fabflow') => void;
 }
 
 const classifyComponent = (item: BillOfMaterialItem): 'Structure' | 'Circuits' | 'Motion' | 'Other' => {
@@ -36,7 +38,7 @@ const classifyComponent = (item: BillOfMaterialItem): 'Structure' | 'Circuits' |
     return 'Other';
 };
 
-const HierarchyView: React.FC<{ project: DesignProject, onBack: () => void }> = ({ project, onBack }) => {
+const HierarchyView: React.FC<{ project: DesignProject, onBack: () => void, onPrepareForSim?: (project: DesignProject, target: 'studiosim' | 'fabflow') => void }> = ({ project, onBack, onPrepareForSim }) => {
     const hierarchy = useMemo(() => {
         if (!project.specs?.bom) return null;
         
@@ -89,6 +91,20 @@ const HierarchyView: React.FC<{ project: DesignProject, onBack: () => void }> = 
                     </div>
                 ))}
             </div>
+            <div className="p-4 border-t border-zinc-800 shrink-0 space-y-2">
+                <button
+                    onClick={() => onPrepareForSim?.(project, 'studiosim')}
+                    className="w-full py-2 bg-emerald-600/10 text-emerald-400 hover:bg-emerald-600/30 rounded transition-colors text-sm font-medium border border-emerald-500/20 flex items-center justify-center gap-2"
+                >
+                    <Box className="w-4 h-4" /> Load in StudioSim
+                </button>
+                <button
+                    onClick={() => onPrepareForSim?.(project, 'fabflow')}
+                    className="w-full py-2 bg-yellow-600/10 text-yellow-400 hover:bg-yellow-600/30 rounded transition-colors text-sm font-medium border border-yellow-500/20 flex items-center justify-center gap-2"
+                >
+                    <Factory className="w-4 h-4" /> Load in FabFlow
+                </button>
+            </div>
         </div>
     );
 };
@@ -103,8 +119,10 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
   onHierarchyViewClosed,
   cloudProjects = [],
   onLoadCloudProject,
+  onDeleteCloudProject,
   cloudLoadingAction,
-  baseRoute = "/studio"
+  baseRoute = "/studio",
+  onPrepareForSim
 }) => {
   const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState('');
@@ -201,22 +219,33 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
                         </div>
                         <div className="flex-1 overflow-y-auto px-2 space-y-1 pb-4 min-h-[150px]">
                             {cloudProjects.sort((a,b) => b.uploadedAt - a.uploadedAt).map((p) => (
-                                <button
-                                    key={`cloud-${p.id}`}
-                                    onClick={() => onLoadCloudProject && onLoadCloudProject(p)}
-                                    disabled={cloudLoadingAction === p.id}
-                                    className="w-full text-left group px-3 py-3 rounded-md flex items-center gap-3 transition-all cursor-pointer text-blue-400 hover:bg-blue-900/20 hover:text-blue-300 disabled:opacity-50"
-                                    title="Click to stream from cloud"
-                                >
-                                    <Cloud className={`w-4 h-4 opacity-70 shrink-0 ${cloudLoadingAction === p.id ? 'animate-pulse text-blue-300' : ''}`} />
-                                    <div className="flex-1 truncate">
-                                        <div className="font-medium text-detail truncate">{p.name}</div>
-                                        <div className="text-micro text-blue-500/70 truncate flex gap-2">
-                                            <span>{(p.sizeBytes / 1000000).toFixed(2)} MB</span>
-                                            <span>{new Date(p.uploadedAt).toLocaleDateString()}</span>
+                                <div key={`cloud-${p.id}`} className="relative group w-full flex items-center">
+                                    <button
+                                        onClick={() => onLoadCloudProject && onLoadCloudProject(p)}
+                                        disabled={cloudLoadingAction === p.id}
+                                        className="w-full text-left px-3 py-3 rounded-md flex items-center gap-3 transition-all cursor-pointer text-blue-400 hover:bg-blue-900/20 hover:text-blue-300 disabled:opacity-50"
+                                        title="Click to stream from cloud"
+                                    >
+                                        <Cloud className={`w-4 h-4 opacity-70 shrink-0 ${cloudLoadingAction === p.id ? 'animate-pulse text-blue-300' : ''}`} />
+                                        <div className="flex-1 truncate pr-8">
+                                            <div className="font-medium text-detail truncate">{p.name}</div>
+                                            <div className="text-micro text-blue-500/70 truncate flex gap-2">
+                                                <span>{(p.sizeBytes / 1000000).toFixed(2)} MB</span>
+                                                <span>{new Date(p.uploadedAt).toLocaleDateString()}</span>
+                                            </div>
                                         </div>
-                                    </div>
-                                </button>
+                                    </button>
+                                    {onDeleteCloudProject && (
+                                        <button 
+                                            onClick={(e) => { e.stopPropagation(); onDeleteCloudProject(p); }}
+                                            className="absolute right-2 p-1.5 opacity-0 group-hover:opacity-100 text-red-500 hover:text-white hover:bg-red-500 border border-red-500/50 hover:border-red-500 rounded transition-all z-10 disabled:opacity-0 bg-[#09090b]/80 backdrop-blur-sm"
+                                            disabled={cloudLoadingAction === p.id}
+                                            title="Delete from Cloud"
+                                        >
+                                            <Trash2 className="w-3.5 h-3.5" />
+                                        </button>
+                                    )}
+                                </div>
                             ))}
                         </div>
                     </>
@@ -225,7 +254,7 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
         </div>
 
         <div className="slide-panel" style={{ transform: isHierarchyVisible ? 'translateX(0)' : 'translateX(100%)' }}>
-            {activeProject && activeProject.specs && <HierarchyView project={activeProject} onBack={handleHierarchyBack} />}
+            {activeProject && activeProject.specs && <HierarchyView project={activeProject} onBack={handleHierarchyBack} onPrepareForSim={onPrepareForSim} />}
         </div>
       </div>
       

@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import AnimatedGrid from '../components/AnimatedGrid';
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -41,13 +42,18 @@ const LoginPage: React.FC = () => {
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full bg-black/40 border border-zinc-700/50 text-white placeholder-zinc-600 rounded-none px-4 py-3 outline-none focus:border-white transition-colors font-kido"
                 />
-                <input
-                    type="password"
-                    placeholder="Password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full bg-black/40 border border-zinc-700/50 text-white placeholder-zinc-600 rounded-none px-4 py-3 outline-none focus:border-white transition-colors font-kido"
-                />
+                <div className="relative w-full">
+                  <input
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="w-full bg-black/40 border border-zinc-700/50 text-white placeholder-zinc-600 rounded-none px-4 py-3 outline-none focus:border-white transition-colors font-kido"
+                  />
+                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white transition-colors">
+                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
                 <button
                     type="submit"
                     disabled={!email || !password}

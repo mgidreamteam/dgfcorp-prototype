@@ -10,8 +10,9 @@ import { generateHardwareSpecs } from '../services/gemini';
 import { AlertCircle, Loader2, Map as MapIcon, Globe, Navigation, ZoomIn, ZoomOut, Compass, Wind, Plane, Eye } from 'lucide-react';
 import { useAutoSave, loadStateFromStorage } from '../hooks/useAutoSave';
 import { useAuth } from '../contexts/AuthContext';
-import { auth, db } from '../services/firebase';
-import { collection, getDocs } from 'firebase/firestore';
+import { auth, db, storage } from '../services/firebase';
+import { collection, getDocs, doc, deleteDoc } from 'firebase/firestore';
+import { ref, deleteObject } from 'firebase/storage';
 import { GoogleMap, useJsApiLoader } from '@react-google-maps/api';
 import ThemePanel from '../components/ThemePanel';
 
@@ -88,6 +89,23 @@ const WorldSimPage: React.FC = () => {
   }, []);
 
   useEffect(() => { fetchCloudProjects(); }, [fetchCloudProjects]);
+
+  const handleDeleteFromCloud = async (cloudProj: CloudProject) => {
+      if (!auth.currentUser) return;
+      try {
+          setIsCloudSaving(true);
+          const fileRef = ref(storage, `users/${auth.currentUser.uid}/projects/${cloudProj.id}.dream`);
+          await deleteObject(fileRef);
+          await deleteDoc(doc(db, `users/${auth.currentUser.uid}/cloudProjects`, cloudProj.id));
+          addLog({ content: `Permanently unlinked "${cloudProj.name}" from the global bucket.`, type: 'output' });
+          await fetchCloudProjects();
+          window.dispatchEvent(new Event('update-cloud-quota'));
+      } catch (err: any) {
+          setError(`Cloud Purge Blocked: ${err.message}`);
+      } finally {
+          setIsCloudSaving(false);
+      }
+  };
 
   const cloudStorageUsed = useMemo(() => cloudProjects.reduce((acc, p) => acc + p.sizeBytes, 0), [cloudProjects]);
   const activeProject = useMemo(() => projects.find(p => p.id === activeProjectId), [projects, activeProjectId]);
@@ -194,6 +212,20 @@ const WorldSimPage: React.FC = () => {
     }
   };
 
+  const handleDownloadProject = () => {
+    if (!activeProject) return;
+    const dataStr = JSON.stringify(activeProject, null, 2);
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.download = `${activeProject.name.replace(/ /g, '_')}.tSim`;
+    link.href = url;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   // --- Flight Mechanics Controls ---
   const handleHomeLocation = () => {
       if (navigator.geolocation) {
@@ -267,7 +299,7 @@ const WorldSimPage: React.FC = () => {
             onNewProject={handleNewProject}
             onSave={() => {}}
             onImport={() => {}}
-            onDownload={() => {}}
+            onDownload={handleDownloadProject}
             onCloseProject={() => navigate('/dashboard')}
             onDeleteProject={() => setIsDeleteModalVisible(true)}
             onExportStl={() => {}}
@@ -278,6 +310,7 @@ const WorldSimPage: React.FC = () => {
             onSaveToCloud={async () => {}}
             isCloudSaving={isCloudSaving}
             cloudStorageUsed={cloudStorageUsed}
+            extension=".tSim"
           />
         </ThemePanel>
         <div className="flex-1 grid overflow-hidden gap-2" style={{ gridTemplateColumns: `256px minmax(500px, 1fr) 6px ${alonPanelWidth}px` }}>
@@ -289,6 +322,7 @@ const WorldSimPage: React.FC = () => {
             triggerHierarchyView={triggerHierarchyView} 
             onHierarchyViewClosed={() => setTriggerHierarchyView(null)} 
             cloudProjects={cloudProjects}
+            onDeleteCloudProject={handleDeleteFromCloud}
           />
           
           <ThemePanel translucent className="flex flex-col h-full overflow-hidden relative z-10 p-0">

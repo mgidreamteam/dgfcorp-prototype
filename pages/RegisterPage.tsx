@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, UserPlus } from 'lucide-react';
+import { ArrowRight, UserPlus, Eye, EyeOff } from 'lucide-react';
 import { auth, db } from '../services/firebase';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
@@ -19,6 +19,7 @@ const RegisterPage: React.FC = () => {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const { dashboardTheme } = useTheme();
   const navigate = useNavigate();
 
@@ -121,14 +122,19 @@ const RegisterPage: React.FC = () => {
             onChange={handleChange}
             className="w-full bg-black/50 border border-zinc-700 text-white placeholder-zinc-500 rounded-lg px-4 py-3 outline-none focus:border-white transition-colors"
           />
-          <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            value={formData.password}
-            onChange={handleChange}
-            className="w-full bg-black/50 border border-zinc-700 text-white placeholder-zinc-500 rounded-lg px-4 py-3 outline-none focus:border-white transition-colors"
-          />
+          <div className="relative w-full">
+            <input
+              type={showPassword ? "text" : "password"}
+              name="password"
+              placeholder="Password"
+              value={formData.password}
+              onChange={handleChange}
+              className="w-full bg-black/50 border border-zinc-700 text-white placeholder-zinc-500 rounded-lg px-4 py-3 outline-none focus:border-white transition-colors"
+            />
+            <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white transition-colors">
+              {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+            </button>
+          </div>
 
           {error && <p className="text-red-400 text-sm text-center bg-red-900/20 py-2 rounded-lg">{error}</p>}
 

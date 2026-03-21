@@ -446,9 +446,9 @@ export const generateOpenScadCode = async (specs: HardwareSpec): Promise<string>
 
   Your task:
   1. Create a highly detailed OpenSCAD script using Constructive Solid Geometry (CSG).
-  2. Implement advanced modularity: Use \`difference()\` to hollow out the casing based on the specified wall thickness.
+  2. Implement advanced modularity: Produce a fully SOLID geometry. DO NOT use \`difference()\` or any other method to hollow out the casing. It must be solid for volumetric simulation.
   3. Use \`minkowski()\` or \`hull()\` to create sleek, rounded, aerodynamic edges where appropriate.
-  4. Design internal features like screw standoffs, battery compartments, or port cutouts if the BOM implies them.
+  4. Design surface-level physical features, but again, do not hollow the main body.
   5. The model MUST be strictly mathematically bounded by the listed dimensions and Architecture.
   6. The output must be ONLY the raw OpenSCAD code. Do not include markdown formatting like \`\`\`scad.
   `;
