@@ -11,7 +11,7 @@ import ThemePanel from '../components/ThemePanel';
 import DesignInput from '../components/DesignInput';
 import { extractSimulationConstraints } from '../services/gemini';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Grid, Environment, ContactShadows, Center } from '@react-three/drei';
+import { OrbitControls, Grid, Environment, ContactShadows, Center, GizmoHelper, GizmoViewport } from '@react-three/drei';
 import * as THREE from 'three';
 // @ts-ignore
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
@@ -342,7 +342,11 @@ const StudioSimPage: React.FC = () => {
                         )}
                     </React.Suspense>
                     
-                    <OrbitControls makeDefault autoRotate autoRotateSpeed={0.8} minDistance={10} maxDistance={400} maxPolarAngle={Math.PI / 2 - 0.05} />
+                    <GizmoHelper alignment="bottom-right" margin={[60, 60]}>
+                        <GizmoViewport axisColors={['#ef4444', '#10b981', '#3b82f6']} labelColor="black" />
+                    </GizmoHelper>
+
+                    <OrbitControls makeDefault autoRotate={false} minDistance={10} maxDistance={400} maxPolarAngle={Math.PI / 2 - 0.05} />
                 </Canvas>
                 
                 {!activeProject?.assetUrls?.stl && (
