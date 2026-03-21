@@ -1,11 +1,14 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Factory, Box, Cpu, Settings2, ShieldCheck, Zap, Server, Globe2 } from 'lucide-react';
 import { useParams, useNavigate } from 'react-router-dom';
 import ThemePanel from '../components/ThemePanel';
 import ProjectSidebar from '../components/ProjectSidebar';
 import FileMenuBar from '../components/MenuBar';
 import { loadStateFromStorage } from '../hooks/useAutoSave';
-import { DesignProject } from '../types';
+import { DesignProject, CloudProject } from '../types';
+import { auth, db, storage } from '../services/firebase';
+import { collection, doc, setDoc, getDocs, deleteDoc } from 'firebase/firestore';
+import { ref, uploadString, getDownloadURL, deleteObject } from 'firebase/storage';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Grid, Environment, ContactShadows, Line, Center, GizmoHelper, GizmoViewport } from '@react-three/drei';
 import * as THREE from 'three';
@@ -155,6 +158,90 @@ const FabFlowPage: React.FC = () => {
       }));
   }, [activeProject]);
 
+  const [cloudProjects, setCloudProjects] = useState<CloudProject[]>([]);
+  const [isCloudSaving, setIsCloudSaving] = useState(false);
+  const [cloudLoadingAction, setCloudLoadingAction] = useState<string | null>(null);
+
+  const fetchCloudProjects = useCallback(async () => {
+    if (!auth.currentUser) return;
+    try {
+        const snap = await getDocs(collection(db, `users/${auth.currentUser.uid}/cloudProjects`));
+        setCloudProjects(snap.docs.map(d => d.data() as CloudProject));
+    } catch (err) { console.error(err); }
+  }, []);
+
+  useEffect(() => { fetchCloudProjects(); }, [fetchCloudProjects]);
+
+  const handleSaveToCloud = async () => {
+    if (!activeProject || !auth.currentUser) return;
+    try {
+        setIsCloudSaving(true);
+        const dataStr = JSON.stringify(activeProject);
+        const sizeBytes = new Blob([dataStr]).size;
+        if (sizeBytes > 10 * 1024 * 1024) throw new Error("Payload exceeds limit.");
+
+        const fileRef = ref(storage, `users/${auth.currentUser.uid}/projects/${activeProject.id}.dream`);
+        await uploadString(fileRef, dataStr, 'raw');
+
+        const cloudMeta: CloudProject = { id: activeProject.id, name: activeProject.name, sizeBytes, uploadedAt: Date.now() };
+        await setDoc(doc(db, `users/${auth.currentUser.uid}/cloudProjects`, activeProject.id), cloudMeta);
+        
+        await fetchCloudProjects();
+        window.dispatchEvent(new Event('update-cloud-quota'));
+    } catch (err: any) {
+        alert(`Cloud Delivery Blocked: ${err.message}`);
+    } finally {
+        setIsCloudSaving(false);
+    }
+  };
+
+  const handleDownloadFromCloud = async (cloudProj: CloudProject) => {
+      if (!auth.currentUser) return;
+      try {
+          setCloudLoadingAction(cloudProj.id);
+          const fileRef = ref(storage, `users/${auth.currentUser.uid}/projects/${cloudProj.id}.dream`);
+          const url = await getDownloadURL(fileRef);
+          const response = await fetch(url);
+          const text = await response.text();
+          const projectData = JSON.parse(text) as DesignProject;
+          if (projectData.id && projectData.name) {
+              setProjects(prev => {
+                  const filtered = prev.filter(p => p.id !== projectData.id);
+                  return [projectData, ...filtered];
+              });
+              navigate(`/fabflow/${projectData.id}`);
+          }
+      } catch (err: any) {
+          alert(`Cloud Fetch Failed: ${err.message}`);
+      } finally {
+          setCloudLoadingAction(null);
+      }
+  };
+
+  const handleDeleteFromCloud = async (cloudProj: CloudProject) => {
+      if (!auth.currentUser || !window.confirm("Permanently delete this cloud asset?")) return;
+      try {
+          setCloudLoadingAction(cloudProj.id);
+          const fileRef = ref(storage, `users/${auth.currentUser.uid}/projects/${cloudProj.id}.dream`);
+          await deleteObject(fileRef);
+          await deleteDoc(doc(db, `users/${auth.currentUser.uid}/cloudProjects`, cloudProj.id));
+          await fetchCloudProjects();
+          window.dispatchEvent(new Event('update-cloud-quota'));
+      } catch (err: any) {
+          alert(`Cloud Purge Blocked: ${err.message}`);
+      } finally {
+          setCloudLoadingAction(null);
+      }
+  };
+
+  const handleDeleteProject = () => {
+      if (!activeProject || !window.confirm(`Delete local project "${activeProject.name}"?`)) return;
+      setProjects(prev => prev.filter(p => p.id !== activeProject.id));
+      navigate('/fabflow');
+  };
+
+  const cloudStorageUsed = useMemo(() => cloudProjects.reduce((acc, p) => acc + p.sizeBytes, 0), [cloudProjects]);
+
   const handleGenerateModel = async () => {
       if (!activeProject || !activeProject.specs) {
           alert("Project requires hardware specifications. Please generate a design in the Studio first.");
@@ -198,11 +285,14 @@ const FabFlowPage: React.FC = () => {
         <ProjectSidebar 
             projects={projects} 
             activeProjectId={activeProject?.id || null} 
-            onNewProject={() => {}} 
+            onNewProject={() => navigate('/studio')} 
             onRenameProject={() => {}} 
             triggerHierarchyView={triggerHierarchyView} 
             onHierarchyViewClosed={() => setTriggerHierarchyView(null)} 
-            cloudProjects={projects.filter(p => false)}
+            cloudProjects={cloudProjects}
+            onLoadCloudProject={handleDownloadFromCloud}
+            onDeleteCloudProject={handleDeleteFromCloud}
+            cloudLoadingAction={cloudLoadingAction}
             onPrepareForSim={(project, target) => {
                 if (target === 'studiosim') navigate(`/studiosim/${project.id}`);
                 else if (target === 'fabflow') navigate(`/fabflow/${project.id}`);
@@ -213,21 +303,21 @@ const FabFlowPage: React.FC = () => {
         <ThemePanel translucent className="flex flex-col h-full overflow-hidden relative z-10 border border-yellow-500/10 shadow-[inset_0_0_50px_rgba(234,179,8,0.03)] rounded-lg bg-[#09090b]">
             <div className="border-b border-zinc-800 bg-black/40">
                 <FileMenuBar
-                    onNewProject={() => {}}
+                    onNewProject={() => navigate('/studio')}
                     onSave={() => {}}
                     onImport={() => {}}
                     onDownload={handleDownloadProject}
                     onCloseProject={() => navigate('/fabflow')}
-                    onDeleteProject={() => {}}
+                    onDeleteProject={handleDeleteProject}
                     onExportStl={() => {}}
                     isStlReady={!!activeProject?.assetUrls?.stl}
                     onExportImages={() => {}}
                     areImagesExportable={false}
                     isProjectActive={!!activeProject}
-                    onSaveToCloud={() => {}}
+                    onSaveToCloud={handleSaveToCloud}
                     onLoadFromCloud={() => {}}
-                    isCloudSaving={false}
-                    cloudStorageUsed={0}
+                    isCloudSaving={isCloudSaving}
+                    cloudStorageUsed={cloudStorageUsed}
                     extension=".fabFlow"
                 />
             </div>

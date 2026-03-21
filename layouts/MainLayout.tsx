@@ -62,7 +62,7 @@ const MainLayout: React.FC = () => {
                                 `px-3 py-2 rounded-md flex items-center gap-2 transition-all text-sm font-medium ${
                                 isActive
                                     ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20 shadow-[0_0_10px_rgba(168,85,247,0.3)]'
-                                    : 'text-zinc-400 hover:bg-zinc-800 hover:text-purple-300'
+                                    : 'text-purple-500/70 hover:bg-zinc-800 hover:text-purple-400'
                                 }`
                             }
                         >
@@ -72,10 +72,10 @@ const MainLayout: React.FC = () => {
                         <NavLink
                             to={`/fabflow${suffix}`}
                             className={({ isActive }) =>
-                                `px-3 py-2 rounded-md flex items-center gap-2 transition-all text-sm font-medium text-yellow-500/80 ${
+                                `px-3 py-2 rounded-md flex items-center gap-2 transition-all text-sm font-medium ${
                                 isActive
-                                    ? 'bg-yellow-500/10 text-yellow-500 border border-yellow-500/20'
-                                    : 'hover:bg-zinc-800 hover:text-yellow-400'
+                                    ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 shadow-[0_0_10px_rgba(234,179,8,0.3)]'
+                                    : 'text-yellow-500/70 hover:bg-zinc-800 hover:text-yellow-400'
                                 }`
                             }
                         >
@@ -88,7 +88,7 @@ const MainLayout: React.FC = () => {
                                 `px-3 py-2 rounded-md flex items-center gap-2 transition-all text-sm font-medium ${
                                 isActive
                                     ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.3)]'
-                                    : 'text-zinc-400 hover:bg-zinc-800 hover:text-emerald-300'
+                                    : 'text-emerald-500/70 hover:bg-zinc-800 hover:text-emerald-400'
                                 }`
                             }
                         >
@@ -100,8 +100,8 @@ const MainLayout: React.FC = () => {
                             className={({ isActive }) =>
                                 `px-3 py-2 rounded-md flex items-center gap-2 transition-all text-sm font-medium ${
                                 isActive
-                                    ? 'bg-red-500/10 text-red-500 border border-red-500/20 shadow-[0_0_10px_rgba(239,68,68,0.3)]'
-                                    : 'text-zinc-400 hover:bg-zinc-800 hover:text-red-400'
+                                    ? 'bg-red-500/10 text-red-400 border border-red-500/20 shadow-[0_0_10px_rgba(239,68,68,0.3)]'
+                                    : 'text-red-500/70 hover:bg-zinc-800 hover:text-red-400'
                                 }`
                             }
                         >
@@ -114,7 +114,7 @@ const MainLayout: React.FC = () => {
                                 `px-3 py-2 rounded-md flex items-center gap-2 transition-all text-sm font-medium ${
                                 isActive
                                     ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 shadow-[0_0_10px_rgba(6,182,212,0.3)]'
-                                    : 'text-zinc-400 hover:bg-zinc-800 hover:text-cyan-300'
+                                    : 'text-cyan-500/70 hover:bg-zinc-800 hover:text-cyan-400'
                                 }`
                             }
                         >

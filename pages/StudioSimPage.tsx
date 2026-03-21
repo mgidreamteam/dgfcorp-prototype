@@ -6,8 +6,8 @@ import FileMenuBar from '../components/MenuBar';
 import { loadStateFromStorage, useAutoSave } from '../hooks/useAutoSave';
 import { DesignProject, CloudProject, DesignStatus, SimulationBoundaryCondition, AgentLog } from '../types';
 import { auth, db, storage } from '../services/firebase';
-import { collection, getDocs, doc, deleteDoc } from 'firebase/firestore';
-import { ref, getDownloadURL, deleteObject } from 'firebase/storage';
+import { collection, getDocs, doc, deleteDoc, setDoc } from 'firebase/firestore';
+import { ref, getDownloadURL, deleteObject, uploadString } from 'firebase/storage';
 import ThemePanel from '../components/ThemePanel';
 import DesignInput from '../components/DesignInput';
 import { extractSimulationConstraints } from '../services/gemini';
@@ -140,19 +140,35 @@ const StudioSimPage: React.FC = () => {
   };
 
   const handleSaveToCloud = async () => {
-      const dummyPayload = JSON.stringify({ telemetry: "sim_data", date: Date.now() });
-      const size = new Blob([dummyPayload]).size;
-      if (size > 10 * 1024 * 1024) {
-          alert("Simulation output exceeds 10MB cloud limit. Archival blocked to preserve bandwidth.");
-          return;
-      }
-      setIsCloudSaving(true);
-      setTimeout(() => {
-          setIsCloudSaving(false);
-          alert("Simulation payload validated under 10MB and synced to Cloud Node.");
-          window.dispatchEvent(new Event('update-cloud-quota'));
-      }, 600);
+    if (!activeProject || !auth.currentUser) return;
+    try {
+        setIsCloudSaving(true);
+        const dataStr = JSON.stringify(activeProject);
+        const sizeBytes = new Blob([dataStr]).size;
+        if (sizeBytes > 10 * 1024 * 1024) throw new Error("Payload exceeds limit.");
+
+        const fileRef = ref(storage, `users/${auth.currentUser.uid}/projects/${activeProject.id}.dream`);
+        await uploadString(fileRef, dataStr, 'raw');
+
+        const cloudMeta: CloudProject = { id: activeProject.id, name: activeProject.name, sizeBytes, uploadedAt: Date.now() };
+        await setDoc(doc(db, `users/${auth.currentUser.uid}/cloudProjects`, activeProject.id), cloudMeta);
+        
+        await fetchCloudProjects();
+        window.dispatchEvent(new Event('update-cloud-quota'));
+    } catch (err: any) {
+        alert(`Cloud Delivery Blocked: ${err.message}`);
+    } finally {
+        setIsCloudSaving(false);
+    }
   };
+
+  const handleDeleteProject = () => {
+      if (!activeProject || !window.confirm(`Delete local project "${activeProject.name}"?`)) return;
+      setProjects(prev => prev.filter(p => p.id !== activeProject.id));
+      navigate('/studiosim');
+  };
+
+  const cloudStorageUsed = React.useMemo(() => cloudProjects.reduce((acc, p) => acc + p.sizeBytes, 0), [cloudProjects]);
 
   const handleSaveLocal = async (fileName: string) => {
       const dummyPayload = JSON.stringify({ project: activeProjectId, customConditions: boundaryConditions, exportFormat: 'SIM.0' }, null, 2);
@@ -278,16 +294,16 @@ const StudioSimPage: React.FC = () => {
                     setActiveProjectId(id);
                     localStorage.setItem('lastActiveStudioProjectId', id);
                 }}
-                onNewProject={() => {}}
+                onNewProject={() => navigate('/studio')}
                 onRenameProject={() => {}} 
                 triggerHierarchyView={triggerHierarchyView} 
                 onHierarchyViewClosed={() => setTriggerHierarchyView(null)} 
-                cloudProjects={projects.filter(p => false)} // Hide cloud projects here since we only manage local context
+                cloudProjects={cloudProjects} 
                 onPrepareForSim={(project, target) => {
                     if (target === 'studiosim') navigate(`/studiosim/${project.id}`);
                     else if (target === 'fabflow') navigate(`/fabflow/${project.id}`);
                 }}
-                onSaveToCloud={() => {}}
+                onSaveToCloud={handleSaveToCloud}
                 onLoadFromCloud={handleDownloadFromCloud}
                 onDeleteFromCloud={handleDeleteFromCloud}
                 onDeleteLocalAll={() => {}}
@@ -297,21 +313,21 @@ const StudioSimPage: React.FC = () => {
         <ThemePanel translucent className="flex flex-col h-full overflow-hidden relative z-10 border border-[#00ffcc]/10 shadow-[inset_0_0_50px_rgba(0,255,204,0.02)]">
             <div className="border-b border-zinc-800 bg-black/40">
                 <FileMenuBar
-                    onNewProject={() => {}}
+                    onNewProject={() => navigate('/studio')}
                     onSave={() => {}}
                     onImport={() => {}}
                     onDownload={handleDownloadProject}
                     onCloseProject={() => navigate('/studiosim')}
-                    onDeleteProject={() => {}}
+                    onDeleteProject={handleDeleteProject}
                     onExportStl={() => {}}
                     isStlReady={!!activeProject?.assetUrls?.stl}
                     onExportImages={() => {}}
                     areImagesExportable={false}
                     isProjectActive={!!activeProject}
-                    onSaveToCloud={() => {}}
+                    onSaveToCloud={handleSaveToCloud}
                     onLoadFromCloud={handleDownloadFromCloud}
                     isCloudSaving={isCloudSaving}
-                    cloudStorageUsed={0}
+                    cloudStorageUsed={cloudStorageUsed}
                     extension=".studioSim"
                 />
             </div>

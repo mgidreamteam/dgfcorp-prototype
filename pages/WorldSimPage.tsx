@@ -11,8 +11,8 @@ import { AlertCircle, Loader2, Map as MapIcon, Globe, Navigation, ZoomIn, ZoomOu
 import { useAutoSave, loadStateFromStorage } from '../hooks/useAutoSave';
 import { useAuth } from '../contexts/AuthContext';
 import { auth, db, storage } from '../services/firebase';
-import { collection, getDocs, doc, deleteDoc } from 'firebase/firestore';
-import { ref, deleteObject } from 'firebase/storage';
+import { collection, getDocs, doc, deleteDoc, setDoc } from 'firebase/firestore';
+import { ref, deleteObject, uploadString, getDownloadURL } from 'firebase/storage';
 import { GoogleMap, useJsApiLoader } from '@react-google-maps/api';
 import ThemePanel from '../components/ThemePanel';
 
@@ -90,8 +90,51 @@ const WorldSimPage: React.FC = () => {
 
   useEffect(() => { fetchCloudProjects(); }, [fetchCloudProjects]);
 
-  const handleDeleteFromCloud = async (cloudProj: CloudProject) => {
+  const handleSaveToCloud = async () => {
+    if (!activeProject || !auth.currentUser) return;
+    try {
+        setIsCloudSaving(true);
+        const dataStr = JSON.stringify(activeProject);
+        const sizeBytes = new Blob([dataStr]).size;
+        if (sizeBytes > 10 * 1024 * 1024) throw new Error("Payload exceeds limit.");
+
+        const fileRef = ref(storage, `users/${auth.currentUser.uid}/projects/${activeProject.id}.dream`);
+        await uploadString(fileRef, dataStr, 'raw');
+
+        const cloudMeta: CloudProject = { id: activeProject.id, name: activeProject.name, sizeBytes, uploadedAt: Date.now() };
+        await setDoc(doc(db, `users/${auth.currentUser.uid}/cloudProjects`, activeProject.id), cloudMeta);
+        
+        await fetchCloudProjects();
+        window.dispatchEvent(new Event('update-cloud-quota'));
+    } catch (err: any) {
+        alert(`Cloud Delivery Blocked: ${err.message}`);
+    } finally {
+        setIsCloudSaving(false);
+    }
+  };
+
+  const handleDownloadFromCloud = async (cloudProj: CloudProject) => {
       if (!auth.currentUser) return;
+      try {
+          const fileRef = ref(storage, `users/${auth.currentUser.uid}/projects/${cloudProj.id}.dream`);
+          const url = await getDownloadURL(fileRef);
+          const response = await fetch(url);
+          const text = await response.text();
+          const projectData = JSON.parse(text) as DesignProject;
+          if (projectData.id && projectData.name) {
+              setProjects(prev => {
+                  const filtered = prev.filter(p => p.id !== projectData.id);
+                  return [projectData, ...filtered];
+              });
+              navigate(`/worldsim/${projectData.id}`);
+          }
+      } catch (err: any) {
+          alert(`Cloud Fetch Failed: ${err.message}`);
+      }
+  };
+
+  const handleDeleteFromCloud = async (cloudProj: CloudProject) => {
+      if (!auth.currentUser || !window.confirm("Permanently delete this cloud asset?")) return;
       try {
           setIsCloudSaving(true);
           const fileRef = ref(storage, `users/${auth.currentUser.uid}/projects/${cloudProj.id}.dream`);
@@ -307,7 +350,8 @@ const WorldSimPage: React.FC = () => {
             onExportImages={() => {}}
             areImagesExportable={false}
             isProjectActive={!!activeProject} 
-            onSaveToCloud={async () => {}}
+            onSaveToCloud={handleSaveToCloud}
+            onLoadFromCloud={handleDownloadFromCloud}
             isCloudSaving={isCloudSaving}
             cloudStorageUsed={cloudStorageUsed}
             extension=".tSim"
@@ -322,6 +366,7 @@ const WorldSimPage: React.FC = () => {
             triggerHierarchyView={triggerHierarchyView} 
             onHierarchyViewClosed={() => setTriggerHierarchyView(null)} 
             cloudProjects={cloudProjects}
+            onLoadCloudProject={handleDownloadFromCloud}
             onDeleteCloudProject={handleDeleteFromCloud}
           />
           
