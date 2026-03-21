@@ -3,7 +3,7 @@ import { DesignProject, DesignStatus } from '../types';
 import AssetViewer from './AssetViewer';
 import SpecViewer from './SpecViewer';
 import { vendors } from '../data/vendors';
-import { Loader2, RefreshCw } from 'lucide-react';
+import { Loader2, RefreshCw, Eye, EyeOff, XCircle } from 'lucide-react';
 import { Factory } from 'lucide-react';
 
 interface ProjectViewProps {
@@ -15,14 +15,68 @@ interface ProjectViewProps {
 }
 
 const ProjectView: React.FC<ProjectViewProps> = ({ project, isGenerating, onRetry, onStartOver, onRerunSimulation }) => {
+  const hasSpecs = !!project.specs;
+  const hasElectronics = hasSpecs ? project.specs!.bom.some(i => i.type.toLowerCase().includes('electronic')) : true;
+  const hasMechanical = hasSpecs ? project.specs!.bom.some(i => !i.type.toLowerCase().includes('electronic')) : true;
+
+  const [toggles, setToggles] = React.useState({
+    rendered: true,
+    exploded: true,
+    circuit: true,
+    pcb: true
+  });
+
+  React.useEffect(() => {
+    if (hasSpecs) {
+      setToggles({
+        rendered: hasMechanical,
+        exploded: hasMechanical,
+        circuit: hasElectronics,
+        pcb: hasElectronics
+      });
+    }
+  }, [hasSpecs, hasElectronics, hasMechanical]);
+
+  const toggleView = (key: keyof typeof toggles, isApplicable: boolean) => {
+    if (!isApplicable) return;
+    setToggles(prev => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const ToggleButton = ({ label, visibilityKey, isApplicable }: { label: string, visibilityKey: keyof typeof toggles, isApplicable: boolean }) => (
+    <button 
+        onClick={() => toggleView(visibilityKey, isApplicable)}
+        disabled={!isApplicable}
+        className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-detail font-medium transition-all border ${
+            !isApplicable 
+            ? 'opacity-50 cursor-not-allowed border-zinc-800 bg-zinc-900/50 text-zinc-500' 
+            : toggles[visibilityKey] 
+                ? 'border-white/20 bg-white/10 text-white' 
+                : 'border-zinc-700 bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white'
+        }`}
+    >
+        {!isApplicable ? <XCircle className="w-3.5 h-3.5" /> : toggles[visibilityKey] ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+        {label} {!isApplicable && '(N/A)'}
+    </button>
+  );
+
   return (
     <div className="flex flex-col gap-8 pb-24">
+      <div className="flex flex-wrap items-center gap-3 mb-[-1rem] bg-zinc-900/40 p-3 rounded-xl border border-zinc-800/60 no-print">
+         <span className="text-detail font-bold text-zinc-500 uppercase tracking-wider mr-2">Viewport Toggles:</span>
+         <ToggleButton label="Rendered CAD" visibilityKey="rendered" isApplicable={hasMechanical} />
+         <ToggleButton label="Exploded CAD" visibilityKey="exploded" isApplicable={hasMechanical} />
+         <ToggleButton label="Circuit Diagram" visibilityKey="circuit" isApplicable={hasElectronics} />
+         <ToggleButton label="PCB Layout" visibilityKey="pcb" isApplicable={hasElectronics} />
+      </div>
+
       <div className="asset-viewer-grid no-print">
         <AssetViewer 
           assetUrls={project.assetUrls} 
           status={project.status} 
           productName={project.specs?.productName || "Product"} 
-          hasElectronics={project.specs?.bom.some(i => i.type.toLowerCase() === 'electronic') ?? false}
+          hasElectronics={hasElectronics}
+          hasMechanical={hasMechanical}
+          visibleToggles={toggles}
           circuitComponents={project.circuitComponents}
         />
       </div>
@@ -83,6 +137,7 @@ const ProjectView: React.FC<ProjectViewProps> = ({ project, isGenerating, onRetr
             simulationData={project.simulationData} 
             openScadCode={project.openScadCode}
             onRerunSimulation={onRerunSimulation}
+            hasElectronics={hasElectronics}
           />
         </>
       ) : (!isGenerating && project.status !== DesignStatus.ERROR && (

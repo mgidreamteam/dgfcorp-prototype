@@ -61,15 +61,22 @@ const WorldSimPage: React.FC = () => {
 
   useEffect(() => {
     if (!hasInitiallyLoaded.current && !projectId && projects.length > 0) {
-      const mostRecentProject = [...projects].sort((a, b) => b.createdAt - a.createdAt)[0];
-      if (mostRecentProject) {
-        navigate(`/worldsim/${mostRecentProject.id}`, { replace: true });
+      const lastActiveId = localStorage.getItem('lastActiveWorldSimProjectId');
+      const targetId = (lastActiveId && projects.some(p => p.id === lastActiveId))
+          ? lastActiveId 
+          : [...projects].sort((a, b) => b.createdAt - a.createdAt)[0]?.id;
+          
+      if (targetId) {
+        navigate(`/worldsim/${targetId}`, { replace: true });
         hasInitiallyLoaded.current = true;
         return;
       }
     }
     hasInitiallyLoaded.current = true;
     setActiveProjectId(projectId || null);
+    if (projectId) {
+      localStorage.setItem('lastActiveWorldSimProjectId', projectId);
+    }
   }, [projectId, projects, navigate]);
 
   const fetchCloudProjects = useCallback(async () => {
@@ -233,13 +240,20 @@ const WorldSimPage: React.FC = () => {
             areImagesExportable={false}
             isProjectActive={!!activeProject} 
             onSaveToCloud={async () => {}}
-            onLoadFromCloud={() => setIsCloudModalOpen(true)}
             isCloudSaving={isCloudSaving}
             cloudStorageUsed={cloudStorageUsed}
           />
         </ThemePanel>
         <div className="flex-1 grid overflow-hidden gap-2" style={{ gridTemplateColumns: `256px minmax(500px, 1fr) 6px ${alonPanelWidth}px` }}>
-          <ProjectSidebar projects={projects} activeProjectId={activeProjectId} onNewProject={handleNewProject} onRenameProject={handleRenameProject} triggerHierarchyView={triggerHierarchyView} onHierarchyViewClosed={() => setTriggerHierarchyView(null)} />
+          <ProjectSidebar 
+            projects={projects} 
+            activeProjectId={activeProjectId} 
+            onNewProject={handleNewProject} 
+            onRenameProject={handleRenameProject} 
+            triggerHierarchyView={triggerHierarchyView} 
+            onHierarchyViewClosed={() => setTriggerHierarchyView(null)} 
+            cloudProjects={cloudProjects}
+          />
           
           <ThemePanel translucent className="flex flex-col h-full overflow-hidden relative z-10 p-0">
             {/* 2D Vector Stabilized HUD Controls */}

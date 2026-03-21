@@ -74,7 +74,7 @@ const ParameterDialog: React.FC<ParameterDialogProps> = ({ missingParams, origin
                 Constrained mode: All parameters are required.
               </div>
             )}
-            <p className="text-zinc-300 mb-4">Please provide values for the following parameters, or let Ñolmo make reasonable assumptions.</p>
+            <p className="text-zinc-300 mb-4">Please provide values for the following parameters, or let Ñolmo (Nyo-Olmo) make reasonable assumptions.</p>
             <div className="space-y-4">
               {missingParams.map(param => (
                 <div key={param}>

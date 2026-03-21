@@ -156,10 +156,12 @@ interface AssetViewerProps {
   status: DesignStatus;
   productName: string;
   hasElectronics: boolean;
+  hasMechanical: boolean;
+  visibleToggles: { rendered: boolean, exploded: boolean, circuit: boolean, pcb: boolean };
   circuitComponents: CircuitComponent[] | null;
 }
 
-const AssetViewer: React.FC<AssetViewerProps> = ({ assetUrls, status, productName, hasElectronics, circuitComponents }) => {
+const AssetViewer: React.FC<AssetViewerProps> = ({ assetUrls, status, productName, hasElectronics, hasMechanical, circuitComponents, visibleToggles }) => {
   const [modalImageUrl, setModalImageUrl] = useState<string | null>(null);
   const { username } = useAuth();
 
@@ -233,51 +235,59 @@ const AssetViewer: React.FC<AssetViewerProps> = ({ assetUrls, status, productNam
     <>
       {modalImageUrl && <ImageModal imageUrl={modalImageUrl} onClose={() => setModalImageUrl(null)} />}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <QuadViewPanel
-          title="Rendered View"
-          icon={ImageIcon}
-          assetUrl={assetUrls?.rendered || null}
-          isLoading={status === DesignStatus.GENERATING_RENDER}
-          isApplicable={true}
-          productName={productName}
-          viewType="rendered"
-          onViewFullScreen={setModalImageUrl}
-          onDownloadImage={handleDownload}
-        />
-        <QuadViewPanel
-          title="Exploded View"
-          icon={Layers3}
-          assetUrl={assetUrls?.exploded || null}
-          isLoading={status === DesignStatus.GENERATING_EXPLODED_VIEW}
-          isApplicable={true}
-          productName={productName}
-          viewType="exploded"
-          onViewFullScreen={setModalImageUrl}
-          onDownloadImage={handleDownload}
-        />
-        <QuadViewPanel
-          title="Circuit Diagram"
-          icon={CircuitBoard}
-          assetUrl={assetUrls?.circuit || null}
-          isLoading={status === DesignStatus.GENERATING_CIRCUIT}
-          isApplicable={hasElectronics}
-          productName={productName}
-          viewType="circuit"
-          circuitComponents={circuitComponents}
-          onViewFullScreen={setModalImageUrl}
-          onDownloadImage={handleDownload}
-        />
-        <QuadViewPanel
-          title="PCB Layout"
-          icon={LayoutGrid}
-          assetUrl={assetUrls?.pcb || null}
-          isLoading={status === DesignStatus.GENERATING_PCB}
-          isApplicable={hasElectronics}
-          productName={productName}
-          viewType="pcb"
-          onViewFullScreen={setModalImageUrl}
-          onDownloadImage={handleDownload}
-        />
+        {visibleToggles.rendered && (
+            <QuadViewPanel
+              title="Rendered View"
+              icon={ImageIcon}
+              assetUrl={assetUrls?.rendered || null}
+              isLoading={status === DesignStatus.GENERATING_RENDER}
+              isApplicable={hasMechanical}
+              productName={productName}
+              viewType="rendered"
+              onViewFullScreen={setModalImageUrl}
+              onDownloadImage={handleDownload}
+            />
+        )}
+        {visibleToggles.exploded && (
+            <QuadViewPanel
+              title="Exploded View"
+              icon={Layers3}
+              assetUrl={assetUrls?.exploded || null}
+              isLoading={status === DesignStatus.GENERATING_EXPLODED_VIEW}
+              isApplicable={hasMechanical}
+              productName={productName}
+              viewType="exploded"
+              onViewFullScreen={setModalImageUrl}
+              onDownloadImage={handleDownload}
+            />
+        )}
+        {visibleToggles.circuit && (
+            <QuadViewPanel
+              title="Circuit Diagram"
+              icon={CircuitBoard}
+              assetUrl={assetUrls?.circuit || null}
+              isLoading={status === DesignStatus.GENERATING_CIRCUIT}
+              isApplicable={hasElectronics}
+              productName={productName}
+              viewType="circuit"
+              circuitComponents={circuitComponents}
+              onViewFullScreen={setModalImageUrl}
+              onDownloadImage={handleDownload}
+            />
+        )}
+        {visibleToggles.pcb && (
+            <QuadViewPanel
+              title="PCB Layout"
+              icon={LayoutGrid}
+              assetUrl={assetUrls?.pcb || null}
+              isLoading={status === DesignStatus.GENERATING_PCB}
+              isApplicable={hasElectronics}
+              productName={productName}
+              viewType="pcb"
+              onViewFullScreen={setModalImageUrl}
+              onDownloadImage={handleDownload}
+            />
+        )}
       </div>
     </>
   );

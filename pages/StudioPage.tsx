@@ -18,6 +18,7 @@ import ThemePanel from '../components/ThemePanel';
 import { auth, db, storage } from '../services/firebase';
 import { collection, doc, setDoc, getDocs, deleteDoc } from 'firebase/firestore';
 import { ref, uploadString, getDownloadURL, deleteObject } from 'firebase/storage';
+import ExportStlModal from '../components/ExportStlModal';
 
 const CloudLoadModal: React.FC<{ 
     isOpen: boolean; 
@@ -80,7 +81,7 @@ const generateId = () => (typeof crypto !== 'undefined' && typeof crypto.randomU
 
 const PROHIBITED_KEYWORDS = [
   'weapon', 'gun', 'firearm', 'pistol', 'rifle', 'shotgun', 'revolver',
-  'missile', 'bomb', 'explosive', 'grenade', 'knife', 'blade', 'sword',
+  'missile', 'bomb', 'explosive', 'grenade', 'knife', 'sword',
   'dagger', 'munition', 'ammunition', 'cartridge', 'bullet', 'ordnance',
   'military-grade', 'itar', 'export controlled', 'classified'
 ];
@@ -109,6 +110,7 @@ const StudioPage: React.FC = () => {
   const [isCloudSaving, setIsCloudSaving] = useState(false);
   const [isCloudModalOpen, setIsCloudModalOpen] = useState(false);
   const [cloudLoadingAction, setCloudLoadingAction] = useState<string | null>(null);
+  const [isExportStlModalOpen, setIsExportStlModalOpen] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   
@@ -122,9 +124,13 @@ const StudioPage: React.FC = () => {
 
   useEffect(() => {
     if (!hasInitiallyLoaded.current && !projectId && projects.length > 0) {
-      const mostRecentProject = [...projects].sort((a, b) => b.createdAt - a.createdAt)[0];
-      if (mostRecentProject) {
-        navigate(`/studio/${mostRecentProject.id}`, { replace: true });
+      const lastActiveId = localStorage.getItem('lastActiveStudioProjectId');
+      const targetId = (lastActiveId && projects.some(p => p.id === lastActiveId))
+          ? lastActiveId 
+          : [...projects].sort((a, b) => b.createdAt - a.createdAt)[0]?.id;
+          
+      if (targetId) {
+        navigate(`/studio/${targetId}`, { replace: true });
         hasInitiallyLoaded.current = true;
         return;
       }
@@ -133,6 +139,7 @@ const StudioPage: React.FC = () => {
 
     setActiveProjectId(projectId || null);
     if (projectId) {
+      localStorage.setItem('lastActiveStudioProjectId', projectId);
       const project = projects.find(p => p.id === projectId);
       if (project?.specs) {
         setTriggerHierarchyView(projectId);
@@ -368,7 +375,7 @@ const StudioPage: React.FC = () => {
               setValidationState({ missingParams: analysis.missingParams, prompt });
               return;
             }
-            addLog({ content: `Unconstrained: Ñolmo will assume values for: ${analysis.missingParams.join(', ')}.`, type: 'output', projectId: activeProjectId });
+            addLog({ content: `Unconstrained: Ñolmo (Nyo-Olmo) will assume values for: ${analysis.missingParams.join(', ')}.`, type: 'output', projectId: activeProjectId });
           }
           await runFullGenerationFlow(prompt, activeProjectId, DesignStatus.GENERATING_SPECS, project.specs);
           break;
@@ -491,7 +498,6 @@ const StudioPage: React.FC = () => {
               });
               navigate(`/studio/${projectData.id}`);
               addLog({ content: `Recovered global asset "${projectData.name}" via binary stream.`, type: 'output' });
-              setIsCloudModalOpen(false);
           } else {
               throw new Error("Corrupted asset architecture.");
           }
@@ -581,18 +587,45 @@ const StudioPage: React.FC = () => {
   };
 
   const handleExportStl = () => {
-    if (!activeProject?.assetUrls?.stl) return;
-    const blob = new Blob([activeProject.assetUrls.stl], { type: 'model/stl' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    const timestamp = new Date().toISOString().slice(0, 19).replace('T', '_').replace(/:/g, '-');
-    link.download = `${activeProject.name.replace(/ /g, '_')}_model_${timestamp}.stl`;
-    link.href = url;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-    addLog({ content: `Exported STL model for "${activeProject.name}".`, type: 'output', projectId: activeProject.id });
+    if (!activeProject?.openScadCode) return;
+    setIsExportStlModalOpen(true);
+  };
+
+  const handleConfirmStlExport = async (filename: string, vertices: number, meshSize: number, fileHandle?: any) => {
+    if (!activeProject?.openScadCode || !activeProject?.specs) return;
+    
+    try {
+        addLog({ content: `Rendering high-fidelity STL ($fn=${vertices}, $fs=${meshSize})...`, type: 'output', projectId: activeProject.id });
+        
+        const modifiedScad = `$fn = ${vertices};\n$fs = ${meshSize};\n\n${activeProject.openScadCode}`;
+        const newStlData = await generateStlFile(activeProject.specs, modifiedScad);
+        
+        const blob = new Blob([newStlData], { type: 'model/stl' });
+        const finalFilename = filename.endsWith('.stl') ? filename : `${filename}.stl`;
+
+        if (fileHandle) {
+            const writable = await fileHandle.createWritable();
+            await writable.write(blob);
+            await writable.close();
+        } else {
+            // Fallback for browsers that don't support File System Access API
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.download = finalFilename;
+            link.href = url;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+        
+        addLog({ content: `Saved high-fidelity STL model.`, type: 'output', projectId: activeProject.id });
+    } catch (err: any) {
+        if (err.name !== 'AbortError') {
+            addLog({ content: `Failed to save high-fidelity STL: ${err.message}`, type: 'error', projectId: activeProject.id });
+            throw err;
+        }
+    }
   };
   
   const handleExportImages = () => {
@@ -620,13 +653,19 @@ const StudioPage: React.FC = () => {
       {validationState && activeProject && <ParameterDialog missingParams={validationState.missingParams} originalPrompt={validationState.prompt} onCancel={() => setValidationState(null)} onSubmit={(p) => { setValidationState(null); handleCreateDesign(p); }} isConstrained={activeProject.isConstrained} />}
       {retryState && <RetryDialog project={retryState} onCancel={() => setRetryState(null)} onSubmit={handleRetryWithGuidance} />}
       {isDeleteModalVisible && activeProject && <DeleteConfirmationDialog projectName={activeProject.name} onConfirm={confirmDeleteProject} onCancel={() => setIsDeleteModalVisible(false)} />}
+      <ExportStlModal 
+        isOpen={isExportStlModalOpen}
+        onClose={() => setIsExportStlModalOpen(false)}
+        onExport={handleConfirmStlExport}
+        defaultFilename={activeProject ? `${activeProject.name.replace(/ /g, '_')}_model_${new Date().toISOString().slice(0, 19).replace('T', '_').replace(/:/g, '-')}` : 'model'}
+      />
       <CloudLoadModal 
-        isOpen={isCloudModalOpen} 
-        onClose={() => setIsCloudModalOpen(false)} 
-        projects={cloudProjects} 
-        onLoad={handleDownloadFromCloud} 
-        onDelete={handleDeleteFromCloud} 
-        loadingAction={cloudLoadingAction} 
+        isOpen={false} 
+        onClose={() => {}} 
+        projects={[]} 
+        onLoad={() => {}} 
+        onDelete={() => {}} 
+        loadingAction={null} 
       />
       
       <div className="h-full flex flex-col gap-2 p-2">
@@ -644,13 +683,22 @@ const StudioPage: React.FC = () => {
           areImagesExportable={!!(activeProject?.assetUrls?.rendered || activeProject?.assetUrls?.exploded)}
           isProjectActive={!!activeProject} 
           onSaveToCloud={handleSaveToCloud}
-          onLoadFromCloud={() => setIsCloudModalOpen(true)}
           isCloudSaving={isCloudSaving}
           cloudStorageUsed={cloudStorageUsed}
         />
         </ThemePanel>
         <div className="flex-1 grid overflow-hidden gap-2" style={{ gridTemplateColumns }}>
-          <ProjectSidebar projects={projects} activeProjectId={activeProjectId} onNewProject={handleNewProject} onRenameProject={handleRenameProject} triggerHierarchyView={triggerHierarchyView} onHierarchyViewClosed={() => setTriggerHierarchyView(null)} />
+          <ProjectSidebar 
+            projects={projects} 
+            activeProjectId={activeProjectId} 
+            onNewProject={handleNewProject} 
+            onRenameProject={handleRenameProject} 
+            triggerHierarchyView={triggerHierarchyView} 
+            onHierarchyViewClosed={() => setTriggerHierarchyView(null)} 
+            cloudProjects={cloudProjects}
+            onLoadCloudProject={handleDownloadFromCloud}
+            cloudLoadingAction={cloudLoadingAction}
+          />
           <ThemePanel translucent className="flex flex-col h-full overflow-hidden relative z-10">
             <div className="px-4 py-3 border-b border-zinc-800 shrink-0 bg-transparent">
                 <h2 className="text-subheading font-normal text-white uppercase tracking-tighter">CANVAS</h2>
@@ -680,7 +728,7 @@ const StudioPage: React.FC = () => {
           <ThemePanel translucent className="h-full overflow-hidden relative z-10">
              <div className="flex flex-col h-full overflow-hidden">
                 <div className="px-4 py-3 border-b border-zinc-800 shrink-0 bg-transparent">
-                    <h2 className="text-subheading font-normal text-white uppercase tracking-tighter">ÑOLMO</h2>
+                    <h2 className="text-subheading font-normal text-white uppercase tracking-tighter">ÑOLMO (NYO-OLMO)</h2>
                 </div>
                 <div className="flex-1 p-4 overflow-hidden">
                     <DesignInput onSubmit={handleCreateDesign} isGenerating={isGenerating} agentLogs={agentLogs.filter(log => !log.projectId || log.projectId === activeProjectId)} activeProject={activeProject} onUpdateProjectConstraint={handleUpdateProjectConstraint} />

@@ -44,7 +44,7 @@ const UserManual: React.FC<UserManualProps> = ({ onClose }) => {
           <section>
             <h3 className="text-panel-title font-bold uppercase tracking-wider text-white mb-2">Welcome!</h3>
             <p className="text-zinc-300 leading-relaxed">
-              Welcome to the D.R.E.A.M. (Decentralized Resource Engineering and Agentic Manufacturing) Studio. You're working with Ñolmo, your AI partner for hardware design and manufacturing. This guide will walk you through the key features.
+              Welcome to the D.R.E.A.M. (Decentralized Resource Engineering and Agentic Manufacturing) Studio. You're working with Ñolmo (Nyo-Olmo), your AI partner for hardware design and manufacturing. This guide will walk you through the key features.
             </p>
           </section>
 
@@ -60,13 +60,13 @@ const UserManual: React.FC<UserManualProps> = ({ onClose }) => {
           <section>
             <h3 className="text-panel-title font-bold uppercase tracking-wider text-white mb-2">2. The Design Process</h3>
             <ul className="list-disc list-inside space-y-2 text-zinc-300 leading-relaxed">
-              <li><span className="font-semibold text-zinc-200">Prompting Ñolmo:</span> Use the main text area in the right-hand panel to describe the product you want to create. Be as descriptive as possible. You can also upload specifications from a `.txt` or `.md` file using the "Upload Specs" button.</li>
-              <li><span className="font-semibold text-zinc-200">Iterative Design:</span> Ñolmo remembers the context of your current project. You can provide follow-up prompts like "make the casing out of aluminum instead" to refine the design without starting over.</li>
+              <li><span className="font-semibold text-zinc-200">Prompting Ñolmo (Nyo-Olmo):</span> Use the main text area in the right-hand panel to describe the product you want to create. Be as descriptive as possible. You can also upload specifications from a `.txt` or `.md` file using the "Upload Specs" button.</li>
+              <li><span className="font-semibold text-zinc-200">Iterative Design:</span> Ñolmo (Nyo-Olmo) remembers the context of your current project. You can provide follow-up prompts like "make the casing out of aluminum instead" to refine the design without starting over.</li>
               <li>
                 <span className="font-semibold text-zinc-200">Design Modes:</span>
                 <ul className="list-[circle] list-inside ml-4 mt-1">
-                    <li><span className="font-medium text-zinc-200">Unconstrained (Default):</span> If you omit key details, Ñolmo will make reasonable, industry-standard assumptions to complete the design. These assumptions will be listed in the specifications.</li>
-                    <li><span className="font-medium text-zinc-200">Constrained:</span> If you check this box, Ñolmo will require you to provide values for all critical parameters before proceeding.</li>
+                    <li><span className="font-medium text-zinc-200">Unconstrained (Default):</span> If you omit key details, Ñolmo (Nyo-Olmo) will make reasonable, industry-standard assumptions to complete the design. These assumptions will be listed in the specifications.</li>
+                    <li><span className="font-medium text-zinc-200">Constrained:</span> If you check this box, Ñolmo (Nyo-Olmo) will require you to provide values for all critical parameters before proceeding.</li>
                 </ul>
               </li>
             </ul>
@@ -74,12 +74,12 @@ const UserManual: React.FC<UserManualProps> = ({ onClose }) => {
 
           <section>
             <h3 className="text-panel-title font-bold uppercase tracking-wider text-white mb-2">3. The Generation Pipeline</h3>
-            <p className="text-zinc-300 mb-2 leading-relaxed">Once you submit a prompt, Ñolmo executes a series of steps:</p>
+            <p className="text-zinc-300 mb-2 leading-relaxed">Once you submit a prompt, Ñolmo (Nyo-Olmo) executes a series of steps:</p>
             <ol className="list-decimal list-inside space-y-2 text-zinc-300 leading-relaxed">
               <li><span className="font-semibold text-zinc-200">Engineering Specs:</span> Generates a detailed technical breakdown, including Bill of Materials (BOM), dimensions, and materials.</li>
               <li><span className="font-semibold text-zinc-200">Rendered Concept:</span> Creates a photorealistic product shot.</li>
               <li><span className="font-semibold text-zinc-200">Exploded View:</span> Shows an assembly diagram of all components.</li>
-              <li><span className="font-semibold text-zinc-200">Circuit & PCB:</span> If your design includes electronics, Ñolmo will generate a schematic and a printed circuit board layout.</li>
+              <li><span className="font-semibold text-zinc-200">Circuit & PCB:</span> If your design includes electronics, Ñolmo (Nyo-Olmo) will generate a schematic and a printed circuit board layout.</li>
             </ol>
              <p className="text-zinc-400 text-detail mt-2 leading-relaxed">The four main visual outputs are displayed simultaneously in a 2x2 grid for a comprehensive overview.</p>
           </section>
@@ -89,7 +89,7 @@ const UserManual: React.FC<UserManualProps> = ({ onClose }) => {
             <p className="text-zinc-300 mb-2 leading-relaxed">If a step fails, you have two options:</p>
             <ul className="list-disc list-inside space-y-2 text-zinc-300 leading-relaxed">
               <li><span className="font-semibold text-zinc-200">Start Over:</span> Discards the failed attempt and re-runs the entire process from your original prompt.</li>
-              <li><span className="font-semibold text-zinc-200">Retry with Guidance:</span> This is the recommended option. A dialog will appear, allowing you to give Ñolmo specific corrective feedback (e.g., "The render should show the product on a white background"). Ñolmo will use this new information to re-attempt only the failed step.</li>
+              <li><span className="font-semibold text-zinc-200">Retry with Guidance:</span> This is the recommended option. A dialog will appear, allowing you to give Ñolmo (Nyo-Olmo) specific corrective feedback (e.g., "The render should show the product on a white background"). Ñolmo (Nyo-Olmo) will use this new information to re-attempt only the failed step.</li>
             </ul>
           </section>
 

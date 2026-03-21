@@ -9,6 +9,7 @@ interface SpecViewerProps {
   simulationData: SimulationData | null;
   openScadCode: string | null;
   onRerunSimulation: (modification: string) => Promise<void>;
+  hasElectronics?: boolean;
 }
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF', '#FF19A3'];
@@ -207,13 +208,11 @@ const SimulationTab = React.memo(({ simulationData, onRerunSimulation }: { simul
     );
 });
 
-const SpecViewer: React.FC<SpecViewerProps> = ({ specs, vendors, simulationData, openScadCode, onRerunSimulation }) => {
+const SpecViewer: React.FC<SpecViewerProps> = ({ specs, vendors, simulationData, openScadCode, onRerunSimulation, hasElectronics = true }) => {
   type TabName = 'specs' | 'model' | 'simulation' | 'details' | 'materials' | 'network';
   const [activeTab, setActiveTab] = useState<TabName>('specs');
   
   const suggestedVendors = useMemo(() => getVendorsForBom(specs.bom, vendors), [specs.bom, vendors]);
-
-  const hasElectronics = useMemo(() => specs.bom.some(item => item.type.toLowerCase() === 'electronic'), [specs.bom]);
 
   const bomVendorMatches = useMemo(() => {
     return specs.bom.map(item => {
@@ -241,11 +240,7 @@ const SpecViewer: React.FC<SpecViewerProps> = ({ specs, vendors, simulationData,
     });
   }, [specs.bom, vendors]);
 
-  const TABS: TabName[] = ['specs', 'model'];
-  if (hasElectronics) {
-    TABS.push('simulation');
-  }
-  TABS.push('details', 'materials', 'network');
+  const TABS: TabName[] = ['specs', 'model', 'simulation', 'details', 'materials', 'network'];
 
 
   return (
@@ -256,11 +251,15 @@ const SpecViewer: React.FC<SpecViewerProps> = ({ specs, vendors, simulationData,
             {TABS.map((tabName) => (
               <button
                 key={tabName}
-                onClick={() => setActiveTab(tabName)}
+                onClick={() => tabName === 'simulation' && !hasElectronics ? null : setActiveTab(tabName)}
+                disabled={tabName === 'simulation' && !hasElectronics}
+                title={tabName === 'simulation' && !hasElectronics ? 'Not applicable for pure mechanical designs' : ''}
                 className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-body transition-colors ${
                   activeTab === tabName
                     ? 'border-white text-white'
-                    : 'border-transparent text-zinc-400 hover:text-zinc-200 hover:border-zinc-500'
+                    : tabName === 'simulation' && !hasElectronics
+                        ? 'border-transparent text-zinc-600 cursor-not-allowed'
+                        : 'border-transparent text-zinc-400 hover:text-zinc-200 hover:border-zinc-500'
                 }`}
               >
                 {tabName === 'simulation' ? 'Simulation' : tabName === 'model' ? '3D Model' : tabName.charAt(0).toUpperCase() + tabName.slice(1).replace('network', 'D.R.E.A.M. Network')}

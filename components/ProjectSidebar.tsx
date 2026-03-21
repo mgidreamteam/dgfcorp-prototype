@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import { DesignProject, BillOfMaterialItem } from '../types';
-import { Plus, Cpu, ChevronRight, ArrowLeft, Wrench, CircuitBoard, Cog, Package } from 'lucide-react';
+import { Plus, Cpu, ChevronRight, ArrowLeft, Wrench, CircuitBoard, Cog, Package, Cloud } from 'lucide-react';
 import ThemePanel from './ThemePanel';
 
 interface ProjectSidebarProps {
@@ -11,6 +11,9 @@ interface ProjectSidebarProps {
   onRenameProject: (id: string, newName: string) => void;
   triggerHierarchyView: string | null;
   onHierarchyViewClosed: () => void;
+  cloudProjects?: import('../types').CloudProject[];
+  onLoadCloudProject?: (proj: import('../types').CloudProject) => void;
+  cloudLoadingAction?: string | null;
 }
 
 const classifyComponent = (item: BillOfMaterialItem): 'Structure' | 'Circuits' | 'Motion' | 'Other' => {
@@ -96,7 +99,10 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
   onNewProject,
   onRenameProject,
   triggerHierarchyView,
-  onHierarchyViewClosed
+  onHierarchyViewClosed,
+  cloudProjects = [],
+  onLoadCloudProject,
+  cloudLoadingAction
 }) => {
   const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState('');
@@ -140,26 +146,30 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
       <div className="flex-1 slide-container">
         <div className="slide-panel flex flex-col" style={{ transform: isHierarchyVisible ? 'translateX(-100%)' : 'translateX(0)' }}>
             <div className="px-4 py-2 border-b border-zinc-800 shrink-0 bg-transparent flex items-center justify-between">
-                <h2 className="text-subheading font-normal text-white uppercase tracking-tighter">PROJECTS</h2>
+                <h2 className="text-subheading font-normal text-white uppercase tracking-tighter">WORKSPACE</h2>
                 <button onClick={onNewProject} className="w-5 h-5 flex items-center justify-center -mr-1 rounded hover:bg-zinc-800 text-zinc-400 hover:text-white transition-colors" title="New Project">
                     <Plus className="w-4 h-4" />
                 </button>
             </div>
             
-            <div className="flex-1 overflow-y-auto px-2 py-2 mt-2 space-y-1">
-                {projects.length === 0 && <div className="text-zinc-500 text-detail text-center py-4 italic px-4 bg-zinc-900/50 rounded border border-zinc-800/50 mx-2">No projects yet.</div>}
-                
-                {projects.map((project) => (
-                <NavLink
-                    key={project.id}
-                    to={`/studio/${project.id}`}
-                    onDoubleClick={() => handleRename(project)}
-                    className={({ isActive }) => `w-full group px-3 py-3 rounded-md flex items-center gap-3 transition-all cursor-pointer ${
-                        isActive
-                        ? 'bg-zinc-800 text-white border-l-2 border-white'
-                        : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-white'
-                    }`}
-                >
+            <div className="flex-1 flex flex-col overflow-hidden">
+                <div className="shrink-0 pt-3 pb-1 px-4">
+                    <h3 className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider">Local Projects</h3>
+                </div>
+                <div className="flex-1 overflow-y-auto px-2 space-y-1 pb-4">
+                    {projects.length === 0 && <div className="text-zinc-500 text-detail text-center py-4 italic px-4 bg-zinc-900/50 rounded border border-zinc-800/50 mx-2">No local projects.</div>}
+                    
+                    {projects.map((project) => (
+                    <NavLink
+                        key={project.id}
+                        to={`/studio/${project.id}`}
+                        onDoubleClick={() => handleRename(project)}
+                        className={({ isActive }) => `w-full group px-3 py-3 rounded-md flex items-center gap-3 transition-all cursor-pointer ${
+                            isActive
+                            ? 'bg-zinc-800 text-white border-l-2 border-white'
+                            : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-white'
+                        }`}
+                    >
                     <Cpu className="w-4 h-4 opacity-70 shrink-0" />
                     <div className="flex-1 truncate">
                         {editingProjectId === project.id ? (
@@ -178,6 +188,37 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
                     )}
                 </NavLink>
                 ))}
+                </div>
+                
+                {cloudProjects && cloudProjects.length > 0 && (
+                    <>
+                        <div className="shrink-0 pt-2 pb-1 px-4 border-t border-zinc-800/50 mt-2">
+                            <h3 className="text-[10px] text-blue-500 font-bold uppercase tracking-wider flex items-center gap-2">
+                                <Cloud className="w-3 h-3" /> Global Cloud Storage
+                            </h3>
+                        </div>
+                        <div className="flex-1 overflow-y-auto px-2 space-y-1 pb-4 min-h-[150px]">
+                            {cloudProjects.sort((a,b) => b.uploadedAt - a.uploadedAt).map((p) => (
+                                <button
+                                    key={`cloud-${p.id}`}
+                                    onClick={() => onLoadCloudProject && onLoadCloudProject(p)}
+                                    disabled={cloudLoadingAction === p.id}
+                                    className="w-full text-left group px-3 py-3 rounded-md flex items-center gap-3 transition-all cursor-pointer text-blue-400 hover:bg-blue-900/20 hover:text-blue-300 disabled:opacity-50"
+                                    title="Click to stream from cloud"
+                                >
+                                    <Cloud className={`w-4 h-4 opacity-70 shrink-0 ${cloudLoadingAction === p.id ? 'animate-pulse text-blue-300' : ''}`} />
+                                    <div className="flex-1 truncate">
+                                        <div className="font-medium text-detail truncate">{p.name}</div>
+                                        <div className="text-micro text-blue-500/70 truncate flex gap-2">
+                                            <span>{(p.sizeBytes / 1000000).toFixed(2)} MB</span>
+                                            <span>{new Date(p.uploadedAt).toLocaleDateString()}</span>
+                                        </div>
+                                    </div>
+                                </button>
+                            ))}
+                        </div>
+                    </>
+                )}
             </div>
         </div>
 
