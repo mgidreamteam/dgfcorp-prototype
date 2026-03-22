@@ -1,111 +1,118 @@
 import { useEffect } from 'react';
 import { DesignProject, AgentLog, DesignStatus } from '../types';
+import { storageEngine } from '../utils/storage';
 
 const PROJECT_IDS_KEY = 'mgi-dream-project-ids';
 const PROJECT_KEY_PREFIX = 'mgi-dream-project-';
 const LOGS_KEY = 'mgi-dream-logs';
 
-export const useAutoSave = (projects: DesignProject[], agentLogs: AgentLog[]) => {
+export const useAutoSave = (projects: DesignProject[], agentLogs: AgentLog[], isLoaded: boolean) => {
   useEffect(() => {
-    try {
-      // Save the list of project IDs
-      const projectIds = projects.map(p => p.id);
-      localStorage.setItem(PROJECT_IDS_KEY, JSON.stringify(projectIds));
+    if (!isLoaded) return;
 
-      // Save each project individually
-      projects.forEach(project => {
-        try {
-          let projectToSave = project;
-          if (project.status.startsWith('GENERATING_')) {
-            projectToSave = {
-              ...project,
-              status: DesignStatus.ERROR,
-              failedStep: project.status,
-            };
-          }
-          localStorage.setItem(`${PROJECT_KEY_PREFIX}${project.id}`, JSON.stringify(projectToSave));
-        } catch (error) {
-          if (error instanceof DOMException && (error.name === 'QuotaExceededError' || error.name === 'NS_ERROR_DOM_QUOTA_REACHED')) {
-            console.warn(`localStorage quota exceeded for project "${project.name}". Saving a lite version without generated assets.`);
-            // If the full project save fails, try saving a "lite" version without the large asset data.
-            try {
-              const { assetUrls, ...liteProject } = project;
-              let liteProjectToSave = liteProject;
+    const saveProjects = async () => {
+      try {
+        const projectIds = projects.map(p => p.id);
+        await storageEngine.setItem(PROJECT_IDS_KEY, projectIds);
 
-              if (project.status.startsWith('GENERATING_')) {
-                  liteProjectToSave = {
-                      ...liteProject,
-                      status: DesignStatus.ERROR,
-                      failedStep: project.status,
-                  };
-              }
-              localStorage.setItem(`${PROJECT_KEY_PREFIX}${project.id}`, JSON.stringify(liteProjectToSave));
-            } catch (innerError) {
-              console.error(`Failed to save even a lite version of project "${project.name}". It may be lost on refresh.`, innerError);
+        for (const project of projects) {
+          try {
+            let projectToSave = project;
+            if (project.status.startsWith('GENERATING_')) {
+              projectToSave = {
+                ...project,
+                status: DesignStatus.ERROR,
+                failedStep: project.status,
+              };
             }
-          } else {
-            console.error(`Failed to save project ${project.id} to localStorage`, error);
+            await storageEngine.setItem(`${PROJECT_KEY_PREFIX}${project.id}`, projectToSave);
+          } catch (error) {
+            if (error instanceof DOMException && (error.name === 'QuotaExceededError' || error.name === 'NS_ERROR_DOM_QUOTA_REACHED')) {
+              console.warn(`IndexedDB quota exceeded for project "${project.name}". Saving a lite version without generated assets.`);
+              try {
+                const { assetUrls, ...liteProject } = project;
+                let liteProjectToSave = liteProject;
+
+                if (project.status.startsWith('GENERATING_')) {
+                    liteProjectToSave = {
+                        ...liteProject,
+                        status: DesignStatus.ERROR,
+                        failedStep: project.status,
+                    };
+                }
+                await storageEngine.setItem(`${PROJECT_KEY_PREFIX}${project.id}`, liteProjectToSave);
+              } catch (innerError) {
+                console.error(`Failed to save even a lite version of project "${project.name}". It may be lost on refresh.`, innerError);
+              }
+            } else {
+              console.error(`Failed to save project ${project.id} to IndexedDB`, error);
+            }
           }
         }
-      });
-
-      // Notice: Removed the aggressive garbage collection loop here.
-      // This ensures that an out-of-sync React component array never deletes
-      // valid `localStorage` data. Orphaned keys are cleaned natively on tab close.
-
-    } catch (error) {
-        console.error("An error occurred during the project auto-save process:", error);
-    }
-  }, [projects]);
+      } catch (error) {
+          console.error("An error occurred during the project auto-save process:", error);
+      }
+    };
+    saveProjects();
+  }, [projects, isLoaded]);
 
   useEffect(() => {
-    try {
-      localStorage.setItem(LOGS_KEY, JSON.stringify(agentLogs));
-    } catch (error) {
-      console.error("Failed to save agent logs to localStorage", error);
-    }
-  }, [agentLogs]);
+    if (!isLoaded) return;
+    
+    const saveLogs = async () => {
+        try {
+        await storageEngine.setItem(LOGS_KEY, agentLogs);
+        } catch (error) {
+        console.error("Failed to save agent logs to IndexedDB", error);
+        }
+    };
+    saveLogs();
+  }, [agentLogs, isLoaded]);
 };
 
-export const loadStateFromStorage = (): { projects: DesignProject[], logs: AgentLog[] } => {
+export const loadStateFromStorage = async (): Promise<{ projects: DesignProject[], logs: AgentLog[] }> => {
   try {
-    const storedLogs = localStorage.getItem(LOGS_KEY);
-    const logs: AgentLog[] = storedLogs ? JSON.parse(storedLogs) : [];
+    const logs = await storageEngine.getItem(LOGS_KEY) || [];
 
-    const projectIdsJson = localStorage.getItem(PROJECT_IDS_KEY);
-    // If new key doesn't exist, check for old key to migrate
-    if (!projectIdsJson) {
-      const oldProjectsData = localStorage.getItem('mgi-dream-projects');
-      if (oldProjectsData) {
-        console.log("Migrating old project data to new format.");
-        const oldProjects: DesignProject[] = JSON.parse(oldProjectsData);
-        const projectIds = oldProjects.map(p => p.id);
-        localStorage.setItem(PROJECT_IDS_KEY, JSON.stringify(projectIds));
-        oldProjects.forEach(p => {
-          localStorage.setItem(`${PROJECT_KEY_PREFIX}${p.id}`, JSON.stringify(p));
-        });
-        localStorage.removeItem('mgi-dream-projects');
-        return { projects: oldProjects, logs };
+    const projectIds = await storageEngine.getItem(PROJECT_IDS_KEY);
+    
+    // Migration: if IndexedDB doesn't have project IDs, port them smoothly from pure legacy localStorage
+    if (!projectIds) {
+      const legacyIdJson = localStorage.getItem(PROJECT_IDS_KEY);
+      if (legacyIdJson) {
+          console.log("Migrating from legacy localStorage to IndexedDB");
+          const legacyIds: string[] = JSON.parse(legacyIdJson);
+          const migratedProjects: DesignProject[] = [];
+          
+          for (const id of legacyIds) {
+              const projJson = localStorage.getItem(`${PROJECT_KEY_PREFIX}${id}`);
+              if (projJson) {
+                  const proj = JSON.parse(projJson);
+                  migratedProjects.push(proj);
+                  await storageEngine.setItem(`${PROJECT_KEY_PREFIX}${id}`, proj);
+              }
+          }
+          await storageEngine.setItem(PROJECT_IDS_KEY, legacyIds);
+          
+          // DO NOT delete localStorage to keep it available as fallback if user downgrades
+          return { projects: migratedProjects, logs };
       }
-      return { projects: [], logs: [] };
+      return { projects: [], logs };
     }
 
-    const projectIds: string[] = JSON.parse(projectIdsJson);
-    const projects: DesignProject[] = projectIds.map(id => {
+    const projects: DesignProject[] = [];
+    for (const id of projectIds) {
       try {
-        const projectJson = localStorage.getItem(`${PROJECT_KEY_PREFIX}${id}`);
-        return projectJson ? JSON.parse(projectJson) : null;
+        const project = await storageEngine.getItem(`${PROJECT_KEY_PREFIX}${id}`);
+        if (project) projects.push(project);
       } catch (e) {
-        console.error(`Failed to parse project ${id} from localStorage`, e);
-        return null;
+        console.error(`Failed to parse project ${id} from IndexedDB`, e);
       }
-    }).filter((p): p is DesignProject => p !== null);
+    }
 
     return { projects, logs };
   } catch (error) {
-    console.error("Failed to load state from localStorage", error);
-    // Return empty arrays but DO NOT aggressively wipe storage, 
-    // to protect against localized cyclic parsing errors during router transitions.
+    console.error("Failed to load state from IndexedDB", error);
     return { projects: [], logs: [] };
   }
 };

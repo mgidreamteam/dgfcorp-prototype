@@ -9,6 +9,7 @@ import { DesignProject, CloudProject } from '../types';
 import { auth, db, storage } from '../services/firebase';
 import { collection, doc, setDoc, getDocs, deleteDoc } from 'firebase/firestore';
 import { ref, uploadString, getDownloadURL, deleteObject } from 'firebase/storage';
+import CloudLoadModal from '../components/CloudLoadModal';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Grid, Environment, ContactShadows, Line, Center, GizmoHelper, GizmoViewport } from '@react-three/drei';
 import * as THREE from 'three';
@@ -206,11 +207,17 @@ const FabFlowPage: React.FC = () => {
 
   useEffect(() => {
     if (projectId && projectId !== activeProjectId) {
-        setActiveProjectId(projectId);
+        const projectExists = projects.some(p => p.id === projectId);
+        if (projectExists) {
+            setActiveProjectId(projectId);
+        } else {
+            alert("The requested project could not be found locally. It may have been deleted, corrupted, or not synchronized. Opening a blank workspace.");
+            navigate('/fabflow', { replace: true });
+        }
     } else if (!projectId && activeProjectId) {
         navigate(`/fabflow/${activeProjectId}`, { replace: true });
     }
-  }, [projectId, activeProjectId, navigate, setActiveProjectId]);
+  }, [projectId, activeProjectId, projects, navigate, setActiveProjectId]);
 
   const primaryMaterialInfo = React.useMemo(() => {
       let type: 'plastic' | 'matte' | 'metallic' = 'metallic';
@@ -259,6 +266,7 @@ const FabFlowPage: React.FC = () => {
   const [cloudProjects, setCloudProjects] = useState<CloudProject[]>([]);
   const [isCloudSaving, setIsCloudSaving] = useState(false);
   const [cloudLoadingAction, setCloudLoadingAction] = useState<string | null>(null);
+  const [isCloudModalOpen, setIsCloudModalOpen] = useState(false);
 
   const fetchCloudProjects = useCallback(async () => {
     if (!auth.currentUser) return;
@@ -267,6 +275,11 @@ const FabFlowPage: React.FC = () => {
         setCloudProjects(snap.docs.map(d => d.data() as CloudProject));
     } catch (err) { console.error(err); }
   }, []);
+
+  const handleCloudModalOpen = () => {
+      fetchCloudProjects();
+      setIsCloudModalOpen(true);
+  };
 
   useEffect(() => { fetchCloudProjects(); }, [fetchCloudProjects]);
 
@@ -308,6 +321,7 @@ const FabFlowPage: React.FC = () => {
                   return [projectData, ...filtered];
               });
               navigate(`/fabflow/${projectData.id}`);
+              setIsCloudModalOpen(false);
           }
       } catch (err: any) {
           alert(`Cloud Fetch Failed: ${err.message}`);
@@ -396,7 +410,7 @@ const FabFlowPage: React.FC = () => {
             areImagesExportable={false}
             isProjectActive={!!activeProject}
             onSaveToCloud={handleSaveToCloud}
-            onLoadFromCloud={() => {}}
+            onLoadFromCloud={handleCloudModalOpen}
             isCloudSaving={isCloudSaving}
             cloudStorageUsed={cloudStorageUsed}
             extension=".fabFlow"
@@ -666,6 +680,15 @@ const FabFlowPage: React.FC = () => {
         </ThemePanel>
         
       </div>
+
+      <CloudLoadModal 
+          isOpen={isCloudModalOpen}
+          onClose={() => setIsCloudModalOpen(false)}
+          projects={cloudProjects}
+          onLoad={handleDownloadFromCloud}
+          onDelete={handleDeleteFromCloud}
+          loadingAction={cloudLoadingAction}
+      />
     </div>
   );
 };

@@ -27,32 +27,36 @@ export const ProjectProvider: React.FC<{ children: ReactNode }> = ({ children })
   const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
 
   useEffect(() => {
-    const initialState = loadStateFromStorage();
-    setProjects(initialState.projects);
-    setAgentLogs(initialState.logs);
-    
-    const lastActiveId = localStorage.getItem('lastActiveStudioProjectId');
-    if (lastActiveId && initialState.projects.some(p => p.id === lastActiveId)) {
-        setActiveProjectId(lastActiveId);
-    } else if (initialState.projects.length > 0) {
-        // Fallback to most recent project
-        const newest = [...initialState.projects].sort((a, b) => b.createdAt - a.createdAt)[0];
-        setActiveProjectId(newest.id);
-    }
-    
-    setIsLoaded(true);
+    const init = async () => {
+        const initialState = await loadStateFromStorage();
+        setProjects(initialState.projects);
+        setAgentLogs(initialState.logs);
+        
+        const lastActiveId = localStorage.getItem('lastActiveStudioProjectId');
+        if (lastActiveId && initialState.projects.some(p => p.id === lastActiveId)) {
+            setActiveProjectId(lastActiveId);
+        } else if (initialState.projects.length > 0) {
+            // Fallback to most recent project
+            const newest = [...initialState.projects].sort((a, b) => b.createdAt - a.createdAt)[0];
+            setActiveProjectId(newest.id);
+        }
+        
+        setIsLoaded(true);
+    };
+    init();
   }, []);
 
-  useAutoSave(projects, agentLogs);
+  useAutoSave(projects, agentLogs, isLoaded);
 
   // Sync activeProjectId to localStorage transparently
   useEffect(() => {
+    if (!isLoaded) return;
     if (activeProjectId) {
       localStorage.setItem('lastActiveStudioProjectId', activeProjectId);
     } else {
       localStorage.removeItem('lastActiveStudioProjectId');
     }
-  }, [activeProjectId]);
+  }, [activeProjectId, isLoaded]);
 
   const addLog = useCallback((log: Omit<AgentLog, 'id' | 'timestamp'>) => {
     setAgentLogs(prev => [{ ...log, id: generateId(), timestamp: Date.now() }, ...prev]);

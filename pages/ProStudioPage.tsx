@@ -9,6 +9,7 @@ import ThemePanel from '../components/ThemePanel';
 import { auth, db, storage } from '../services/firebase';
 import { collection, doc, setDoc, getDocs, deleteDoc } from 'firebase/firestore';
 import { ref, getDownloadURL, deleteObject, uploadString } from 'firebase/storage';
+import CloudLoadModal from '../components/CloudLoadModal';
 import { Wrench } from 'lucide-react';
 
 const ProStudioPage: React.FC = () => {
@@ -20,16 +21,23 @@ const ProStudioPage: React.FC = () => {
   const [cloudProjects, setCloudProjects] = useState<CloudProject[]>([]);
   const [isCloudSaving, setIsCloudSaving] = useState(false);
   const [cloudLoadingAction, setCloudLoadingAction] = useState<string | null>(null);
+  const [isCloudModalOpen, setIsCloudModalOpen] = useState(false);
 
   const [hiloPanelWidth, setHiloPanelWidth] = useState(400);
 
   useEffect(() => {
     if (projectId && projectId !== activeProjectId) {
-      setActiveProjectId(projectId);
+        const projectExists = projects.some(p => p.id === projectId);
+        if (projectExists) {
+            setActiveProjectId(projectId);
+        } else {
+            alert("The requested project could not be found locally. It may have been deleted, corrupted, or not synchronized. Opening a blank workspace.");
+            navigate('/prostudio', { replace: true });
+        }
     } else if (!projectId && activeProjectId) {
       navigate(`/prostudio/${activeProjectId}`, { replace: true });
     }
-  }, [projectId, activeProjectId, navigate, setActiveProjectId]);
+  }, [projectId, activeProjectId, projects, navigate, setActiveProjectId]);
 
   const fetchCloudProjects = async () => {
     if (!auth.currentUser) return;
@@ -39,6 +47,11 @@ const ProStudioPage: React.FC = () => {
     } catch (err) {
         console.error("Failed to sync cloud registry", err);
     }
+  };
+
+  const handleCloudModalOpen = () => {
+      fetchCloudProjects();
+      setIsCloudModalOpen(true);
   };
 
   useEffect(() => {
@@ -91,6 +104,7 @@ const ProStudioPage: React.FC = () => {
                   return [projectData, ...filtered];
               });
               navigate(`/prostudio/${projectData.id}`);
+              setIsCloudModalOpen(false);
           }
       } catch (err: any) {
           alert(`Cloud Retrieval Failed: ${err.message}`);
@@ -139,6 +153,7 @@ const ProStudioPage: React.FC = () => {
           areImagesExportable={false}
           isProjectActive={!!activeProject} 
           onSaveToCloud={handleSaveToCloud}
+          onLoadFromCloud={handleCloudModalOpen}
           isCloudSaving={isCloudSaving}
           cloudStorageUsed={cloudStorageUsed}
         />

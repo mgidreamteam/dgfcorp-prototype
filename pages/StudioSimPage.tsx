@@ -11,6 +11,7 @@ import { ref, getDownloadURL, deleteObject, uploadString } from 'firebase/storag
 import ThemePanel from '../components/ThemePanel';
 import DesignInput from '../components/DesignInput';
 import { extractSimulationConstraints } from '../services/gemini';
+import CloudLoadModal from '../components/CloudLoadModal';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Grid, Environment, ContactShadows, Center, GizmoHelper, GizmoViewport } from '@react-three/drei';
 import * as THREE from 'three';
@@ -133,6 +134,7 @@ const StudioSimPage: React.FC = () => {
   const [cloudProjects, setCloudProjects] = useState<CloudProject[]>([]);
   const [isCloudSaving, setIsCloudSaving] = useState(false);
   const [cloudLoadingAction, setCloudLoadingAction] = useState<string | null>(null);
+  const [isCloudModalOpen, setIsCloudModalOpen] = useState(false);
   
   const [isGeneratingNlp, setIsGeneratingNlp] = useState(false);
   const [boundaryConditions, setBoundaryConditions] = useState<SimulationBoundaryCondition[]>([]);
@@ -147,6 +149,21 @@ const StudioSimPage: React.FC = () => {
         const snap = await getDocs(collection(db, `users/${auth.currentUser.uid}/cloudProjects`));
         setCloudProjects(snap.docs.map(d => d.data() as CloudProject));
     } catch (err) {
+        console.error("Failed to sync cloud registry", err);
+    }
+  };
+
+  const handleCloudModalOpen = () => {
+    fetchCloudProjects();
+    setIsCloudModalOpen(true);
+  };
+
+  const handleDeleteCloudProject = async (p: CloudProject) => {
+    if (!auth.currentUser) return;
+    try {
+        await deleteDoc(doc(db, `users/${auth.currentUser.uid}/cloudProjects`, p.id));
+        setCloudProjects(prev => prev.filter(proj => proj.id !== p.id));
+    } catch (err) {
         console.error(err);
     }
   };
@@ -157,11 +174,17 @@ const StudioSimPage: React.FC = () => {
 
   useEffect(() => {
     if (projectId && projectId !== activeProjectId) {
-        setActiveProjectId(projectId);
+        const projectExists = projects.some(p => p.id === projectId);
+        if (projectExists) {
+            setActiveProjectId(projectId);
+        } else {
+            alert("The requested project could not be found locally. It may have been deleted, corrupted, or not synchronized. Opening a blank workspace.");
+            navigate('/studiosim', { replace: true });
+        }
     } else if (!projectId && activeProjectId) {
         navigate(`/studiosim/${activeProjectId}`, { replace: true });
     }
-  }, [projectId, activeProjectId, navigate, setActiveProjectId]);
+  }, [projectId, activeProjectId, projects, navigate, setActiveProjectId]);
 
   const handleGenerateModel = async () => {
       if (!activeProject || !activeProject.specs) {
@@ -604,6 +627,15 @@ const StudioSimPage: React.FC = () => {
             </div>
         </ThemePanel>
       </div>
+      
+      <CloudLoadModal 
+          isOpen={isCloudModalOpen}
+          onClose={() => setIsCloudModalOpen(false)}
+          projects={cloudProjects}
+          onLoad={handleDownloadFromCloud}
+          onDelete={handleDeleteCloudProject}
+          loadingAction={cloudLoadingAction}
+      />
     </div>
   );
 };

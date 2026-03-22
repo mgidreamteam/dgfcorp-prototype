@@ -3,6 +3,7 @@ import { NavLink } from 'react-router-dom';
 import { DesignProject, BillOfMaterialItem } from '../types';
 import { Plus, Cpu, ChevronRight, ArrowLeft, Wrench, CircuitBoard, Cog, Package, Cloud, Box, Factory, Trash2 } from 'lucide-react';
 import ThemePanel from './ThemePanel';
+import LoadingModal from './LoadingModal';
 
 interface ProjectSidebarProps {
   projects: DesignProject[];
@@ -262,6 +263,8 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
         <p className="text-zinc-500">A DREAM Gigafactories Corp. Product</p>
         <p className="text-yellow-600 tracking-wide mt-1">Limited trial alpha</p>
       </div>
+
+      <LoadingModal isOpen={!!cloudLoadingAction} message="Downloading Project from Cloud..." />
     </ThemePanel>
   );
 };
