@@ -103,7 +103,7 @@ export const analyzeUserIntent = async (prompt: string, previousSpec: HardwareSp
 export const getAnswerFromSpec = async (question: string, specs: HardwareSpec): Promise<string> => {
     const model = "gemini-3-flash-preview";
     const answerPrompt = `
-    You are Ñolmo (Nyo-Olmo), an expert hardware design assistant.
+    You are Hilo, an expert hardware design assistant.
     A user has asked a question about a product you designed.
     Use the following JSON specification to answer the question.
     Your answer should be concise, helpful, and directly address the user's query based ONLY on the data provided in the specification.
@@ -175,7 +175,7 @@ export const generateHardwareSpecs = async (prompt: string, previousSpec: Hardwa
   let generationPrompt: string;
 
   if (previousSpec) {
-    generationPrompt = `You are Ñolmo (Nyo-Olmo), an agentic hardware designer. You previously generated the following hardware specification:
+    generationPrompt = `You are Hilo, an agentic hardware designer. You previously generated the following hardware specification:
 
     \`\`\`json
     ${JSON.stringify(previousSpec, null, 2)}
@@ -192,7 +192,7 @@ export const generateHardwareSpecs = async (prompt: string, previousSpec: Hardwa
     For any new parameters that are now required due to the user's request, but not specified, make reasonable, industry-standard assumptions and list them clearly in the 'assumedParameters' field.
     `;
   } else {
-     generationPrompt = `You are Ñolmo (Nyo-Olmo), an agentic hardware designer. Design a hardware product based on this description: "${prompt}". 
+     generationPrompt = `You are Hilo, an agentic hardware designer. Design a hardware product based on this description: "${prompt}". 
     The product name is fixed and must be "${projectName}".
     Provide a highly detailed technical specification. This includes precise dimensions, mechanical architecture, wall thickness, tolerances, materials, BOM, and manufacturing advice.
     
@@ -267,7 +267,7 @@ export const generateHardwareSpecs = async (prompt: string, previousSpec: Hardwa
           sourcingNotes: { type: Type.STRING, description: "Notes on component sourcing challenges and availability." },
           assumedParameters: {
             type: Type.ARRAY,
-            description: "List of critical parameters that were not specified in the prompt and were assumed by Ñolmo (Nyo-Olmo).",
+            description: "List of critical parameters that were not specified in the prompt and were assumed by Hilo.",
             items: {
                 type: Type.OBJECT,
                 properties: {

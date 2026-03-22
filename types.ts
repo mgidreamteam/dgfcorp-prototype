@@ -85,6 +85,8 @@ export interface DesignProject {
   failedStep?: DesignStatus | null;
   isConstrained: boolean;
   circuitComponents: CircuitComponent[] | null;
+  assemblyParts?: { id: string; name: string; stlUrl: string; transform: [number, number, number] }[];
+  vendorMatches?: VendorMatch[];
 }
 
 export type VendorCategory = 'Injection Molding' | 'PCB & Electronics' | 'CNC Machining' | '3D Printing' | 'Assembly' | 'Materials';
@@ -106,6 +108,15 @@ export interface Vendor {
   capabilities: string[];
   componentCategory: ComponentCategory[];
   serviceType: ServiceType;
+}
+
+export interface VendorMatch {
+  partId: string;
+  vendorName: string;
+  price: string;
+  leadTime: string;
+  status: string;
+  score: number;
 }
 
 export interface AgentLog {

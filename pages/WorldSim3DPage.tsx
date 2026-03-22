@@ -42,9 +42,9 @@ const WorldSim3DPage: React.FC = () => {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
 
-  const [alonPanelWidth] = useState(400);
+  const [hiloPanelWidth] = useState(400);
   const [viewMode, setViewMode] = useState<ViewMode>('3D');
-  const gridTemplateColumns = `256px minmax(500px, 1fr) 6px ${alonPanelWidth}px`;
+  const gridTemplateColumns = `256px minmax(500px, 1fr) 6px ${hiloPanelWidth}px`;
 
   const [projects, setProjects] = useState<DesignProject[]>(() => loadStateFromStorage().projects);
   const [activeProjectId, setActiveProjectId] = useState<string | null>(null);

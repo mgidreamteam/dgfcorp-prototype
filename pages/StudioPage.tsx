@@ -114,7 +114,7 @@ const StudioPage: React.FC = () => {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   
-  const [alonPanelWidth, setAlonPanelWidth] = useState(400);
+  const [hiloPanelWidth, setHiloPanelWidth] = useState(400);
   const isResizing = useRef(false);
   const dragStartX = useRef(0);
   const startWidth = useRef(0);
@@ -195,7 +195,7 @@ const StudioPage: React.FC = () => {
     const mainPanel = document.querySelector('main');
     const maxWidth = mainPanel ? mainPanel.clientWidth - 100 : 800;
     const clampedWidth = Math.max(300, Math.min(maxWidth, newWidth));
-    setAlonPanelWidth(clampedWidth);
+    setHiloPanelWidth(clampedWidth);
   }, []);
   
   const handleMouseUp = useCallback(() => {
@@ -210,12 +210,12 @@ const StudioPage: React.FC = () => {
     e.preventDefault();
     isResizing.current = true;
     dragStartX.current = e.clientX;
-    startWidth.current = alonPanelWidth;
+    startWidth.current = hiloPanelWidth;
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
     document.body.style.cursor = 'col-resize';
     document.body.style.userSelect = 'none';
-  }, [alonPanelWidth, handleMouseMove, handleMouseUp]);
+  }, [hiloPanelWidth, handleMouseMove, handleMouseUp]);
 
   useEffect(() => {
     return () => {
@@ -390,7 +390,7 @@ const StudioPage: React.FC = () => {
               setValidationState({ missingParams: analysis.missingParams, prompt });
               return;
             }
-            addLog({ content: `Unconstrained: Ñolmo (Nyo-Olmo) will assume values for: ${analysis.missingParams.join(', ')}.`, type: 'output', projectId: activeProjectId });
+            addLog({ content: `Unconstrained: Hilo will assume values for: ${analysis.missingParams.join(', ')}.`, type: 'output', projectId: activeProjectId });
           }
           await runFullGenerationFlow(prompt, activeProjectId, DesignStatus.GENERATING_SPECS, project.specs);
           break;
@@ -663,7 +663,7 @@ const StudioPage: React.FC = () => {
     addLog({ content: `Exported all generated images for "${activeProject.name}".`, type: 'output', projectId: activeProject.id });
   };
 
-  const gridTemplateColumns = `256px minmax(500px, 1fr) 6px ${alonPanelWidth}px`;
+  const gridTemplateColumns = `256px minmax(500px, 1fr) 6px ${hiloPanelWidth}px`;
   
   return (
     <>
@@ -750,7 +750,7 @@ const StudioPage: React.FC = () => {
           <ThemePanel translucent className="h-full overflow-hidden relative z-10">
              <div className="flex flex-col h-full overflow-hidden">
                 <div className="px-4 py-3 border-b border-zinc-800 shrink-0 bg-transparent">
-                    <h2 className="text-subheading font-normal text-white uppercase tracking-tighter">ÑOLMO (NYO-OLMO)</h2>
+                    <h2 className="text-subheading font-normal text-white uppercase tracking-tighter">HILO</h2>
                 </div>
                 <div className="flex-1 p-4 overflow-hidden">
                     <DesignInput onSubmit={handleCreateDesign} isGenerating={isGenerating} agentLogs={agentLogs.filter(log => !log.projectId || log.projectId === activeProjectId)} activeProject={activeProject} onUpdateProjectConstraint={handleUpdateProjectConstraint} />

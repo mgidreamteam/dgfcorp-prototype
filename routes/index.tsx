@@ -7,6 +7,7 @@ import DashboardPage from '../pages/DashboardPage';
 import UserManagementPage from '../pages/UserManagementPage';
 import VendorAdminPage from '../pages/VendorAdminPage';
 import StudioPage from '../pages/StudioPage';
+import ProStudioPage from '../pages/ProStudioPage';
 import MainLayout from '../layouts/MainLayout';
 import ProfilePage from '../pages/ProfilePage';
 import AboutPage from '../pages/AboutPage';
@@ -67,6 +68,8 @@ const AppRouter: React.FC = () => {
                     <Route path="/admin/gigafactory" element={<VendorAdminPage />} />
                     <Route path="/studio" element={<StudioPage />} />
                     <Route path="/studio/:projectId" element={<StudioPage />} />
+                    <Route path="/prostudio" element={<ProStudioPage />} />
+                    <Route path="/prostudio/:projectId" element={<ProStudioPage />} />
                     <Route path="/studiosim" element={<StudioSimPage />} />
                     <Route path="/studiosim/:projectId" element={<StudioSimPage />} />
                     <Route path="/worldsim" element={<WorldSimPage />} />

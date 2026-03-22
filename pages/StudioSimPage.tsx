@@ -20,8 +20,10 @@ import { CameraPresets, ViewMode } from '../components/CameraPresets';
 import { RoomWalls } from '../components/RoomWalls';
 import { SimHUD } from '../components/SimHUD';
 import { generateOpenScadCode, generateStlFile } from '../services/gemini';
+import { StudioLighting } from '../components/StudioLighting';
+import { Lightbulb, LightbulbOff, Box as BoxIcon, Droplet, Sparkles, Sun, Moon, Eye, EyeOff, Grid3X3 } from 'lucide-react';
 
-const StlModel = ({ stlData }: { stlData: string }) => {
+const StlModel = ({ stlData, materialType = 'metallic', baseColor = '#71717a', onLoaded }: { stlData: string, materialType?: 'plastic' | 'matte' | 'metallic', baseColor?: string, onLoaded?: (s: {x:number,y:number,z:number}) => void }) => {
   const [geometry, setGeometry] = useState<THREE.BufferGeometry | null>(null);
   useEffect(() => {
     if (!stlData) return;
@@ -31,7 +33,13 @@ const StlModel = ({ stlData }: { stlData: string }) => {
     loader.load(url, (geo) => {
         geo.computeBoundingSphere();
         geo.computeBoundingBox();
+        geo.computeVertexNormals(); // Generates smooth surface normals over facets natively on GPU
         geo.center();
+        if (onLoaded && geo.boundingBox) {
+            const size = new THREE.Vector3();
+            geo.boundingBox.getSize(size);
+            onLoaded({ x: size.x, y: size.y, z: size.z });
+        }
         setGeometry(geo);
         URL.revokeObjectURL(url);
     });
@@ -49,16 +57,36 @@ const StlModel = ({ stlData }: { stlData: string }) => {
   if (!geometry) return null;
   return (
     <mesh geometry={geometry}>
-      <meshPhysicalMaterial color="#3f3f46" roughness={0.2} metalness={0.8} clearcoat={1} clearcoatRoughness={0.1} side={THREE.DoubleSide} />
+      <meshPhysicalMaterial 
+        color={baseColor} 
+        roughness={materialType === 'matte' ? 0.8 : materialType === 'plastic' ? 0.2 : 0.4} 
+        metalness={materialType === 'metallic' ? 0.8 : 0.1} 
+        clearcoat={materialType === 'plastic' ? 1 : 0} 
+        clearcoatRoughness={0.1} 
+        side={THREE.DoubleSide} 
+      />
     </mesh>
   );
 };
 
 const StudioSimPage: React.FC = () => {
   const navigate = useNavigate();
-  const [alonPanelWidth, setAlonPanelWidth] = useState(400);
+  const [hiloPanelWidth, setHiloPanelWidth] = useState(400);
   const [viewMode, setViewMode] = useState<ViewMode>('3D');
-  const gridTemplateColumns = `256px minmax(500px, 1fr) 6px ${alonPanelWidth}px`;
+  const [openScadRes, setOpenScadRes] = useState(50);
+  const [globalLightIntensitySlider, setGlobalLightIntensitySlider] = useState(0);
+  const [globalLightsOn, setGlobalLightsOn] = useState(true);
+  const [showLightMeshes, setShowLightMeshes] = useState(true);
+  const [showGrid, setShowGrid] = useState(true);
+  const [modelSize, setModelSize] = useState({x:20, y:20, z:20});
+  const [isResizingMesh, setIsResizingMesh] = useState(false);
+  const [materialType, setMaterialType] = useState<'plastic' | 'matte' | 'metallic'>('metallic');
+  const [roomTheme, setRoomTheme] = useState<'dark' | 'light'>('dark');
+
+  useEffect(() => {
+      setGlobalLightIntensitySlider(roomTheme === 'light' ? 500 : 0);
+  }, [roomTheme]);
+  const gridTemplateColumns = `256px minmax(500px, 1fr) 6px ${hiloPanelWidth}px`;
 
   const [projects, setProjects] = useState<DesignProject[]>(() => loadStateFromStorage().projects);
   const [agentLogs, setAgentLogs] = useState<AgentLog[]>(() => loadStateFromStorage().logs);
@@ -78,6 +106,43 @@ const StudioSimPage: React.FC = () => {
 
   const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
   const activeProject = projects.find(p => p.id === activeProjectId);
+  
+  const primaryMaterialInfo = React.useMemo(() => {
+      let type: 'plastic' | 'matte' | 'metallic' = 'metallic';
+      let color = "#71717a";
+      if (!activeProject?.specs?.materials?.length) return { color, type };
+      
+      const dominant = activeProject.specs.materials.reduce((prev, curr) => (prev.percentage > curr.percentage) ? prev : curr);
+      const m = dominant.material.toLowerCase();
+      
+      if (m.includes('plastic') || m.includes('abs') || m.includes('poly') || m.includes('nylon')) {
+          type = 'plastic';
+          color = "#e4e4e7"; 
+          if (m.includes('black')) color = "#27272a";
+          if (m.includes('white')) color = "#f4f4f5";
+      } else if (m.includes('alum')) {
+          type = 'metallic';
+          color = "#d4d4d8"; 
+      } else if (m.includes('steel') || m.includes('iron')) {
+          type = 'metallic';
+          color = "#71717a";
+      } else if (m.includes('copper') || m.includes('brass') || m.includes('bronze')) {
+          type = 'metallic';
+          color = "#b45309";
+      } else if (m.includes('wood') || m.includes('carbon')) {
+          type = 'matte';
+          color = m.includes('wood') ? "#78350f" : "#18181b"; 
+      } else if (m.includes('rubber') || m.includes('silicone')) {
+          type = 'matte';
+          color = "#27272a";
+      }
+      return { color, type };
+  }, [activeProject?.specs?.materials]);
+
+  React.useEffect(() => {
+      setMaterialType(primaryMaterialInfo.type);
+  }, [primaryMaterialInfo.type]);
+
   const [cloudProjects, setCloudProjects] = useState<CloudProject[]>([]);
   const [isCloudSaving, setIsCloudSaving] = useState(false);
   const [cloudLoadingAction, setCloudLoadingAction] = useState<string | null>(null);
@@ -136,6 +201,23 @@ const StudioSimPage: React.FC = () => {
           alert("Simulation conversion failed. " + (err as any).message);
       } finally {
           setIsGeneratingModel(false);
+      }
+  };
+
+  const handleResApply = async () => {
+      if (!activeProject?.openScadCode || !activeProject.specs) return;
+      try {
+          setIsResizingMesh(true);
+          const modifiedScad = `$fn = ${openScadRes};\n$fs = 0.5;\n$fa = 5;\n\n${activeProject.openScadCode}`;
+          const stlData = await generateStlFile(activeProject.specs, modifiedScad);
+          
+          const updatedProj = { ...activeProject, assetUrls: { ...activeProject.assetUrls, stl: stlData } };
+          setProjects(projects.map(p => p.id === activeProject.id ? updatedProj : p));
+      } catch(err) {
+          console.error(err);
+          alert("Resolution generation failed: " + (err as any).message);
+      } finally {
+          setIsResizingMesh(false);
       }
   };
 
@@ -338,6 +420,58 @@ const StudioSimPage: React.FC = () => {
                      <button onClick={() => setViewMode('TOP')} className={`px-3 py-1 rounded transition-colors text-[10px] font-bold uppercase tracking-widest ${viewMode === 'TOP' ? 'bg-[#00ffcc]/10 text-[#00ffcc] border border-[#00ffcc]/30' : 'text-zinc-500 hover:text-zinc-300'}`}>TOP</button>
                  </div>
                  
+                 <div className="flex items-center gap-3 ml-4 bg-black/60 px-3 py-1.5 rounded-lg border border-zinc-800/80 shadow-inner">
+                     <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest flex items-center gap-1"><Maximize className="w-3 h-3 text-zinc-400" /> Mesh Res</span>
+                     <input 
+                        type="range" min="10" max="150" step="5" 
+                        value={openScadRes} 
+                        onChange={e => setOpenScadRes(Number(e.target.value))} 
+                        onMouseUp={handleResApply} 
+                        onTouchEnd={handleResApply} 
+                        className="w-24 md:w-32 accent-[#00ffcc] outline-none cursor-pointer" 
+                        disabled={isResizingMesh} 
+                     />
+                     <div className="w-10 text-right font-mono text-xs text-[#00ffcc]">
+                         {isResizingMesh ? <RefreshCw className="w-3 h-3 animate-spin inline-block text-[#00ffcc]" /> : openScadRes}
+                     </div>
+                 </div>
+
+                 <div className="flex items-center gap-1 ml-4 bg-black/60 p-1 rounded-lg border border-zinc-800/80 shadow-inner">
+                     <button onClick={() => setRoomTheme(roomTheme === 'dark' ? 'light' : 'dark')} className="p-1.5 rounded transition-colors text-zinc-500 hover:text-zinc-300" title="Toggle Environment">
+                        {roomTheme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                     </button>
+                 </div>
+
+                 <div className="flex items-center gap-1 ml-4 bg-black/60 p-1 rounded-lg border border-zinc-800/80 shadow-inner">
+                     <button onClick={() => setMaterialType('matte')} className={`p-1.5 rounded transition-colors ${materialType === 'matte' ? 'bg-[#00ffcc]/20 text-[#00ffcc]' : 'text-zinc-500 hover:text-zinc-300'}`} title="Matte Finish"><BoxIcon className="w-4 h-4" /></button>
+                     <button onClick={() => setMaterialType('plastic')} className={`p-1.5 rounded transition-colors ${materialType === 'plastic' ? 'bg-[#00ffcc]/20 text-[#00ffcc]' : 'text-zinc-500 hover:text-zinc-300'}`} title="Glossy Plastic"><Droplet className="w-4 h-4" /></button>
+                     <button onClick={() => setMaterialType('metallic')} className={`p-1.5 rounded transition-colors ${materialType === 'metallic' ? 'bg-[#00ffcc]/20 text-[#00ffcc]' : 'text-zinc-500 hover:text-zinc-300'}`} title="Metallic Finish"><Sparkles className="w-4 h-4" /></button>
+                 </div>
+
+                 <div className="flex items-center gap-3 ml-4 bg-black/60 px-3 py-1.5 rounded-lg border border-zinc-800/80 shadow-inner">
+                  <div className="flex items-center gap-2">
+                     <button onClick={() => setShowGrid(!showGrid)} className="outline-none transition-colors border-r border-zinc-700 pr-2 mr-1" title="Toggle Grid">
+                        <Grid3X3 className={`w-4 h-4 ${showGrid ? 'text-[#00ffcc] hover:text-[#00ffcc]/80' : 'text-zinc-600 hover:text-zinc-500'}`} />
+                     </button>
+                     <button onClick={() => setShowLightMeshes(!showLightMeshes)} className="outline-none transition-colors border-r border-zinc-700 pr-2 mr-1" title="Show/Hide Physical Light Frames">
+                        {showLightMeshes ? <Eye className="w-4 h-4 text-zinc-300 hover:text-white" /> : <EyeOff className="w-4 h-4 text-zinc-600 hover:text-zinc-500" />}
+                     </button>
+                     <button onClick={() => setGlobalLightsOn(!globalLightsOn)} className="outline-none transition-colors" title="Toggle All Lights">
+                        {globalLightsOn ? <Lightbulb className="w-4 h-4 text-yellow-500 hover:text-yellow-400" /> : <LightbulbOff className="w-4 h-4 text-zinc-600 hover:text-zinc-500" />}
+                     </button>
+                     <span className="text-xs text-zinc-400 font-bold tracking-wider">LUX BASE</span>
+                     <input 
+                       type="range" min="-1000" max="1000" step="1" 
+                       value={globalLightIntensitySlider} 
+                       onChange={e => setGlobalLightIntensitySlider(Number(e.target.value))} 
+                       className="w-24 accent-yellow-500 outline-none cursor-pointer" 
+                     />
+                     <span className="text-xs font-mono w-8 text-zinc-300">{globalLightIntensitySlider > 0 ? `+${globalLightIntensitySlider}` : globalLightIntensitySlider}</span>
+                 </div>
+                 </div>
+
+                 <div className="flex-1"></div>
+                 
                  <div className="flex items-center gap-4">
                      <div className="text-xs font-mono text-zinc-500 bg-black/50 px-3 py-1.5 rounded border border-zinc-800 tracking-widest">
                          FRAME: <span className="text-emerald-400">0000</span> / 1200
@@ -363,35 +497,36 @@ const StudioSimPage: React.FC = () => {
                  </div>
             </div>
             <div className="flex-1 w-full h-full bg-[#09090b] relative cursor-move rounded-b-lg overflow-hidden z-0">
-                <Canvas camera={{ position: [150, 100, 150], fov: 45 }}>
-                    <color attach="background" args={['#09090b']} />
-                    <fog attach="fog" args={['#09090b', 50, 400]} />
+                <Canvas camera={{ position: [100, 75, 100], fov: 45 }}>
+                    <color attach="background" args={[roomTheme === 'dark' ? '#09090b' : '#808080']} />
+                    <fog attach="fog" args={[roomTheme === 'dark' ? '#09090b' : '#808080', 50, 400]} />
                     
-                    <ambientLight intensity={1.5} />
-                    <directionalLight position={[100, 100, 50]} intensity={2.5} castShadow shadow-mapSize={2048} />
+                    <StudioLighting modelSize={modelSize} showLightMeshes={showLightMeshes} globalIntensitySlider={globalLightIntensitySlider} globalLightsOn={globalLightsOn} roomTheme={roomTheme} />
                     
-                    <Grid 
-                       renderOrder={-1} 
-                       position={[0, -50, 0]} 
-                       infiniteGrid 
-                       cellSize={10} 
-                       cellThickness={0.5} 
-                       sectionSize={50} 
-                       sectionThickness={1.5} 
-                       cellColor={'#27272a'} 
-                       sectionColor={'#3f3f46'} 
-                       fadeDistance={400} 
-                    />
+                    {showGrid && (
+                        <Grid 
+                           renderOrder={-1} 
+                           position={[0, -0.01, 0]} 
+                           infiniteGrid 
+                           cellSize={10} 
+                           cellThickness={0.5} 
+                           sectionSize={50} 
+                           sectionThickness={1} 
+                           cellColor={roomTheme === 'dark' ? '#27272a' : '#d4d4d8'} 
+                           sectionColor={roomTheme === 'dark' ? '#3f3f46' : '#a1a1aa'} 
+                           fadeDistance={200} 
+                        />
+                    )}
                     
                     <CameraPresets mode={viewMode} />
-                    <RoomWalls />
+                    <RoomWalls roomTheme={roomTheme} />
 
                     <React.Suspense fallback={null}>
                         <Environment preset="city" />
                         {activeProject?.assetUrls?.stl && (
                             <>
                                 <ContactShadows position={[0, -50, 0]} opacity={0.8} scale={300} blur={2.5} far={100} />
-                                <StlModel stlData={activeProject.assetUrls.stl} />
+                                <StlModel stlData={activeProject.assetUrls.stl} materialType={materialType} baseColor={primaryMaterialInfo.color} onLoaded={(size) => setModelSize(size)} />
                             </>
                         )}
                     </React.Suspense>

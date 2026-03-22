@@ -52,7 +52,7 @@ const WorldSimPage: React.FC = () => {
   const [isCloudSaving, setIsCloudSaving] = useState(false);
   const [isCloudModalOpen, setIsCloudModalOpen] = useState(false);
 
-  const [alonPanelWidth, setAlonPanelWidth] = useState(400);
+  const [hiloPanelWidth, setHiloPanelWidth] = useState(400);
   const isResizing = useRef(false);
   const dragStartX = useRef(0);
   const startWidth = useRef(0);
@@ -177,7 +177,7 @@ const WorldSimPage: React.FC = () => {
     const newWidth = startWidth.current - dx;
     const mainPanel = document.querySelector('main');
     const maxWidth = mainPanel ? mainPanel.clientWidth - 100 : 800;
-    setAlonPanelWidth(Math.max(300, Math.min(maxWidth, newWidth)));
+    setHiloPanelWidth(Math.max(300, Math.min(maxWidth, newWidth)));
   }, []);
   
   const handleMouseUp = useCallback(() => {
@@ -192,12 +192,12 @@ const WorldSimPage: React.FC = () => {
     e.preventDefault();
     isResizing.current = true;
     dragStartX.current = e.clientX;
-    startWidth.current = alonPanelWidth;
+    startWidth.current = hiloPanelWidth;
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
     document.body.style.cursor = 'col-resize';
     document.body.style.userSelect = 'none';
-  }, [alonPanelWidth, handleMouseMove, handleMouseUp]);
+  }, [hiloPanelWidth, handleMouseMove, handleMouseUp]);
 
   useEffect(() => {
     return () => {
@@ -357,7 +357,7 @@ const WorldSimPage: React.FC = () => {
             extension=".tSim"
           />
         </ThemePanel>
-        <div className="flex-1 grid overflow-hidden gap-2" style={{ gridTemplateColumns: `256px minmax(500px, 1fr) 6px ${alonPanelWidth}px` }}>
+        <div className="flex-1 grid overflow-hidden gap-2" style={{ gridTemplateColumns: `256px minmax(500px, 1fr) 6px ${hiloPanelWidth}px` }}>
           <ProjectSidebar 
             projects={projects} 
             activeProjectId={activeProjectId} 
