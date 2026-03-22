@@ -388,7 +388,7 @@ const StudioSimPage: React.FC = () => {
             areImagesExportable={false}
             isProjectActive={!!activeProject}
             onSaveToCloud={handleSaveToCloud}
-            onLoadFromCloud={handleDownloadFromCloud}
+            onLoadFromCloud={handleCloudModalOpen}
             isCloudSaving={isCloudSaving}
             cloudStorageUsed={cloudStorageUsed}
             extension=".studioSim"
@@ -402,10 +402,6 @@ const StudioSimPage: React.FC = () => {
                 projects={projects}
                 activeProjectId={activeProjectId}
                 baseRoute="/studiosim"
-                onSelectProject={(id) => {
-                    setActiveProjectId(id);
-                    localStorage.setItem('lastActiveStudioProjectId', id);
-                }}
                 onNewProject={() => navigate('/studio')}
                 onRenameProject={() => {}} 
                 triggerHierarchyView={triggerHierarchyView} 
@@ -415,10 +411,8 @@ const StudioSimPage: React.FC = () => {
                     if (target === 'studiosim') navigate(`/studiosim/${project.id}`);
                     else if (target === 'fabflow') navigate(`/fabflow/${project.id}`);
                 }}
-                onSaveToCloud={handleSaveToCloud}
-                onLoadFromCloud={handleDownloadFromCloud}
-                onDeleteFromCloud={handleDeleteFromCloud}
-                onDeleteLocalAll={() => {}}
+                onLoadCloudProject={handleDownloadFromCloud}
+                onDeleteCloudProject={handleDeleteFromCloud}
             />
         </div>
         
@@ -545,7 +539,7 @@ const StudioSimPage: React.FC = () => {
                         <GizmoViewport axisColors={['#ef4444', '#10b981', '#3b82f6']} labelColor="black" />
                     </GizmoHelper>
 
-                    <OrbitControls makeDefault autoRotate={false} minDistance={10} maxDistance={400} maxPolarAngle={Math.PI / 2 - 0.05} />
+                    <OrbitControls makeDefault autoRotate={false} minDistance={10} maxDistance={400} />
                 </Canvas>
                 
                 {!activeProject?.assetUrls?.stl && (

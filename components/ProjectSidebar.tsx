@@ -15,9 +15,11 @@ interface ProjectSidebarProps {
   cloudProjects?: import('../types').CloudProject[];
   onLoadCloudProject?: (proj: import('../types').CloudProject) => void;
   onDeleteCloudProject?: (proj: import('../types').CloudProject) => void;
+  onDeleteLocalProject?: (id: string) => void;
   cloudLoadingAction?: string | null;
   baseRoute?: string;
-  onPrepareForSim?: (project: DesignProject, target: 'studiosim' | 'fabflow') => void;
+  onPrepareForSim?: (project: DesignProject, target: 'studiosim' | 'fabflow' | 'prostudio') => void;
+  hideNewProjectButton?: boolean;
 }
 
 const classifyComponent = (item: BillOfMaterialItem): 'Structure' | 'Circuits' | 'Motion' | 'Other' => {
@@ -39,7 +41,7 @@ const classifyComponent = (item: BillOfMaterialItem): 'Structure' | 'Circuits' |
     return 'Other';
 };
 
-const HierarchyView: React.FC<{ project: DesignProject, onBack: () => void, onPrepareForSim?: (project: DesignProject, target: 'studiosim' | 'fabflow') => void }> = ({ project, onBack, onPrepareForSim }) => {
+const HierarchyView: React.FC<{ project: DesignProject, onBack: () => void, onPrepareForSim?: (project: DesignProject, target: 'studiosim' | 'fabflow' | 'prostudio') => void }> = ({ project, onBack, onPrepareForSim }) => {
     const hierarchy = useMemo(() => {
         if (!project.specs?.bom) return null;
         
@@ -94,6 +96,12 @@ const HierarchyView: React.FC<{ project: DesignProject, onBack: () => void, onPr
             </div>
             <div className="p-4 border-t border-zinc-800 shrink-0 space-y-2">
                 <button
+                    onClick={() => onPrepareForSim?.(project, 'prostudio')}
+                    className="w-full py-2 bg-blue-600/10 text-blue-400 hover:bg-blue-600/30 rounded transition-colors text-sm font-medium border border-blue-500/20 flex items-center justify-center gap-2"
+                >
+                    <Wrench className="w-4 h-4" /> Load in ProStudio
+                </button>
+                <button
                     onClick={() => onPrepareForSim?.(project, 'studiosim')}
                     className="w-full py-2 bg-emerald-600/10 text-emerald-400 hover:bg-emerald-600/30 rounded transition-colors text-sm font-medium border border-emerald-500/20 flex items-center justify-center gap-2"
                 >
@@ -123,7 +131,9 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
   onDeleteCloudProject,
   cloudLoadingAction,
   baseRoute = "/studio",
-  onPrepareForSim
+  onPrepareForSim,
+  hideNewProjectButton,
+  onDeleteLocalProject
 }) => {
   const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState('');
@@ -168,9 +178,11 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
         <div className="slide-panel flex flex-col" style={{ transform: isHierarchyVisible ? 'translateX(-100%)' : 'translateX(0)' }}>
             <div className="px-4 py-2 border-b border-zinc-800 shrink-0 bg-transparent flex items-center justify-between">
                 <h2 className="text-subheading font-normal text-white uppercase tracking-tighter">WORKSPACE</h2>
-                <button onClick={onNewProject} className="w-5 h-5 flex items-center justify-center -mr-1 rounded hover:bg-zinc-800 text-zinc-400 hover:text-white transition-colors" title="New Project">
-                    <Plus className="w-4 h-4" />
-                </button>
+                {!hideNewProjectButton && (
+                    <button onClick={onNewProject} className="w-5 h-5 flex items-center justify-center -mr-1 rounded hover:bg-zinc-800 text-zinc-400 hover:text-white transition-colors" title="New Project">
+                        <Plus className="w-4 h-4" />
+                    </button>
+                )}
             </div>
             
             <div className="flex-1 flex flex-col overflow-hidden">
@@ -195,7 +207,7 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
                     <div className="flex-1 truncate">
                         {editingProjectId === project.id ? (
                             <form onSubmit={handleRenameSubmit}>
-                                <input type="text" value={editingName} onChange={(e) => setEditingName(e.target.value)} onBlur={() => setEditingProjectId(null)} autoFocus className="w-full bg-zinc-700 text-white text-detail p-0 m-0 border-none outline-none focus:ring-0" />
+                                <input type="text" value={editingName} onChange={(e) => setEditingName(e.target.value)} onFocus={(e) => e.target.select()} onBlur={() => setEditingProjectId(null)} autoFocus className="w-full bg-zinc-700 text-white text-detail p-1 rounded border-none outline-none focus:ring-1 focus:ring-blue-500" />
                             </form>
                         ) : (
                             <div className="font-medium text-detail truncate" title="Double-click to rename">{project.name}</div>

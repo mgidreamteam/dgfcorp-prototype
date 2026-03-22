@@ -87,6 +87,7 @@ export interface DesignProject {
   circuitComponents: CircuitComponent[] | null;
   assemblyParts?: { id: string; name: string; stlUrl: string; transform: [number, number, number] }[];
   vendorMatches?: VendorMatch[];
+  nodes?: any[];
 }
 
 export type VendorCategory = 'Injection Molding' | 'PCB & Electronics' | 'CNC Machining' | '3D Printing' | 'Assembly' | 'Materials';

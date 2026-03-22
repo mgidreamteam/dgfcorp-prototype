@@ -585,7 +585,7 @@ const FabFlowPage: React.FC = () => {
                                 <GizmoViewport axisColors={['#ef4444', '#10b981', '#3b82f6']} labelColor="black" />
                             </GizmoHelper>
 
-                            <OrbitControls makeDefault autoRotate={false} minDistance={20} maxDistance={500} maxPolarAngle={Math.PI / 2 - 0.05} />
+                            <OrbitControls makeDefault autoRotate={false} minDistance={20} maxDistance={500} />
                         </Canvas>
 
                     </div>

@@ -654,6 +654,7 @@ const StudioPage: React.FC = () => {
             onPrepareForSim={(project, target) => {
                 if (target === 'studiosim') navigate(`/studiosim/${project.id}`);
                 else if (target === 'fabflow') navigate(`/fabflow/${project.id}`);
+                else if (target === 'prostudio') navigate(`/prostudio/${project.id}`);
             }}
           />
           <ThemePanel translucent className="flex flex-col h-full overflow-hidden relative z-10">

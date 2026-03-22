@@ -35,10 +35,6 @@ export const ProjectProvider: React.FC<{ children: ReactNode }> = ({ children })
         const lastActiveId = localStorage.getItem('lastActiveStudioProjectId');
         if (lastActiveId && initialState.projects.some(p => p.id === lastActiveId)) {
             setActiveProjectId(lastActiveId);
-        } else if (initialState.projects.length > 0) {
-            // Fallback to most recent project
-            const newest = [...initialState.projects].sort((a, b) => b.createdAt - a.createdAt)[0];
-            setActiveProjectId(newest.id);
         }
         
         setIsLoaded(true);

@@ -14,6 +14,9 @@ importers:
       '@react-google-maps/api':
         specifier: ^2.20.8
         version: 2.20.8(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      '@react-three/csg':
+        specifier: ^4.0.0
+        version: 4.0.0(three@0.183.2)
       '@react-three/drei':
         specifier: ^10.7.7
         version: 10.7.7(@react-three/fiber@9.5.0(@types/react@19.2.14)(immer@11.1.4)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.183.2))(@types/react@19.2.14)(@types/three@0.183.1)(immer@11.1.4)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.183.2)
@@ -59,6 +62,9 @@ importers:
       three:
         specifier: ^0.183.2
         version: 0.183.2
+      three-bvh-csg:
+        specifier: ^0.0.18
+        version: 0.0.18(three-mesh-bvh@0.8.3(three@0.183.2))(three@0.183.2)
       uuid:
         specifier: ^13.0.0
         version: 13.0.0
@@ -75,6 +81,12 @@ importers:
       '@types/node':
         specifier: ^22.14.0
         version: 22.19.15
+      '@types/react':
+        specifier: ^19.2.14
+        version: 19.2.14
+      '@types/react-dom':
+        specifier: ^19.2.3
+        version: 19.2.3(@types/react@19.2.14)
       concurrently:
         specifier: ^9.2.1
         version: 9.2.1
@@ -641,6 +653,9 @@ packages:
   '@react-google-maps/marker-clusterer@2.20.0':
     resolution: {integrity: sha512-tieX9Va5w1yP88vMgfH1pHTacDQ9TgDTjox3tLlisKDXRQWdjw+QeVVghhf5XqqIxXHgPdcGwBvKY6UP+SIvLw==}
 
+  '@react-three/csg@4.0.0':
+    resolution: {integrity: sha512-IMLKGINdyQEUfyg3CE1gYoH9lK5RDR90vhXG21vHyo2kVAuslTnsH9GTVat69YglvNqHoEIMExTGLdhzm5/ygQ==}
+
   '@react-three/drei@10.7.7':
     resolution: {integrity: sha512-ff+J5iloR0k4tC++QtD/j9u3w5fzfgFAWDtAGQah9pF2B1YgOq/5JxqY0/aVoQG5r3xSZz0cv5tk2YuBob4xEQ==}
     peerDependencies:
@@ -919,6 +934,11 @@ packages:
 
   '@types/range-parser@1.2.7':
     resolution: {integrity: sha512-hKormJbkJqzQGhziax5PItDUTMAM9uE2XXQmM37dyd4hVM+5aVl7oVxMVUiVQn2oCQFN/LKCZdvSM0pFRqbSmQ==}
+
+  '@types/react-dom@19.2.3':
+    resolution: {integrity: sha512-jp2L/eY6fn+KgVVQAOqYItbF0VY/YApe5Mz2F0aykSO8gx31bYCZyvSeYxCHKvzHG5eZjc+zyaS5BrBWya2+kQ==}
+    peerDependencies:
+      '@types/react': ^19.2.0
 
   '@types/react-reconciler@0.28.9':
     resolution: {integrity: sha512-HHM3nxyUZ3zAylX8ZEyrDNd2XZOnQ0D5XfunJF5FLQnZbHHYq4UWvW1QfelQNXv1ICNkwYhfxjwfnqivYB6bFg==}
@@ -1834,6 +1854,23 @@ packages:
     peerDependencies:
       react: '>=17.0'
 
+  three-bvh-csg@0.0.16:
+    resolution: {integrity: sha512-RgC5dY0hAKdfd1bmD3o2CDfmK9GTkvsA1ECzoqTMhSkjSc2zp1z4Wpa5+emLi/EosF5P6+aK2veTxTLZA9+Mhw==}
+    peerDependencies:
+      three: '>=0.151.0'
+      three-mesh-bvh: '>=0.6.6'
+
+  three-bvh-csg@0.0.18:
+    resolution: {integrity: sha512-M3GCZMmGFgASGuDf+YMamM83nVlD/vdwzVHcYbFxgW+g1S7/nKPiuY00YVHOMbjmJPh8mLevGZL65ItHUuGt2w==}
+    peerDependencies:
+      three: '>=0.179.0'
+      three-mesh-bvh: '>=0.9.7'
+
+  three-mesh-bvh@0.6.8:
+    resolution: {integrity: sha512-EGebF9DZx1S8+7OZYNNTT80GXJZVf+UYXD/HyTg/e2kR/ApofIFfUS4ZzIHNnUVIadpnLSzM4n96wX+l7GMbnQ==}
+    peerDependencies:
+      three: '>= 0.151.0'
+
   three-mesh-bvh@0.8.3:
     resolution: {integrity: sha512-4G5lBaF+g2auKX3P0yqx+MJC6oVt6sB5k+CchS6Ob0qvH0YIhuUk1eYr7ktsIpY+albCqE80/FVQGV190PmiAg==}
     peerDependencies:
@@ -2688,6 +2725,13 @@ snapshots:
 
   '@react-google-maps/marker-clusterer@2.20.0': {}
 
+  '@react-three/csg@4.0.0(three@0.183.2)':
+    dependencies:
+      three-bvh-csg: 0.0.16(three-mesh-bvh@0.6.8(three@0.183.2))(three@0.183.2)
+      three-mesh-bvh: 0.6.8(three@0.183.2)
+    transitivePeerDependencies:
+      - three
+
   '@react-three/drei@10.7.7(@react-three/fiber@9.5.0(@types/react@19.2.14)(immer@11.1.4)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.183.2))(@types/react@19.2.14)(@types/three@0.183.1)(immer@11.1.4)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.183.2)':
     dependencies:
       '@babel/runtime': 7.29.2
@@ -2926,6 +2970,10 @@ snapshots:
   '@types/qs@6.15.0': {}
 
   '@types/range-parser@1.2.7': {}
+
+  '@types/react-dom@19.2.3(@types/react@19.2.14)':
+    dependencies:
+      '@types/react': 19.2.14
 
   '@types/react-reconciler@0.28.9(@types/react@19.2.14)':
     dependencies:
@@ -3921,6 +3969,20 @@ snapshots:
   suspend-react@0.1.3(react@19.2.4):
     dependencies:
       react: 19.2.4
+
+  three-bvh-csg@0.0.16(three-mesh-bvh@0.6.8(three@0.183.2))(three@0.183.2):
+    dependencies:
+      three: 0.183.2
+      three-mesh-bvh: 0.6.8(three@0.183.2)
+
+  three-bvh-csg@0.0.18(three-mesh-bvh@0.8.3(three@0.183.2))(three@0.183.2):
+    dependencies:
+      three: 0.183.2
+      three-mesh-bvh: 0.8.3(three@0.183.2)
+
+  three-mesh-bvh@0.6.8(three@0.183.2):
+    dependencies:
+      three: 0.183.2
 
   three-mesh-bvh@0.8.3(three@0.183.2):
     dependencies:

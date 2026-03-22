@@ -1,0 +1,30 @@
+{
+  "name": "react-cad",
+  "version": "0.23.0",
+  "description": "A CAD system for producing constructive solid geometry in React",
+  "main": "lib/index.js",
+  "files": [
+    "lib/**/*",
+    "types/**/*"
+  ],
+  "repository": "github:react-cad/react-cad",
+  "homepage": "https://github.com/react-cad/react-cad",
+  "bugs": "https://github.com/react-cad/react-cad/issues",
+  "author": {
+    "name": "React CAD Dev",
+    "email": "react.cad.dev@gmail.com"
+  },
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc",
+    "start": "tsc --watch --preserveWatchOutput"
+  },
+  "dependencies": {
+    "@react-cad/core": "^0.23.0",
+    "@react-cad/renderer": "^0.23.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "gitHead": "021d53db8b9a13e6b5d6c91fb1c04834f518cb8b"
+}
