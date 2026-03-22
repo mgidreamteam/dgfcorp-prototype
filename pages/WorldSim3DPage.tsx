@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { loadStateFromStorage, useAutoSave } from '../hooks/useAutoSave';
+import { useProject } from '../contexts/ProjectContext';
 import { DesignProject, CloudProject, AgentLog, DesignStatus } from '../types';
 import { auth, db, storage } from '../services/firebase';
 import { collection, getDocs, doc, deleteDoc, setDoc } from 'firebase/firestore';
@@ -46,22 +46,18 @@ const WorldSim3DPage: React.FC = () => {
   const [viewMode, setViewMode] = useState<ViewMode>('3D');
   const gridTemplateColumns = `256px minmax(500px, 1fr) 6px ${hiloPanelWidth}px`;
 
-  const [projects, setProjects] = useState<DesignProject[]>(() => loadStateFromStorage().projects);
-  const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
-  const [agentLogs] = useState<AgentLog[]>(() => loadStateFromStorage().logs);
-  
-  useAutoSave(projects, agentLogs);
+  const { projects, setProjects, activeProjectId, setActiveProjectId } = useProject();
 
   const [cloudProjects, setCloudProjects] = useState<CloudProject[]>([]);
   const [isCloudSaving, setIsCloudSaving] = useState(false);
 
   useEffect(() => {
-    if (projectId) {
+    if (projectId && projectId !== activeProjectId) {
         setActiveProjectId(projectId);
-    } else if (projects.length > 0) {
-        navigate(`/worldsim3d/${projects[0].id}`, { replace: true });
+    } else if (!projectId && activeProjectId) {
+        navigate(`/worldsim3d/${activeProjectId}`, { replace: true });
     }
-  }, [projectId, projects, navigate]);
+  }, [projectId, activeProjectId, navigate, setActiveProjectId]);
 
   const fetchCloudProjects = useCallback(async () => {
     if (!auth.currentUser) return;

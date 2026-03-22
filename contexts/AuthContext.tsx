@@ -1,6 +1,6 @@
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 import { auth, db } from '../services/firebase';
-import { onAuthStateChanged, signInWithEmailAndPassword, signOut, User } from 'firebase/auth';
+import { onAuthStateChanged, signInWithEmailAndPassword, signOut, User, setPersistence, browserSessionPersistence } from 'firebase/auth';
 import { doc, getDoc, setDoc, updateDoc, increment } from 'firebase/firestore';
 
 export interface UserProfile {
@@ -50,6 +50,34 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     return () => { if (sessionInterval) clearInterval(sessionInterval); };
   }, [user, profile?.status, profile?.role]);
+
+  // Session Inactivity Timeout
+  useEffect(() => {
+    let timeoutId: ReturnType<typeof setTimeout>;
+    const INACTIVITY_LIMIT = 30 * 60 * 1000; // 30 minutes
+    
+    const resetTimer = () => {
+      clearTimeout(timeoutId);
+      if (user) {
+        timeoutId = setTimeout(() => {
+          console.warn("Session expired due to inactivity.");
+          signOut(auth);
+        }, INACTIVITY_LIMIT);
+      }
+    };
+    
+    window.addEventListener('mousemove', resetTimer);
+    window.addEventListener('keydown', resetTimer);
+    window.addEventListener('click', resetTimer);
+    resetTimer(); // Initialize
+    
+    return () => {
+      clearTimeout(timeoutId);
+      window.removeEventListener('mousemove', resetTimer);
+      window.removeEventListener('keydown', resetTimer);
+      window.removeEventListener('click', resetTimer);
+    };
+  }, [user]);
 
   useEffect(() => {
     if (!user) return;
@@ -158,6 +186,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
+      await setPersistence(auth, browserSessionPersistence);
       await signInWithEmailAndPassword(auth, email, password);
       // Let onAuthStateChanged handle profile loading
       return true;

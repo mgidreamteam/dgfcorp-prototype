@@ -1,22 +1,24 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import LoginPage from '../pages/LoginPage';
-import RegisterPage from '../pages/RegisterPage';
-import DashboardPage from '../pages/DashboardPage';
-import UserManagementPage from '../pages/UserManagementPage';
-import VendorAdminPage from '../pages/VendorAdminPage';
-import StudioPage from '../pages/StudioPage';
-import ProStudioPage from '../pages/ProStudioPage';
+import TopProgressBar from '../components/TopProgressBar';
 import MainLayout from '../layouts/MainLayout';
-import ProfilePage from '../pages/ProfilePage';
-import AboutPage from '../pages/AboutPage';
-import InnovationPage from '../pages/InnovationPage';
-import WorldSimPage from '../pages/WorldSimPage';
-import WorldSim3DPage from '../pages/WorldSim3DPage';
-import StudioSimPage from '../pages/StudioSimPage';
-import FabFlowPage from '../pages/FabFlowPage';
 import PublicLayout from '../layouts/PublicLayout';
+
+const LoginPage = React.lazy(() => import('../pages/LoginPage'));
+const RegisterPage = React.lazy(() => import('../pages/RegisterPage'));
+const DashboardPage = React.lazy(() => import('../pages/DashboardPage'));
+const UserManagementPage = React.lazy(() => import('../pages/UserManagementPage'));
+const VendorAdminPage = React.lazy(() => import('../pages/VendorAdminPage'));
+const StudioPage = React.lazy(() => import('../pages/StudioPage'));
+const ProStudioPage = React.lazy(() => import('../pages/ProStudioPage'));
+const ProfilePage = React.lazy(() => import('../pages/ProfilePage'));
+const AboutPage = React.lazy(() => import('../pages/AboutPage'));
+const InnovationPage = React.lazy(() => import('../pages/InnovationPage'));
+const WorldSimPage = React.lazy(() => import('../pages/WorldSimPage'));
+const WorldSim3DPage = React.lazy(() => import('../pages/WorldSim3DPage'));
+const StudioSimPage = React.lazy(() => import('../pages/StudioSimPage'));
+const FabFlowPage = React.lazy(() => import('../pages/FabFlowPage'));
 
 const ProtectedRoute: React.FC = () => {
     const { isAuthenticated, profile, logout } = useAuth();
@@ -52,37 +54,39 @@ const ProtectedRoute: React.FC = () => {
 const AppRouter: React.FC = () => {
     const { isAuthenticated } = useAuth();
     return (
-        <Routes>
-            <Route element={<PublicLayout />}>
-                <Route path="/login" element={isAuthenticated ? <Navigate to="/studio" replace /> : <LoginPage />} />
-                <Route path="/register" element={isAuthenticated ? <Navigate to="/studio" replace /> : <RegisterPage />} />
-                <Route path="/about" element={<AboutPage />} />
-                <Route path="/innovation" element={<InnovationPage />} />
-            </Route>
-
-            <Route element={<ProtectedRoute />}>
-                <Route element={<MainLayout />}>
-                    <Route path="/dashboard" element={<DashboardPage />} />
-                    <Route path="/admin/users" element={<UserManagementPage />} />
-                    <Route path="/profile" element={<ProfilePage />} />
-                    <Route path="/admin/gigafactory" element={<VendorAdminPage />} />
-                    <Route path="/studio" element={<StudioPage />} />
-                    <Route path="/studio/:projectId" element={<StudioPage />} />
-                    <Route path="/prostudio" element={<ProStudioPage />} />
-                    <Route path="/prostudio/:projectId" element={<ProStudioPage />} />
-                    <Route path="/studiosim" element={<StudioSimPage />} />
-                    <Route path="/studiosim/:projectId" element={<StudioSimPage />} />
-                    <Route path="/worldsim" element={<WorldSimPage />} />
-                    <Route path="/worldsim/:projectId" element={<WorldSimPage />} />
-                    <Route path="/worldsim3d" element={<WorldSim3DPage />} />
-                    <Route path="/worldsim3d/:projectId" element={<WorldSim3DPage />} />
-                    <Route path="/fabflow" element={<FabFlowPage />} />
-                    <Route path="/fabflow/:projectId" element={<FabFlowPage />} />
+        <Suspense fallback={<TopProgressBar />}>
+            <Routes>
+                <Route element={<PublicLayout />}>
+                    <Route path="/login" element={isAuthenticated ? <Navigate to="/studio" replace /> : <LoginPage />} />
+                    <Route path="/register" element={isAuthenticated ? <Navigate to="/studio" replace /> : <RegisterPage />} />
+                    <Route path="/about" element={<AboutPage />} />
+                    <Route path="/innovation" element={<InnovationPage />} />
                 </Route>
-            </Route>
 
-            <Route path="*" element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />} />
-        </Routes>
+                <Route element={<ProtectedRoute />}>
+                    <Route element={<MainLayout />}>
+                        <Route path="/dashboard" element={<DashboardPage />} />
+                        <Route path="/admin/users" element={<UserManagementPage />} />
+                        <Route path="/profile" element={<ProfilePage />} />
+                        <Route path="/admin/gigafactory" element={<VendorAdminPage />} />
+                        <Route path="/studio" element={<StudioPage />} />
+                        <Route path="/studio/:projectId" element={<StudioPage />} />
+                        <Route path="/prostudio" element={<ProStudioPage />} />
+                        <Route path="/prostudio/:projectId" element={<ProStudioPage />} />
+                        <Route path="/studiosim" element={<StudioSimPage />} />
+                        <Route path="/studiosim/:projectId" element={<StudioSimPage />} />
+                        <Route path="/worldsim" element={<WorldSimPage />} />
+                        <Route path="/worldsim/:projectId" element={<WorldSimPage />} />
+                        <Route path="/worldsim3d" element={<WorldSim3DPage />} />
+                        <Route path="/worldsim3d/:projectId" element={<WorldSim3DPage />} />
+                        <Route path="/fabflow" element={<FabFlowPage />} />
+                        <Route path="/fabflow/:projectId" element={<FabFlowPage />} />
+                    </Route>
+                </Route>
+
+                <Route path="*" element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />} />
+            </Routes>
+        </Suspense>
     );
 };
 

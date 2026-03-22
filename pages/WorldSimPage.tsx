@@ -8,7 +8,7 @@ import DeleteConfirmationDialog from '../components/DeleteConfirmationDialog';
 import { CloudProject, DesignProject, DesignStatus, AgentLog } from '../types';
 import { generateHardwareSpecs } from '../services/gemini';
 import { AlertCircle, Loader2, Map as MapIcon, Globe, Navigation, ZoomIn, ZoomOut, Compass, Wind, Plane, Eye } from 'lucide-react';
-import { useAutoSave, loadStateFromStorage } from '../hooks/useAutoSave';
+import { useProject } from '../contexts/ProjectContext';
 import { useAuth } from '../contexts/AuthContext';
 import { auth, db, storage } from '../services/firebase';
 import { collection, getDocs, doc, deleteDoc, setDoc } from 'firebase/firestore';
@@ -31,10 +31,8 @@ const WorldSimPage: React.FC = () => {
 
   const [mapType, setMapType] = useState<google.maps.MapTypeId | 'hybrid' | 'roadmap' | 'satellite'>('satellite');
   
-  const [projects, setProjects] = useState<DesignProject[]>(() => loadStateFromStorage().projects);
-  const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
+  const { projects, setProjects, activeProjectId, setActiveProjectId, agentLogs, addLog } = useProject();
   const [error, setError] = useState<string | null>(null);
-  const [agentLogs, setAgentLogs] = useState<AgentLog[]>(() => loadStateFromStorage().logs);
   const [triggerHierarchyView, setTriggerHierarchyView] = useState<string | null>(null);
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
   
@@ -58,27 +56,13 @@ const WorldSimPage: React.FC = () => {
   const startWidth = useRef(0);
   const hasInitiallyLoaded = useRef(false);
 
-  useAutoSave(projects, agentLogs);
-
   useEffect(() => {
-    if (!hasInitiallyLoaded.current && !projectId && projects.length > 0) {
-      const lastActiveId = localStorage.getItem('lastActiveWorldSimProjectId');
-      const targetId = (lastActiveId && projects.some(p => p.id === lastActiveId))
-          ? lastActiveId 
-          : [...projects].sort((a, b) => b.createdAt - a.createdAt)[0]?.id;
-          
-      if (targetId) {
-        navigate(`/worldsim/${targetId}`, { replace: true });
-        hasInitiallyLoaded.current = true;
-        return;
-      }
+    if (projectId && projectId !== activeProjectId) {
+      setActiveProjectId(projectId);
+    } else if (!projectId && activeProjectId) {
+      navigate(`/worldsim/${activeProjectId}`, { replace: true });
     }
-    hasInitiallyLoaded.current = true;
-    setActiveProjectId(projectId || null);
-    if (projectId) {
-      localStorage.setItem('lastActiveWorldSimProjectId', projectId);
-    }
-  }, [projectId, projects, navigate]);
+  }, [projectId, activeProjectId, navigate, setActiveProjectId]);
 
   const fetchCloudProjects = useCallback(async () => {
     if (!auth.currentUser) return;
@@ -154,7 +138,7 @@ const WorldSimPage: React.FC = () => {
   const activeProject = useMemo(() => projects.find(p => p.id === activeProjectId), [projects, activeProjectId]);
   const isGenerating = useMemo(() => projects.some(p => p.status.startsWith('GENERATING_')), [projects]);
 
-  const addLog = useCallback((log: Omit<AgentLog, 'id' | 'timestamp'>) => setAgentLogs(prev => [{ ...log, id: generateId(), timestamp: Date.now() }, ...prev]), []);
+
 
   useEffect(() => {
     const handleTokens = (e: Event) => {

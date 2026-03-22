@@ -3,8 +3,42 @@ import { DesignProject, DesignStatus } from '../types';
 import AssetViewer from './AssetViewer';
 import SpecViewer from './SpecViewer';
 import { vendors } from '../data/vendors';
+import { useProject } from '../contexts/ProjectContext';
 import { Loader2, RefreshCw, Eye, EyeOff, XCircle } from 'lucide-react';
 import { Factory } from 'lucide-react';
+
+const EditableText = ({ value, onSave, className }: { value: string, onSave: (v: string) => void, className?: string }) => {
+    const [isEditing, setIsEditing] = React.useState(false);
+    const [tempValue, setTempValue] = React.useState(value);
+
+    React.useEffect(() => { setTempValue(value); }, [value]);
+
+    if (isEditing) {
+        return (
+            <textarea
+                autoFocus
+                className={`w-full bg-zinc-900 border border-blue-500 rounded p-2 text-zinc-300 focus:outline-none focus:ring-1 focus:ring-blue-500 ${className}`}
+                value={tempValue}
+                onChange={(e) => setTempValue(e.target.value)}
+                onBlur={() => { setIsEditing(false); if (tempValue !== value) onSave(tempValue); }}
+                onKeyDown={(e) => { 
+                    if(e.key === 'Escape') { setIsEditing(false); setTempValue(value); } 
+                }}
+                rows={4}
+            />
+        );
+    }
+    return (
+        <div 
+            className={`cursor-pointer hover:bg-zinc-800/80 p-2 -m-2 rounded transition-colors group relative ${className}`}
+            onClick={() => setIsEditing(true)}
+            title="Click to edit"
+        >
+            {value}
+            <span className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 text-zinc-500 text-xs bg-zinc-800 px-2 py-1 rounded">Click to edit</span>
+        </div>
+    );
+};
 
 interface ProjectViewProps {
   project: DesignProject;
@@ -15,6 +49,7 @@ interface ProjectViewProps {
 }
 
 const ProjectView: React.FC<ProjectViewProps> = ({ project, isGenerating, onRetry, onStartOver, onRerunSimulation }) => {
+  const { updateProjectField } = useProject();
   const hasSpecs = !!project.specs;
   const hasElectronics = hasSpecs ? project.specs!.bom.some(i => i.type.toLowerCase().includes('electronic')) : true;
   const hasMechanical = hasSpecs ? project.specs!.bom.some(i => !i.type.toLowerCase().includes('electronic')) : true;
@@ -122,7 +157,11 @@ const ProjectView: React.FC<ProjectViewProps> = ({ project, isGenerating, onRetr
               </div>
               <div className="bg-white/10 text-zinc-300 px-3 py-1 rounded-full text-micro border border-white/20">v1.0-draft</div>
             </div>
-            <p className="text-body text-zinc-300 mt-4 leading-relaxed">{project.specs.description}</p>
+            <EditableText 
+                value={project.specs.description} 
+                onSave={(v) => updateProjectField(project.id, 'specs.description', v)}
+                className="text-body text-zinc-300 mt-4 leading-relaxed" 
+            />
             <div className="mt-6 pt-6 border-t border-zinc-800">
               <h4 className="text-detail font-bold text-zinc-400 uppercase tracking-wider mb-2 flex items-center gap-2">
                 <Factory className="w-4 h-4" />
@@ -138,6 +177,7 @@ const ProjectView: React.FC<ProjectViewProps> = ({ project, isGenerating, onRetr
             openScadCode={project.openScadCode}
             onRerunSimulation={onRerunSimulation}
             hasElectronics={hasElectronics}
+            onUpdateProjectField={(field, val) => updateProjectField(project.id, field, val)}
           />
         </>
       ) : (!isGenerating && project.status !== DesignStatus.ERROR && (

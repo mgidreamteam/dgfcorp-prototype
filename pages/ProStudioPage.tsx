@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import ProjectSidebar from '../components/ProjectSidebar';
 import FileMenuBar from '../components/MenuBar';
 import { CloudProject, DesignProject, AgentLog } from '../types';
-import { useAutoSave, loadStateFromStorage } from '../hooks/useAutoSave';
+import { useProject } from '../contexts/ProjectContext';
 import { useAuth } from '../contexts/AuthContext';
 import ThemePanel from '../components/ThemePanel';
 import { auth, db, storage } from '../services/firebase';
@@ -15,9 +15,7 @@ const ProStudioPage: React.FC = () => {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
 
-  const [projects, setProjects] = useState<DesignProject[]>(() => loadStateFromStorage().projects);
-  const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
-  const [agentLogs] = useState<AgentLog[]>(() => loadStateFromStorage().logs);
+  const { projects, setProjects, activeProjectId, setActiveProjectId } = useProject();
   
   const [cloudProjects, setCloudProjects] = useState<CloudProject[]>([]);
   const [isCloudSaving, setIsCloudSaving] = useState(false);
@@ -25,19 +23,13 @@ const ProStudioPage: React.FC = () => {
 
   const [hiloPanelWidth, setHiloPanelWidth] = useState(400);
 
-  useAutoSave(projects, agentLogs);
-
   useEffect(() => {
-    setActiveProjectId(projectId || null);
-    if (projectId) {
-      localStorage.setItem('lastActiveStudioProjectId', projectId);
-    } else {
-        const lastActiveId = localStorage.getItem('lastActiveStudioProjectId');
-        if (lastActiveId && projects.some(p => p.id === lastActiveId)) {
-            navigate(`/prostudio/${lastActiveId}`, { replace: true });
-        }
+    if (projectId && projectId !== activeProjectId) {
+      setActiveProjectId(projectId);
+    } else if (!projectId && activeProjectId) {
+      navigate(`/prostudio/${activeProjectId}`, { replace: true });
     }
-  }, [projectId, projects, navigate]);
+  }, [projectId, activeProjectId, navigate, setActiveProjectId]);
 
   const fetchCloudProjects = async () => {
     if (!auth.currentUser) return;
@@ -140,6 +132,7 @@ const ProStudioPage: React.FC = () => {
               setProjects(prev => prev.filter(p => p.id !== activeProject.id));
               navigate('/prostudio');
           }}
+          onImportStl={() => alert("Import STL native mesh replacement tool launching shortly")}
           onExportStl={() => {}}
           isStlReady={false}
           onExportImages={() => {}}

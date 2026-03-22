@@ -4,7 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import ThemePanel from '../components/ThemePanel';
 import ProjectSidebar from '../components/ProjectSidebar';
 import FileMenuBar from '../components/MenuBar';
-import { loadStateFromStorage } from '../hooks/useAutoSave';
+import { useProject } from '../contexts/ProjectContext';
 import { DesignProject, CloudProject } from '../types';
 import { auth, db, storage } from '../services/firebase';
 import { collection, doc, setDoc, getDocs, deleteDoc } from 'firebase/firestore';
@@ -44,14 +44,17 @@ const StlModel: React.FC<{
     const blob = new Blob([stlData], { type: 'model/stl' });
     const url = URL.createObjectURL(blob);
     loader.load(url, (geo) => {
-        geo.computeBoundingSphere();
-        geo.computeBoundingBox();
-        geo.computeVertexNormals(); // Crucial phase for high-resolution visual surface mapping
+        geo.rotateX(-Math.PI / 2); // Correct OpenSCAD Z-up orientation to ThreeJS Y-up
         geo.center();
-        if (onLoaded && geo.boundingBox) {
+        geo.computeBoundingBox();
+        if (geo.boundingBox) {
             const size = new THREE.Vector3();
             geo.boundingBox.getSize(size);
-            onLoaded({ x: size.x, y: size.y, z: size.z });
+            geo.translate(0, size.y / 2, 0);
+            geo.computeBoundingBox();
+            geo.computeBoundingSphere(); // Important: must be calculated AFTER all rotations/translations so WebGL doesn't aggressively frustum cull the "off-screen" offset
+            geo.computeVertexNormals(); // Crucial phase for high-resolution visual surface mapping
+            if (onLoaded) onLoaded({ x: size.x, y: size.y, z: size.z });
         }
         setGeometry(geo);
         URL.revokeObjectURL(url);
@@ -179,8 +182,8 @@ const FabFlowPage: React.FC = () => {
   const [triggerHierarchyView, setTriggerHierarchyView] = useState<string | null>(null);
   const gridTemplateColumns = `256px minmax(500px, 1fr) 6px ${hiloPanelWidth}px`;
   
-  const [projects, setProjects] = useState<DesignProject[]>(() => loadStateFromStorage().projects);
-  const [activeProject, setActiveProject] = useState<DesignProject | null>(null);
+  const { projects, setProjects, activeProjectId, setActiveProjectId } = useProject();
+  const activeProject = React.useMemo(() => projects.find(p => p.id === activeProjectId) || null, [projects, activeProjectId]);
   const [isGeneratingModel, setIsGeneratingModel] = useState(false);
   const [hoveredComponentId, setHoveredComponentId] = useState<string | null>(null);
   const [isExploded, setIsExploded] = useState(false);
@@ -202,13 +205,12 @@ const FabFlowPage: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (projectId) {
-        setActiveProject(projects.find(p => p.id === projectId) || null);
-        localStorage.setItem('lastActiveStudioProjectId', projectId);
-    } else {
-        setActiveProject(null);
+    if (projectId && projectId !== activeProjectId) {
+        setActiveProjectId(projectId);
+    } else if (!projectId && activeProjectId) {
+        navigate(`/fabflow/${activeProjectId}`, { replace: true });
     }
-  }, [projectId, projects]);
+  }, [projectId, activeProjectId, navigate, setActiveProjectId]);
 
   const primaryMaterialInfo = React.useMemo(() => {
       let type: 'plastic' | 'matte' | 'metallic' = 'metallic';
@@ -352,7 +354,6 @@ const FabFlowPage: React.FC = () => {
           
           const updatedProj = { ...activeProject, assetUrls: { ...activeProject.assetUrls, stl: stlData } };
           setProjects(projects.map(p => p.id === activeProject.id ? updatedProj : p));
-          setActiveProject(updatedProj);
       } catch(err) {
           console.error(err);
           alert("Resolution generation failed: " + (err as any).message);
@@ -376,7 +377,31 @@ const FabFlowPage: React.FC = () => {
   };
 
   return (
-    <div className="h-full flex flex-col p-2 relative bg-black/90">
+    <div className="h-full flex flex-col gap-2 p-2 relative bg-black/90">
+      <ThemePanel className="w-full shrink-0">
+        <FileMenuBar
+            onNewProject={() => navigate('/studio')}
+            onSave={() => {}}
+            onImport={() => {}}
+            onDownload={handleDownloadProject}
+            onCloseProject={() => {
+                setActiveProjectId(null);
+                navigate('/fabflow');
+            }}
+            onDeleteProject={handleDeleteProject}
+            onImportStl={() => alert("Import STL native mesh replacement tool launching shortly")}
+            onExportStl={() => {}}
+            isStlReady={!!activeProject?.assetUrls?.stl}
+            onExportImages={() => {}}
+            areImagesExportable={false}
+            isProjectActive={!!activeProject}
+            onSaveToCloud={handleSaveToCloud}
+            onLoadFromCloud={() => {}}
+            isCloudSaving={isCloudSaving}
+            cloudStorageUsed={cloudStorageUsed}
+            extension=".fabFlow"
+        />
+      </ThemePanel>
       <div className="flex-1 grid overflow-hidden gap-2" style={{ gridTemplateColumns }}>
         
         {/* Left Sidebar: Project Mapping */}
@@ -399,26 +424,6 @@ const FabFlowPage: React.FC = () => {
         
         {/* Central Map / Exploded WebGL Canvas */}
         <ThemePanel translucent className="flex flex-col h-full overflow-hidden relative z-10 border border-yellow-500/10 shadow-[inset_0_0_50px_rgba(234,179,8,0.03)] rounded-lg bg-[#09090b]">
-            <div className="border-b border-zinc-800 bg-black/40">
-                <FileMenuBar
-                    onNewProject={() => navigate('/studio')}
-                    onSave={() => {}}
-                    onImport={() => {}}
-                    onDownload={handleDownloadProject}
-                    onCloseProject={() => navigate('/fabflow')}
-                    onDeleteProject={handleDeleteProject}
-                    onExportStl={() => {}}
-                    isStlReady={!!activeProject?.assetUrls?.stl}
-                    onExportImages={() => {}}
-                    areImagesExportable={false}
-                    isProjectActive={!!activeProject}
-                    onSaveToCloud={handleSaveToCloud}
-                    onLoadFromCloud={() => {}}
-                    isCloudSaving={isCloudSaving}
-                    cloudStorageUsed={cloudStorageUsed}
-                    extension=".fabFlow"
-                />
-            </div>
             <div className="px-4 py-2 border-b border-zinc-800/80 shrink-0 bg-transparent flex justify-between items-center bg-black/60">
                  <div className="flex items-center gap-2">
                      <div className="flex items-center gap-1 bg-black/60 p-1 rounded border border-yellow-500/20">

@@ -11,7 +11,7 @@ import ProjectView from '../components/ProjectView';
 import { CloudProject, DesignProject, DesignStatus, HardwareSpec, AgentLog } from '../types';
 import { analyzeUserIntent, getAnswerFromSpec, generateHardwareSpecs, generateProductRenderImage, generateProductExplodedViewImage, generateCircuitDiagramImage, generatePcbLayoutImage, generateOpenScadCode, generateStlFile, generateSkidlCode, runCircuitSimulation, rerunCircuitSimulation } from '../services/gemini';
 import { AlertCircle, Cloud, X, CloudDownload, Trash2, Loader2 } from 'lucide-react';
-import { useAutoSave, loadStateFromStorage } from '../hooks/useAutoSave';
+import { useProject } from '../contexts/ProjectContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import ThemePanel from '../components/ThemePanel';
@@ -96,10 +96,8 @@ const StudioPage: React.FC = () => {
   const navigate = useNavigate();
   const { dashboardTheme } = useTheme();
 
-  const [projects, setProjects] = useState<DesignProject[]>(() => loadStateFromStorage().projects);
-  const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
+  const { projects, setProjects, activeProjectId, setActiveProjectId, agentLogs, addLog } = useProject();
   const [error, setError] = useState<string | null>(null);
-  const [agentLogs, setAgentLogs] = useState<AgentLog[]>(() => loadStateFromStorage().logs);
   const [validationState, setValidationState] = useState<{ missingParams: string[]; prompt: string; } | null>(null);
   const [retryState, setRetryState] = useState<DesignProject | null>(null);
   const [triggerHierarchyView, setTriggerHierarchyView] = useState<string | null>(null);
@@ -120,32 +118,22 @@ const StudioPage: React.FC = () => {
   const startWidth = useRef(0);
   const hasInitiallyLoaded = useRef(false);
 
-  useAutoSave(projects, agentLogs);
+  useEffect(() => {
+    if (projectId && projectId !== activeProjectId) {
+      setActiveProjectId(projectId);
+    } else if (!projectId && activeProjectId) {
+      navigate(`/studio/${activeProjectId}`, { replace: true });
+    }
+  }, [projectId, activeProjectId, navigate, setActiveProjectId]);
 
   useEffect(() => {
-    if (!hasInitiallyLoaded.current && !projectId && projects.length > 0) {
-      const lastActiveId = localStorage.getItem('lastActiveStudioProjectId');
-      const targetId = (lastActiveId && projects.some(p => p.id === lastActiveId))
-          ? lastActiveId 
-          : [...projects].sort((a, b) => b.createdAt - a.createdAt)[0]?.id;
-          
-      if (targetId) {
-        navigate(`/studio/${targetId}`, { replace: true });
-        hasInitiallyLoaded.current = true;
-        return;
-      }
-    }
-    hasInitiallyLoaded.current = true;
-
-    setActiveProjectId(projectId || null);
-    if (projectId) {
-      localStorage.setItem('lastActiveStudioProjectId', projectId);
-      const project = projects.find(p => p.id === projectId);
+    if (activeProjectId) {
+      const project = projects.find(p => p.id === activeProjectId);
       if (project?.specs) {
-        setTriggerHierarchyView(projectId);
+        setTriggerHierarchyView(activeProjectId);
       }
     }
-  }, [projectId, projects, navigate]);
+  }, [activeProjectId, projects]);
 
   const fetchCloudProjects = useCallback(async () => {
     if (!auth.currentUser) return;
@@ -169,9 +157,7 @@ const StudioPage: React.FC = () => {
   const activeProject = useMemo(() => projects.find(p => p.id === activeProjectId), [projects, activeProjectId]);
   const isGenerating = useMemo(() => projects.some(p => p.status.startsWith('GENERATING_')), [projects]);
 
-  const addLog = useCallback((log: Omit<AgentLog, 'id' | 'timestamp'>) => {
-    setAgentLogs(prev => [{ ...log, id: generateId(), timestamp: Date.now() }, ...prev]);
-  }, []);
+
 
   useEffect(() => {
     const handleTokens = (e: Event) => {
@@ -589,6 +575,7 @@ const StudioPage: React.FC = () => {
   const handleCloseProject = () => {
     if(!activeProjectId) return;
     addLog({ content: `Closed project "${activeProject?.name}"`, type: 'output', projectId: activeProjectId });
+    setActiveProjectId(null);
     navigate('/studio');
   };
 
@@ -694,6 +681,7 @@ const StudioPage: React.FC = () => {
           onDownload={handleDownloadProject}
           onCloseProject={handleCloseProject}
           onDeleteProject={handleDeleteProject}
+          onImportStl={() => alert("Import STL native mesh replacement tool launching shortly")}
           onExportStl={handleExportStl}
           isStlReady={!!activeProject?.assetUrls?.stl}
           onExportImages={handleExportImages}

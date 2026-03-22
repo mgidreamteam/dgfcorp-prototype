@@ -1,7 +1,7 @@
 import React from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
-import { PlusCircle, Save, Trash2, FileInput, FileOutput, Box, ImageIcon, XSquare, CloudUpload, CloudDownload, Loader2, Moon, Sun, Cpu } from 'lucide-react';
+import { PlusCircle, Save, Trash2, FileInput, FileOutput, Box, ImageIcon, XSquare, CloudUpload, CloudDownload, Loader2, Moon, Sun, Cpu, Upload, Download, ArrowUp, ArrowDown } from 'lucide-react';
 
 interface FileMenuBarProps {
   onNewProject: () => void;
@@ -10,6 +10,7 @@ interface FileMenuBarProps {
   onDownload: () => void;
   onCloseProject: () => void;
   onDeleteProject: () => void;
+  onImportStl?: () => void;
   onExportStl: () => void;
   isStlReady: boolean;
   onExportImages: () => void;
@@ -29,6 +30,7 @@ const FileMenuBar: React.FC<FileMenuBarProps> = ({
     onDownload,
     onCloseProject,
     onDeleteProject,
+    onImportStl,
     onExportStl, 
     isStlReady, 
     onExportImages, 
@@ -76,11 +78,25 @@ const FileMenuBar: React.FC<FileMenuBarProps> = ({
             <CloudDownload className="w-5 h-5" />
         </button>
         <div className="h-5 w-px bg-zinc-700 mx-1.5"></div>
-        <button onClick={onExportStl} disabled={!isStlReady} className={isStlReady ? textBtnClass : disabledTextBtnClass} title="Export STL">
-          <Box className="w-5 h-5" /> STL
+        {onImportStl && (
+          <button onClick={onImportStl} className={iconBtnClass} title="Import STL (*.stl)">
+            <div className="relative">
+              <Box className="w-5 h-5 flex-shrink-0" />
+              <ArrowDown className="w-3.5 h-3.5 absolute -bottom-2 -left-2 text-emerald-400 stroke-[3] drop-shadow-md" />
+            </div>
+          </button>
+        )}
+        <button onClick={onExportStl} disabled={!isStlReady} className={isStlReady ? iconBtnClass : disabledIconBtnClass} title="Export STL">
+          <div className="relative">
+            <Box className="w-5 h-5 flex-shrink-0" />
+            <ArrowUp className="w-3.5 h-3.5 absolute -top-2 -right-2 text-blue-400 stroke-[3] drop-shadow-md" />
+          </div>
         </button>
         <button onClick={onExportImages} disabled={!areImagesExportable} className={areImagesExportable ? iconBtnClass : disabledIconBtnClass} title="Export Images">
-          <ImageIcon className="w-5 h-5" />
+          <div className="relative">
+            <ImageIcon className="w-5 h-5 flex-shrink-0" />
+            <ArrowUp className="w-3.5 h-3.5 absolute -top-2 -right-2 text-blue-400 stroke-[3] drop-shadow-md" />
+          </div>
         </button>
         <div className="h-5 w-px bg-zinc-700 mx-1.5"></div>
 

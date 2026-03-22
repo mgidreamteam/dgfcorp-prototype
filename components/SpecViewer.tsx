@@ -10,6 +10,7 @@ interface SpecViewerProps {
   openScadCode: string | null;
   onRerunSimulation: (modification: string) => Promise<void>;
   hasElectronics?: boolean;
+  onUpdateProjectField?: (fieldPath: string, value: any) => void;
 }
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF', '#FF19A3'];
@@ -117,22 +118,51 @@ const NetworkTab = React.memo(({ bomVendorMatches }: { bomVendorMatches: { bomIt
     </div>
 ));
 
-const ModelTab = React.memo(({ openScadCode }: { openScadCode: string | null }) => {
+const ModelTab = React.memo(({ openScadCode, onUpdateCode }: { openScadCode: string | null, onUpdateCode?: (code: string) => void }) => {
+    const [isEditing, setIsEditing] = useState(false);
+    const [tempCode, setTempCode] = useState(openScadCode || '');
+
+    React.useEffect(() => { setTempCode(openScadCode || ''); }, [openScadCode]);
+
     const handleCopyCode = () => {
-        if (openScadCode) {
-            navigator.clipboard.writeText(openScadCode);
-        }
+        if (openScadCode) navigator.clipboard.writeText(openScadCode);
     };
+
     if (!openScadCode) return <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-6 text-center text-zinc-500">OpenSCAD model not yet generated.</div>;
     return (
         <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-6">
             <h3 className="text-body font-bold text-zinc-400 uppercase tracking-wider mb-4 flex items-center justify-between">
                 <div className="flex items-center gap-2"><Cuboid className="w-4 h-4" /> OpenSCAD Code</div>
-                <button onClick={handleCopyCode} className="flex items-center gap-1.5 text-detail text-zinc-400 hover:text-white bg-zinc-800 hover:bg-zinc-700 px-2 py-1 rounded-md transition-colors">
-                    <Clipboard className="w-3 h-3" /> Copy
-                </button>
+                <div className="flex items-center gap-2">
+                    {onUpdateCode && (
+                        <button 
+                            onClick={() => {
+                                if (isEditing) {
+                                    setIsEditing(false);
+                                    if (tempCode !== openScadCode) onUpdateCode(tempCode);
+                                } else {
+                                    setIsEditing(true);
+                                }
+                            }} 
+                            className={`flex items-center gap-1.5 text-detail px-3 py-1.5 rounded-md transition-colors font-bold ${isEditing ? 'bg-blue-600 text-white hover:bg-blue-500' : 'bg-transparent border border-zinc-600 text-zinc-400 hover:text-white hover:border-zinc-400'}`}
+                        >
+                            {isEditing ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Code className="w-3.5 h-3.5" />} {isEditing ? 'Save' : 'Edit'}
+                        </button>
+                    )}
+                    <button onClick={handleCopyCode} className="flex items-center gap-1.5 text-detail text-zinc-400 hover:text-white bg-zinc-800 hover:bg-zinc-700 px-3 py-1.5 rounded-md transition-colors">
+                        <Clipboard className="w-3 h-3" /> Copy
+                    </button>
+                </div>
             </h3>
-            <pre className="bg-black/50 p-4 rounded-lg overflow-x-auto text-body text-zinc-300 max-h-96"><code>{openScadCode}</code></pre>
+            {isEditing ? (
+                <textarea
+                    className="w-full bg-zinc-950 border border-blue-500/50 p-4 rounded-lg text-body text-zinc-300 min-h-96 font-mono focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    value={tempCode}
+                    onChange={(e) => setTempCode(e.target.value)}
+                />
+            ) : (
+                <pre className="bg-black/50 p-4 rounded-lg overflow-x-auto text-body text-zinc-300 max-h-96"><code>{openScadCode}</code></pre>
+            )}
         </div>
     );
 });
@@ -208,7 +238,7 @@ const SimulationTab = React.memo(({ simulationData, onRerunSimulation }: { simul
     );
 });
 
-const SpecViewer: React.FC<SpecViewerProps> = ({ specs, vendors, simulationData, openScadCode, onRerunSimulation, hasElectronics = true }) => {
+const SpecViewer: React.FC<SpecViewerProps> = ({ specs, vendors, simulationData, openScadCode, onRerunSimulation, hasElectronics = true, onUpdateProjectField }) => {
   type TabName = 'specs' | 'model' | 'simulation' | 'details' | 'materials' | 'network';
   const [activeTab, setActiveTab] = useState<TabName>('specs');
   
@@ -271,7 +301,7 @@ const SpecViewer: React.FC<SpecViewerProps> = ({ specs, vendors, simulationData,
       
       <div className="animate-fade-in mt-6 spec-tab-content-container">
         <div className={activeTab === 'specs' ? 'block' : 'hidden'}><SpecsTab specs={specs} /></div>
-        <div className={activeTab === 'model' ? 'block' : 'hidden'}><ModelTab openScadCode={openScadCode} /></div>
+        <div className={activeTab === 'model' ? 'block' : 'hidden'}><ModelTab openScadCode={openScadCode} onUpdateCode={(c) => onUpdateProjectField && onUpdateProjectField('openScadCode', c)} /></div>
         <div className={activeTab === 'simulation' ? 'block' : 'hidden'}><SimulationTab simulationData={simulationData} onRerunSimulation={onRerunSimulation}/></div>
         <div className={activeTab === 'details' ? 'block' : 'hidden'}><DetailsTab specs={specs} suggestedVendors={suggestedVendors} /></div>
         <div className={activeTab === 'materials' ? 'block' : 'hidden'}><MaterialsTab specs={specs} /></div>

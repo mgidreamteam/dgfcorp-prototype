@@ -3,7 +3,7 @@ import { Loader2, Box, Move, RefreshCw, Maximize, Play, Pause, SkipBack, SkipFor
 import { useNavigate, useParams } from 'react-router-dom';
 import ProjectSidebar from '../components/ProjectSidebar';
 import FileMenuBar from '../components/MenuBar';
-import { loadStateFromStorage, useAutoSave } from '../hooks/useAutoSave';
+import { useProject } from '../contexts/ProjectContext';
 import { DesignProject, CloudProject, DesignStatus, SimulationBoundaryCondition, AgentLog } from '../types';
 import { auth, db, storage } from '../services/firebase';
 import { collection, getDocs, doc, deleteDoc, setDoc } from 'firebase/firestore';
@@ -31,14 +31,17 @@ const StlModel = ({ stlData, materialType = 'metallic', baseColor = '#71717a', o
     const blob = new Blob([stlData], { type: 'model/stl' });
     const url = URL.createObjectURL(blob);
     loader.load(url, (geo) => {
-        geo.computeBoundingSphere();
-        geo.computeBoundingBox();
-        geo.computeVertexNormals(); // Generates smooth surface normals over facets natively on GPU
+        geo.rotateX(-Math.PI / 2); // Correct OpenSCAD Z-up orientation to ThreeJS Y-up
         geo.center();
-        if (onLoaded && geo.boundingBox) {
+        geo.computeBoundingBox();
+        if (geo.boundingBox) {
             const size = new THREE.Vector3();
             geo.boundingBox.getSize(size);
-            onLoaded({ x: size.x, y: size.y, z: size.z });
+            geo.translate(0, size.y / 2, 0);
+            geo.computeBoundingBox();
+            geo.computeBoundingSphere(); // Important: must be calculated AFTER all rotations/translations so WebGL doesn't aggressively frustum cull the "off-screen" offset
+            geo.computeVertexNormals(); // Generates smooth surface normals over facets natively on GPU
+            if (onLoaded) onLoaded({ x: size.x, y: size.y, z: size.z });
         }
         setGeometry(geo);
         URL.revokeObjectURL(url);
@@ -88,23 +91,7 @@ const StudioSimPage: React.FC = () => {
   }, [roomTheme]);
   const gridTemplateColumns = `256px minmax(500px, 1fr) 6px ${hiloPanelWidth}px`;
 
-  const [projects, setProjects] = useState<DesignProject[]>(() => loadStateFromStorage().projects);
-  const [agentLogs, setAgentLogs] = useState<AgentLog[]>(() => loadStateFromStorage().logs);
-  
-  const addLog = (log: Omit<AgentLog, 'id' | 'timestamp'>) => {
-    const newLog: AgentLog = {
-      ...log,
-      id: (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') 
-            ? crypto.randomUUID() 
-            : Math.random().toString(36).substring(2) + Date.now().toString(36),
-      timestamp: Date.now()
-    };
-    setAgentLogs(prev => [...prev, newLog]);
-  };
-
-  useAutoSave(projects, agentLogs);
-
-  const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
+  const { projects, setProjects, agentLogs, addLog, activeProjectId, setActiveProjectId } = useProject();
   const activeProject = projects.find(p => p.id === activeProjectId);
   
   const primaryMaterialInfo = React.useMemo(() => {
@@ -169,16 +156,12 @@ const StudioSimPage: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (projectId) {
+    if (projectId && projectId !== activeProjectId) {
         setActiveProjectId(projectId);
-        localStorage.setItem('lastActiveStudioProjectId', projectId);
-    } else {
-        const lastActiveId = localStorage.getItem('lastActiveStudioProjectId');
-        if (lastActiveId) {
-            navigate(`/studiosim/${lastActiveId}`, { replace: true });
-        }
+    } else if (!projectId && activeProjectId) {
+        navigate(`/studiosim/${activeProjectId}`, { replace: true });
     }
-  }, [projectId, navigate]);
+  }, [projectId, activeProjectId, navigate, setActiveProjectId]);
 
   const handleGenerateModel = async () => {
       if (!activeProject || !activeProject.specs) {
@@ -363,7 +346,31 @@ const StudioSimPage: React.FC = () => {
   };
 
   return (
-    <div className="h-full flex flex-col p-2 relative bg-black/90">
+    <div className="h-full flex flex-col gap-2 p-2 relative bg-black/90">
+      <ThemePanel className="w-full shrink-0">
+        <FileMenuBar
+            onNewProject={() => navigate('/studio')}
+            onSave={() => {}}
+            onImport={() => {}}
+            onDownload={handleDownloadProject}
+            onCloseProject={() => {
+                setActiveProjectId(null);
+                navigate('/studiosim');
+            }}
+            onDeleteProject={handleDeleteProject}
+            onImportStl={() => alert("Import STL native mesh replacement tool launching shortly")}
+            onExportStl={() => {}}
+            isStlReady={!!activeProject?.assetUrls?.stl}
+            onExportImages={() => {}}
+            areImagesExportable={false}
+            isProjectActive={!!activeProject}
+            onSaveToCloud={handleSaveToCloud}
+            onLoadFromCloud={handleDownloadFromCloud}
+            isCloudSaving={isCloudSaving}
+            cloudStorageUsed={cloudStorageUsed}
+            extension=".studioSim"
+        />
+      </ThemePanel>
       <div className="flex-1 grid overflow-hidden gap-2" style={{ gridTemplateColumns }}>
         
         {/* Real Project Registry Sidebar */}
@@ -393,26 +400,6 @@ const StudioSimPage: React.FC = () => {
         </div>
         
         <ThemePanel translucent className="flex flex-col h-full overflow-hidden relative z-10 border border-[#00ffcc]/10 shadow-[inset_0_0_50px_rgba(0,255,204,0.02)]">
-            <div className="border-b border-zinc-800 bg-black/40">
-                <FileMenuBar
-                    onNewProject={() => navigate('/studio')}
-                    onSave={() => {}}
-                    onImport={() => {}}
-                    onDownload={handleDownloadProject}
-                    onCloseProject={() => navigate('/studiosim')}
-                    onDeleteProject={handleDeleteProject}
-                    onExportStl={() => {}}
-                    isStlReady={!!activeProject?.assetUrls?.stl}
-                    onExportImages={() => {}}
-                    areImagesExportable={false}
-                    isProjectActive={!!activeProject}
-                    onSaveToCloud={handleSaveToCloud}
-                    onLoadFromCloud={handleDownloadFromCloud}
-                    isCloudSaving={isCloudSaving}
-                    cloudStorageUsed={cloudStorageUsed}
-                    extension=".studioSim"
-                />
-            </div>
             <div className="px-4 py-2 border-b border-zinc-800/80 shrink-0 bg-transparent flex justify-between items-center bg-black/60 relative z-20">
                  <div className="flex items-center gap-1 bg-black/60 p-1 rounded border border-[#00ffcc]/20 shadow-inner">
                      <button onClick={() => setViewMode('3D')} className={`px-3 py-1 rounded transition-colors text-[10px] font-bold uppercase tracking-widest ${viewMode === '3D' ? 'bg-[#00ffcc]/10 text-[#00ffcc] border border-[#00ffcc]/30' : 'text-zinc-500 hover:text-zinc-300'}`}>3D</button>

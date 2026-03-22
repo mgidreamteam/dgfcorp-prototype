@@ -446,11 +446,12 @@ export const generateOpenScadCode = async (specs: HardwareSpec): Promise<string>
 
   Your task:
   1. Create a highly detailed OpenSCAD script using Constructive Solid Geometry (CSG).
-  2. Implement advanced modularity: Produce a fully SOLID geometry. DO NOT use \`difference()\` or any other method to hollow out the casing. It must be solid for volumetric simulation.
-  3. Use \`minkowski()\` or \`hull()\` to create sleek, rounded, aerodynamic edges where appropriate.
-  4. Design surface-level physical features, but again, do not hollow the main body.
-  5. The model MUST be strictly mathematically bounded by the listed dimensions and Architecture.
-  6. The output must be ONLY the raw OpenSCAD code. Do not include markdown formatting like \`\`\`scad.
+  2. The object must be built upright with Z as the vertical (up) axis, sitting on the XY plane.
+  3. Implement advanced realism using standard primitives. For example, a coffee mug SHOULD be a \`cylinder()\` for the main body, hollowed out using \`difference()\` with a slightly smaller \`cylinder()\`, and a \`rotate()\` \`translate()\` \`torus()\` (or similar) attached to the side for the handle. Do not create complex abstract extrusions for everyday objects; rely on precise, recognizable standard geometries.
+  4. Feel free to use \`difference()\` to create hollow interiors, cavities, and holes where appropriate to make the model visually accurate and authentic.
+  5. Use \`minkowski()\` or \`hull()\` to create sleek, rounded edges where appropriate.
+  6. The model MUST be strictly mathematically bounded by the listed dimensions and Architecture.
+  7. The output must be ONLY the raw OpenSCAD code. Do not include markdown formatting like \`\`\`scad.
   `;
   const response = await ai.models.generateContent({
     model,

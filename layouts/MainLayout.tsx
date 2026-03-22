@@ -6,9 +6,11 @@ import { BookOpen, LayoutGrid, Globe, Shield, LogOut, Rocket, Layers, User, Fact
 import UserManual from '../components/UserManual';
 import { collection, getDocs } from 'firebase/firestore';
 import { db, auth } from '../services/firebase';
+import { useProject } from '../contexts/ProjectContext';
 
 const MainLayout: React.FC = () => {
     const { profile, logout } = useAuth();
+    const { activeProjectId } = useProject();
     const { dashboardTheme, setDashboardTheme } = useTheme();
     const [isManualOpen, setIsManualOpen] = useState(false);
     const [cloudStorageUsed, setCloudStorageUsed] = useState(0);
@@ -30,8 +32,8 @@ const MainLayout: React.FC = () => {
     }, [auth.currentUser]);
 
     const location = useLocation();
-    const match = location.pathname.match(/\/(?:studio|prostudio|studiosim|worldsim|worldsim3d|fabflow)\/([^/]+)/);
-    const activeId = match ? match[1] : localStorage.getItem('lastActiveStudioProjectId');
+    // Safely sync navigation links with the global application memory
+    const activeId = activeProjectId;
     const suffix = activeId ? `/${activeId}` : '';
     const cumulativeTokens = profile?.cumulativeTokens || 0;
 
