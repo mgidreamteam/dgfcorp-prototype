@@ -292,17 +292,31 @@ const MechatronicNodeMesh = React.memo(({
                                 if (axis === 'rear') { finalRot = [-Math.PI/2, 0, 0]; finalPos[2] += pushIn; }
                             }
 
-                            let taperArgs = [0,0,0];
+                            let taperArgs = [0,0,0] as any;
                             if (csg.type === 'taper') {
                                 const ang = (csg.params.angle || 0) * (Math.PI/180);
-                                taperArgs = [dim[0]*2, dim[1]*2, dim[2]*2];
-                                const offset = dim[1]*1.5; // shift huge bounds outward so wedge edge clips target
-                                if (axis === 'top') { finalRot = [ang, 0, 0]; finalPos[1] += offset; }
-                                if (axis === 'bottom') { finalRot = [ang, 0, 0]; finalPos[1] -= offset; }
-                                if (axis === 'right') { finalRot = [0, ang, 0]; finalPos[0] += offset; }
-                                if (axis === 'left') { finalRot = [0, ang, 0]; finalPos[0] -= offset; }
-                                if (axis === 'front') { finalRot = [ang, 0, 0]; finalPos[2] += offset; }
-                                if (axis === 'rear') { finalRot = [ang, 0, 0]; finalPos[2] -= offset; }
+                                const R = Math.max(dim[0], dim[1], dim[2]) * 2 + 50;
+                                taperArgs = [R*2, R*2, R*2];
+                                
+                                if (axis === 'top') {
+                                    finalRot = [ang, 0, 0];
+                                    finalPos = [0, dim[1]/2 + R*Math.cos(ang), R*Math.sin(ang)];
+                                } else if (axis === 'bottom') {
+                                    finalRot = [-ang, 0, 0];
+                                    finalPos = [0, -dim[1]/2 - R*Math.cos(ang), R*Math.sin(ang)];
+                                } else if (axis === 'right') {
+                                    finalRot = [0, 0, ang];
+                                    finalPos = [dim[0]/2 + R*Math.cos(ang), R*Math.sin(ang), 0];
+                                } else if (axis === 'left') {
+                                    finalRot = [0, 0, -ang];
+                                    finalPos = [-dim[0]/2 - R*Math.cos(ang), R*Math.sin(ang), 0];
+                                } else if (axis === 'front') {
+                                    finalRot = [-ang, 0, 0];
+                                    finalPos = [0, R*Math.sin(ang), dim[2]/2 + R*Math.cos(ang)];
+                                } else if (axis === 'rear') {
+                                    finalRot = [ang, 0, 0];
+                                    finalPos = [0, R*Math.sin(ang), -dim[2]/2 - R*Math.cos(ang)];
+                                }
                             }
 
                             return (
