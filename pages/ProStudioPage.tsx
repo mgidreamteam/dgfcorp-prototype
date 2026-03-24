@@ -1206,9 +1206,7 @@ const ProStudioPage: React.FC = () => {
                     triggerHierarchyView={null} 
                     onHierarchyViewClosed={() => {}} 
                     cloudProjects={cloudProjects}
-                    onLoadCloudProject={(proj) => {
-                        window.alert('Please instantiate cloud payloads from simulation workspaces first.');
-                    }}
+                    onLoadCloudProject={handleDownloadFromCloud}
                     onDeleteCloudProject={handleDeleteCloudProject}
                     onDeleteLocalProject={handleDeleteLocalProject}
                     cloudLoadingAction={cloudLoadingAction}

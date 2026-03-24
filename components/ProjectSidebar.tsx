@@ -5,6 +5,7 @@ import { Plus, Cpu, ChevronRight, ArrowLeft, Wrench, CircuitBoard, Cog, Package,
 import ThemePanel from './ThemePanel';
 import LoadingModal from './LoadingModal';
 import DeleteConfirmationDialog from './DeleteConfirmationDialog';
+import WarningModal from './WarningModal';
 
 interface ProjectSidebarProps {
   projects: DesignProject[];
@@ -350,7 +351,14 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
 
       <LoadingModal isOpen={!!cloudLoadingAction} message="Downloading Project from Cloud..." />
       
-      {projectToDelete && (
+      {projectToDelete && projectToDelete.id === activeProjectId && (
+          <WarningModal 
+              title="Cannot Delete Open Project"
+              message={<>You must close the currently open workspace <strong className="text-white font-semibold">"{projectToDelete.name}"</strong> before it can be deleted. Please return to the dashboard or open a different project to proceed.</>}
+              onClose={() => setProjectToDelete(null)}
+          />
+      )}
+      {projectToDelete && projectToDelete.id !== activeProjectId && (
           <DeleteConfirmationDialog
               projectName={projectToDelete.name}
               onCancel={() => setProjectToDelete(null)}

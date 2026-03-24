@@ -1,0 +1,75 @@
+/* Modal.css - Global Modal Typography and Structure */
+
+.dream-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background-color: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(4px);
+  animation: fade-in 0.2s ease-out;
+}
+
+.dream-modal-container {
+  background-color: var(--modal-bg, #18181b); /* Dynamically themeable, defaults to dark */
+  border: 1px solid var(--modal-border, #27272a); 
+  border-radius: 0px; /* Sharp corners per Dream Giga theme */
+  width: 100%;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%); /* Signature angled cut */
+  display: flex;
+  flex-direction: column;
+}
+
+.dream-modal-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--modal-border, #27272a);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dream-modal-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1.25rem; /* Equivalent to text-xl */
+  line-height: 1.75rem;
+  font-weight: 700;
+  color: #ffffff; /* Explicitly white for headers */
+}
+
+/* Base styling for typography inside the modal body */
+.dream-modal-body {
+  padding: 1.5rem;
+  color: #d4d4d8; /* zinc-300 for normal text */
+  font-size: 0.875rem; /* Standard readable text size (text-sm) */
+  line-height: 1.25rem;
+  overflow-y: auto;
+  max-height: 70vh;
+}
+
+/* If there is no header, ensure body retains consistent coloring everywhere */
+.dream-modal-body.no-header {
+  color: #d4d4d8;
+  padding-top: 1.5rem;
+}
+
+/* Nested elements typography normalization so we don't need utility classes everywhere */
+.dream-modal-body p {
+  color: inherit;
+  margin-bottom: 0.5rem;
+}
+
+.dream-modal-footer {
+  padding: 1rem 1.5rem;
+  background-color: rgba(24, 24, 27, 0.5); /* slightly darker/translucent footer */
+  border-top: 1px solid var(--modal-border, #27272a);
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 1rem;
+}
