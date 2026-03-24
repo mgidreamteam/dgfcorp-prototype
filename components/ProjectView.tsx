@@ -50,7 +50,7 @@ interface ProjectViewProps {
 
 const ProjectView: React.FC<ProjectViewProps> = ({ project, isGenerating, onRetry, onStartOver, onRerunSimulation }) => {
   const { updateProjectField } = useProject();
-  const hasSpecs = !!project.specs;
+  const hasSpecs = !!project.specs && Array.isArray(project.specs.bom);
   const hasElectronics = hasSpecs ? project.specs!.bom.some(i => i.type.toLowerCase().includes('electronic')) : true;
   const hasMechanical = hasSpecs ? project.specs!.bom.some(i => !i.type.toLowerCase().includes('electronic')) : true;
 

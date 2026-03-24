@@ -4,6 +4,7 @@ import { ThemeProvider } from './contexts/ThemeContext';
 import GlobalThemeWrapper from './components/GlobalThemeWrapper';
 import AppRouter from './routes';
 import { ProjectProvider } from './contexts/ProjectContext';
+import { AppErrorBoundary } from './components/AppErrorBoundary';
 
 const App: React.FC = () => {
   return (
@@ -11,7 +12,9 @@ const App: React.FC = () => {
       <AuthProvider>
         <GlobalThemeWrapper>
           <ProjectProvider>
-            <AppRouter />
+            <AppErrorBoundary>
+              <AppRouter />
+            </AppErrorBoundary>
           </ProjectProvider>
         </GlobalThemeWrapper>
       </AuthProvider>

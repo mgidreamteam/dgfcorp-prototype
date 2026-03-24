@@ -1,13 +1,13 @@
 /// <reference types="vite/client" />
 import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import AgentSidebar from '../components/AgentSidebar';
 import ProjectSidebar from '../components/ProjectSidebar';
-import DesignInput from '../components/DesignInput';
 import FileMenuBar from '../components/MenuBar';
 import DeleteConfirmationDialog from '../components/DeleteConfirmationDialog';
 import { CloudProject, DesignProject, DesignStatus, AgentLog } from '../types';
 import { generateHardwareSpecs } from '../services/gemini';
-import { AlertCircle, Loader2, Map as MapIcon, Globe, Navigation, ZoomIn, ZoomOut, Compass, Wind, Plane, Eye } from 'lucide-react';
+import { AlertCircle, Loader2, Map as MapIcon, Globe, Navigation, ZoomIn, ZoomOut, Compass, Wind, Plane, Eye, PlusCircle, Trash2, CloudDownload, XSquare, ArrowDownToLine, Save, UploadCloud, Cuboid, Database, Box as BoxIcon, RefreshCw, ArrowDown, ArrowDownRight } from 'lucide-react';
 import { useProject } from '../contexts/ProjectContext';
 import { useAuth } from '../contexts/AuthContext';
 import { auth, db, storage } from '../services/firebase';
@@ -15,6 +15,27 @@ import { collection, getDocs, doc, deleteDoc, setDoc } from 'firebase/firestore'
 import { ref, deleteObject, uploadString, getDownloadURL } from 'firebase/storage';
 import { GoogleMap, useJsApiLoader } from '@react-google-maps/api';
 import ThemePanel from '../components/ThemePanel';
+
+const ViewCubeIcon = ({ face }: { face: string }) => {
+    const f = face.toLowerCase();
+    return (
+        <svg viewBox="0 0 100 100" className="w-[30px] h-[30px] transform transition-transform group-hover:scale-[1.15]">
+            <g strokeLinejoin="round" strokeLinecap="round" className="stroke-zinc-600 stroke-[4] fill-transparent transition-colors">
+                <path d="M50 20 L80 35 L50 50 L20 35 Z" className={f === 'top' ? 'fill-orange-500/60 stroke-orange-400' : f === 'bottom' ? 'fill-blue-500/30 stroke-blue-400 stroke-dasharray-[4_4]' : ''} />
+                <path d="M20 35 L50 50 L50 80 L20 65 Z" className={f === 'front' ? 'fill-orange-500/60 stroke-orange-400' : f === 'rear' ? 'fill-blue-500/30 stroke-blue-400 stroke-dasharray-[4_4]' : ''} />
+                <path d="M50 50 L80 35 L80 65 L50 80 Z" className={f === 'right' ? 'fill-orange-500/60 stroke-orange-400' : f === 'left' ? 'fill-blue-500/30 stroke-blue-400 stroke-dasharray-[4_4]' : ''} />
+                {f === '3d' && (
+                    <>
+                        <path d="M50 20 L80 35 L50 50 L20 35 Z" className="fill-orange-500/20 stroke-orange-400/50" />
+                        <path d="M20 35 L50 50 L50 80 L20 65 Z" className="fill-orange-500/20 stroke-orange-400/50" />
+                        <path d="M50 50 L80 35 L80 65 L50 80 Z" className="fill-orange-500/20 stroke-orange-400/50" />
+                        <circle cx="50" cy="50" r="12" className="fill-orange-500 stroke-orange-400" />
+                    </>
+                )}
+            </g>
+        </svg>
+    );
+};
 
 const generateId = () => (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') ? crypto.randomUUID() : Math.random().toString(36).substring(2) + Date.now().toString(36);
 
@@ -30,11 +51,11 @@ const WorldSimPage: React.FC = () => {
   const { isLoaded } = useJsApiLoader({ id: 'google-map-script', googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '' });
 
   const [mapType, setMapType] = useState<google.maps.MapTypeId | 'hybrid' | 'roadmap' | 'satellite'>('satellite');
+  const [renderMode, setRenderMode] = useState<'wireframe' | 'edges' | 'solid'>('solid');
   
   const { projects, setProjects, activeProjectId, setActiveProjectId, agentLogs, addLog } = useProject();
   const [error, setError] = useState<string | null>(null);
   const [triggerHierarchyView, setTriggerHierarchyView] = useState<string | null>(null);
-  const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
   
   const [mapCenter, setMapCenter] = useState(defaultCenter);
   const [mapZoom, setMapZoom] = useState(16);
@@ -45,16 +66,27 @@ const WorldSimPage: React.FC = () => {
   
   const [isSpinning, setIsSpinning] = useState(false);
   const [isFlyby, setIsFlyby] = useState(false);
+  
+  const [isOriginLocked, setIsOriginLocked] = useState(false);
+  const [cameraView, setCameraView] = useState('3D');
+
+  const handleViewCube = (face: string) => {
+      setCameraView(face);
+      setIsSpinning(false);
+      setIsFlyby(false);
+      if (face === '3D') { setMapTilt(45); }
+      else if (face === 'TOP') { setMapTilt(0); setMapHeading(0); }
+      else if (face === 'BOTTOM') { setMapTilt(0); setMapHeading(180); }
+      else if (face === 'FRONT') { setMapTilt(45); setMapHeading(0); }
+      else if (face === 'REAR') { setMapTilt(45); setMapHeading(180); }
+      else if (face === 'LEFT') { setMapTilt(45); setMapHeading(90); }
+      else if (face === 'RIGHT') { setMapTilt(45); setMapHeading(270); }
+  };
 
   const [cloudProjects, setCloudProjects] = useState<CloudProject[]>([]);
   const [isCloudSaving, setIsCloudSaving] = useState(false);
-  const [isCloudModalOpen, setIsCloudModalOpen] = useState(false);
 
-  const [hiloPanelWidth, setHiloPanelWidth] = useState(400);
-  const isResizing = useRef(false);
-  const dragStartX = useRef(0);
-  const startWidth = useRef(0);
-  const hasInitiallyLoaded = useRef(false);
+  const [agentPanelWidth, setAgentPanelWidth] = useState(400);
 
   useEffect(() => {
     if (projectId && projectId !== activeProjectId) {
@@ -63,6 +95,16 @@ const WorldSimPage: React.FC = () => {
       navigate(`/worldsim/${activeProjectId}`, { replace: true });
     }
   }, [projectId, activeProjectId, navigate, setActiveProjectId]);
+
+  useEffect(() => {
+    if (renderMode === 'wireframe') {
+        setMapType('roadmap');
+    } else if (renderMode === 'edges') {
+        setMapType('hybrid');
+    } else {
+        setMapType('satellite');
+    }
+  }, [renderMode]);
 
   const fetchCloudProjects = useCallback(async () => {
     if (!auth.currentUser) return;
@@ -155,40 +197,7 @@ const WorldSimPage: React.FC = () => {
     return () => window.removeEventListener('gemini_token_usage', handleTokens);
   }, [activeProjectId, addLog]);
 
-  const handleMouseMove = useCallback((e: MouseEvent) => {
-    if (!isResizing.current) return;
-    const dx = e.clientX - dragStartX.current;
-    const newWidth = startWidth.current - dx;
-    const mainPanel = document.querySelector('main');
-    const maxWidth = mainPanel ? mainPanel.clientWidth - 100 : 800;
-    setHiloPanelWidth(Math.max(300, Math.min(maxWidth, newWidth)));
-  }, []);
-  
-  const handleMouseUp = useCallback(() => {
-    isResizing.current = false;
-    document.removeEventListener('mousemove', handleMouseMove);
-    document.removeEventListener('mouseup', handleMouseUp);
-    document.body.style.cursor = '';
-    document.body.style.userSelect = '';
-  }, [handleMouseMove]);
-  
-  const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    isResizing.current = true;
-    dragStartX.current = e.clientX;
-    startWidth.current = hiloPanelWidth;
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
-    document.body.style.cursor = 'col-resize';
-    document.body.style.userSelect = 'none';
-  }, [hiloPanelWidth, handleMouseMove, handleMouseUp]);
 
-  useEffect(() => {
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-    };
-  }, [handleMouseMove, handleMouseUp]);
 
   const handleNewProject = () => {
     const id = generateId();
@@ -318,76 +327,138 @@ const WorldSimPage: React.FC = () => {
       return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  const handleDeleteLocalProject = async (id: string) => {
+      try {
+          setProjects(prev => prev.filter(p => p.id !== id));
+          if (activeProjectId === id) setActiveProjectId(null);
+      } catch (err) { }
+  };
+
   return (
     <>
       <div className="h-full flex flex-col gap-2 p-2">
         <ThemePanel className="w-full shrink-0">
-          <FileMenuBar 
-            onNewProject={handleNewProject}
-            onSave={() => {}}
-            onImport={() => {}}
-            onDownload={handleDownloadProject}
-            onCloseProject={() => navigate('/dashboard')}
-            onDeleteProject={() => setIsDeleteModalVisible(true)}
-            onExportStl={() => {}}
-            isStlReady={false}
-            onExportImages={() => {}}
-            areImagesExportable={false}
-            isProjectActive={!!activeProject} 
-            onSaveToCloud={handleSaveToCloud}
-            onLoadFromCloud={handleDownloadFromCloud}
-            isCloudSaving={isCloudSaving}
-            cloudStorageUsed={cloudStorageUsed}
-            extension=".tSim"
-          />
+          <FileMenuBar projectName={activeProject?.name || 'WorldSim Workspace'} />
         </ThemePanel>
-        <div className="flex-1 grid overflow-hidden gap-2" style={{ gridTemplateColumns: `256px minmax(500px, 1fr) 6px ${hiloPanelWidth}px` }}>
+        <div className="flex-1 grid overflow-hidden gap-2" style={{ gridTemplateColumns: `256px minmax(500px, 1fr) 60px 6px ${agentPanelWidth}px` }}>
+          
+          {/* Left Local/Cloud Explorer */}
           <ProjectSidebar 
-            projects={projects} 
-            activeProjectId={activeProjectId} 
-            onNewProject={handleNewProject} 
-            onRenameProject={handleRenameProject} 
-            triggerHierarchyView={triggerHierarchyView} 
-            onHierarchyViewClosed={() => setTriggerHierarchyView(null)} 
-            cloudProjects={cloudProjects}
-            onLoadCloudProject={handleDownloadFromCloud}
-            onDeleteCloudProject={handleDeleteFromCloud}
+              projects={projects} 
+              activeProjectId={activeProjectId} 
+              onNewProject={handleNewProject} 
+              onRenameProject={handleRenameProject} 
+              triggerHierarchyView={null} 
+              onHierarchyViewClosed={() => {}} 
+              cloudProjects={cloudProjects}
+              onLoadCloudProject={handleDownloadFromCloud}
+              onDeleteCloudProject={handleDeleteFromCloud}
+              onDeleteLocalProject={handleDeleteLocalProject}
+              cloudLoadingAction={null}
+              baseRoute="/worldsim"
+              hideNewProjectButton
           />
           
           <ThemePanel translucent className="flex flex-col h-full overflow-hidden relative z-10 p-0">
-            {/* 2D Vector Stabilized HUD Controls */}
-            <div className="absolute top-4 left-4 right-4 z-50 flex flex-wrap justify-between gap-2 pointer-events-none">
-                <div className="flex gap-2 pointer-events-auto">
-                    <button onClick={handleHomeLocation} className={`px-4 py-2 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 rounded-lg transition-all shadow-lg backdrop-blur-md bg-zinc-900/80 text-zinc-300 border border-zinc-700 hover:bg-zinc-800`}>
-                        <Navigation className="w-3 h-3" /> Home (Geolocate)
-                    </button>
-                    <button onClick={() => setMapHeading(0)} className={`px-4 py-2 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 rounded-lg transition-all shadow-lg backdrop-blur-md bg-zinc-900/80 text-zinc-300 border border-zinc-700 hover:bg-zinc-800`} title="Hotkey: N">
-                        <Compass className="w-3 h-3" /> North Up [N]
-                    </button>
+            {/* Two-Tier Top Map Toolbar */}
+            <div className="px-4 py-2 border-b border-zinc-800/80 shrink-0 bg-transparent flex flex-col items-center bg-black/60 z-30 relative pointer-events-auto shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
+                
+                {/* FIRST ROW: File Menu & Main Views */}
+                <div className="flex justify-between items-center w-full gap-4">
+                    {/* File Main Actions */}
+                    <div className="flex items-center gap-2 bg-black/60 p-1.5 rounded-lg border border-zinc-800/80 shadow-[0_4px_30px_rgba(0,0,0,0.5)] backdrop-blur-sm overflow-x-auto no-scrollbar shrink-0">
+                        <button onClick={() => navigate('/studio')} className="p-1.5 text-zinc-300 hover:text-emerald-400 hover:bg-emerald-900/40 rounded transition-colors" title="New Project">
+                            <PlusCircle className="w-5 h-5 drop-shadow-md" />
+                        </button>
+                        <button onClick={handleDownloadProject} className="p-1.5 px-2 text-blue-400 hover:text-blue-300 hover:bg-blue-900/40 rounded transition-colors flex items-center justify-center gap-1.5" title="Save File Locally">
+                            <Save className="w-5 h-5 drop-shadow-md fill-blue-500/10" />
+                            <ArrowDownToLine className="w-3.5 h-3.5 opacity-80" />
+                        </button>
+                        <div className="w-px h-5 bg-zinc-700/80 mx-0.5 rounded"></div>
+                        <button onClick={() => alert("Please import natively via ProStudio before running Simulation.")} className="p-1 hover:bg-emerald-900/40 rounded transition-colors flex items-center" title="Import 3D Model">
+                            <div className="relative p-1 group flex items-center justify-center">
+                                <Cuboid className="w-[22px] h-[22px] stroke-[1.5] text-emerald-500 drop-shadow-md" />
+                                <ArrowDown className="w-[14px] h-[14px] text-emerald-400 absolute -right-1 -bottom-1 drop-shadow stroke-[3]" />
+                            </div>
+                        </button>
+                        <button onClick={handleSaveToCloud} disabled={isCloudSaving} className="p-1.5 text-blue-400 hover:text-blue-300 hover:bg-blue-900/40 rounded transition-colors flex items-center gap-1.5 disabled:opacity-50" title="Commit to Remote Cloud">
+                            {isCloudSaving ? <RefreshCw className="w-5 h-5 animate-spin drop-shadow-md" /> : <UploadCloud className="w-5 h-5 drop-shadow-md fill-blue-500/20" />}
+                        </button>
+                        <div className="w-px h-5 bg-zinc-700/80 mx-0.5 rounded"></div>
+                        <button onClick={() => { setActiveProjectId(null); navigate('/worldsim'); }} className="p-1.5 text-zinc-300 hover:text-orange-400 hover:bg-orange-900/40 rounded transition-colors" title="Close Project">
+                            <XSquare className="w-5 h-5 drop-shadow-md" />
+                        </button>
+                    </div>
+
+                    {/* App-Specific Tools (FEA, Vendor) */}
+                    <div className="flex items-center gap-1 bg-black/60 p-1.5 rounded-lg border border-indigo-500/20 shadow-[0_4px_30px_rgba(0,0,0,0.5)] backdrop-blur-sm overflow-x-auto no-scrollbar shrink-0">
+                        <button onClick={() => alert("FEA Solvers paused. Switching engines...")} className="relative p-1.5 text-indigo-400 hover:text-indigo-300 hover:bg-indigo-900/40 rounded transition-colors" title="Run FEA">
+                            <Cuboid className="w-5 h-5 opacity-80 fill-indigo-500/30 drop-shadow-md" />
+                            <ArrowDownRight className="w-[16px] h-[16px] absolute bottom-1 right-0 text-emerald-400 drop-shadow shadow-black stroke-[3]" />
+                        </button>
+                        <div className="w-px h-4 bg-zinc-700/80 mx-1 rounded"></div>
+                        <button onClick={() => alert("Vendor catalog locked during cartographic traversal.")} className="p-1.5 text-orange-400 hover:text-orange-300 hover:bg-orange-900/40 rounded transition-colors flex items-center gap-1" title="Search Parts Catalog">
+                            <Database className="w-5 h-5 fill-orange-500/30 drop-shadow-md" />
+                        </button>
+                    </div>
+
+                    {/* Viewport Render Modes */}
+                    <div className="flex items-center gap-1 bg-black/60 p-1.5 rounded-lg border border-zinc-800/80 shadow-[0_4px_30px_rgba(0,0,0,0.5)] backdrop-blur-sm shrink-0">
+                        <button onClick={() => setRenderMode('wireframe')} className={`p-1.5 rounded transition-colors ${renderMode === 'wireframe' ? 'bg-[#00ffcc]/20 text-[#00ffcc] shadow-inner' : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50'}`} title="Wireframe View (Roadmap)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                        </button>
+                        <button onClick={() => setRenderMode('edges')} className={`p-1.5 rounded transition-colors ${renderMode === 'edges' ? 'bg-[#00ffcc]/20 text-[#00ffcc] shadow-inner' : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50'}`} title="Solid + Edge View (Hybrid)">
+                            <svg viewBox="0 0 24 24" className="w-5 h-5">
+                                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" fill="currentColor" fillOpacity="0.15" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"></path>
+                                <polyline points="3.27 6.96 12 12.01 20.73 6.96" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"></polyline>
+                                <line x1="12" y1="22.08" x2="12" y2="12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"></line>
+                            </svg>
+                        </button>
+                        <button onClick={() => setRenderMode('solid')} className={`p-1.5 rounded transition-colors ${renderMode === 'solid' ? 'bg-[#00ffcc]/20 text-[#00ffcc] shadow-inner' : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50'}`} title="Solid View (Satellite)">
+                            <svg viewBox="0 0 24 24" className="w-5 h-5">
+                                <polygon points="12 2 3 7 12 12 21 7 12 2" fill="currentColor" fillOpacity="0.4"></polygon>
+                                <polygon points="3 16 3 7 12 12 12 22 3 16" fill="currentColor" fillOpacity="0.8"></polygon>
+                                <polygon points="12 22 12 12 21 7 21 16 12 22" fill="currentColor"></polygon>
+                            </svg>
+                        </button>
+
+                        <div className="w-px h-4 bg-zinc-700/80 mx-1.5 rounded"></div>
+
+                        <button onClick={() => alert('V-Ray Plugin Not Licensed. Map Render unavailable.')} className="w-7 h-7 mx-0.5 rounded-sm border border-zinc-600/80 hover:border-orange-500 overflow-hidden relative shadow-md group outline-none transition-colors" title="Photorealistic GPU Render (Terrain)">
+                            <img src="/crankshaft_render.png" alt="Render" className="w-full h-full object-cover group-hover:scale-125 transition-transform duration-700 ease-out" />
+                            <div className="absolute inset-0 ring-1 ring-inset ring-black/40 group-hover:ring-orange-500/30 mix-blend-overlay pointer-events-none"></div>
+                        </button>
+                    </div>
                 </div>
-                <div className="flex gap-2 pointer-events-auto">
-                    <button onClick={() => setMapZoom(z => Math.min(z + 1, 22))} className={`px-3 py-2 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 rounded-lg transition-all shadow-lg backdrop-blur-md bg-[#00ffcc]/10 text-[#00ffcc] border border-[#00ffcc]/30 hover:bg-[#00ffcc]/20`} title="Hotkey: +">
-                        <ZoomIn className="w-3 h-3" />
-                    </button>
-                    <button onClick={() => setMapZoom(z => Math.max(z - 1, 0))} className={`px-3 py-2 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 rounded-lg transition-all shadow-lg backdrop-blur-md bg-[#00ffcc]/10 text-[#00ffcc] border border-[#00ffcc]/30 hover:bg-[#00ffcc]/20`} title="Hotkey: -">
-                        <ZoomOut className="w-3 h-3" />
-                    </button>
+
+                {/* SECOND ROW: App-Specific Controls (Map Navigation) */}
+                <div className="flex justify-between items-center w-full gap-4 mt-2">
+                    <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pointer-events-auto">
+                        <button onClick={handleHomeLocation} className="px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 rounded-lg transition-all shadow-inner bg-black/60 text-zinc-300 border border-zinc-700 hover:bg-zinc-800">
+                            <Navigation className="w-3 h-3" /> Home (Geolocate)
+                        </button>
+                        <button onClick={() => setMapHeading(0)} className="px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 rounded-lg transition-all shadow-inner bg-black/60 text-zinc-300 border border-zinc-700 hover:bg-zinc-800" title="Hotkey: N">
+                            <Compass className="w-3 h-3" /> North Up [N]
+                        </button>
+                        
+                        <div className="w-px h-5 bg-zinc-700 mx-1"></div>
+                        
+                        <button onClick={() => setIsSpinning(s => !s)} className={`px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 rounded-lg transition-all shadow-inner ${isSpinning ? 'bg-yellow-500 text-black shadow-[0_0_15px_rgba(234,179,8,0.4)] border border-yellow-500' : 'bg-black/60 text-zinc-300 border border-zinc-700 hover:bg-zinc-800'}`}>
+                            <Globe className="w-3 h-3" /> Spin View [A/D]
+                        </button>
+                        <button onClick={() => { setMapTilt(45); setMapZoom(18); setIsFlyby(false); }} className="px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 rounded-lg transition-all shadow-inner bg-black/60 text-zinc-300 border border-zinc-700 hover:bg-zinc-800" title="Hotkey: C">
+                            <Plane className="w-3 h-3" /> Chase View [C]
+                        </button>
+                        <button onClick={() => setIsFlyby(f => !f)} className={`px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 rounded-lg transition-all shadow-inner ${isFlyby ? 'bg-red-500 text-black shadow-[0_0_15px_rgba(239,68,68,0.4)] border border-red-500' : 'bg-black/60 text-zinc-300 border border-zinc-700 hover:bg-zinc-800'}`}>
+                            <Wind className="w-3 h-3" /> Cinematic Flyby
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            <div className="absolute bottom-4 left-4 z-50 flex gap-2 pointer-events-auto">
-                <button onClick={() => setIsSpinning(s => !s)} className={`px-4 py-2 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 rounded-lg transition-all shadow-lg backdrop-blur-md ${isSpinning ? 'bg-yellow-500 text-black shadow-[0_0_15px_rgba(234,179,8,0.4)]' : 'bg-zinc-900/80 text-zinc-300 border border-zinc-700 hover:bg-zinc-800'}`}>
-                    <Globe className="w-3 h-3" /> Spin View [A/D]
-                </button>
-                <button onClick={() => { setMapTilt(45); setMapZoom(18); setIsFlyby(false); }} className={`px-4 py-2 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 rounded-lg transition-all shadow-lg backdrop-blur-md bg-zinc-900/80 text-zinc-300 border border-zinc-700 hover:bg-zinc-800`} title="Hotkey: C">
-                    <Plane className="w-3 h-3" /> Chase View [C]
-                </button>
-                <button onClick={() => setIsFlyby(f => !f)} className={`px-4 py-2 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 rounded-lg transition-all shadow-lg backdrop-blur-md ${isFlyby ? 'bg-red-500 text-black shadow-[0_0_15px_rgba(239,68,68,0.4)]' : 'bg-zinc-900/80 text-zinc-300 border border-zinc-700 hover:bg-zinc-800'}`}>
-                    <Wind className="w-3 h-3" /> Cinematic Flyby
-                </button>
-            </div>
+            <div className="w-full h-full bg-zinc-950 relative z-0">
 
-            <div className="w-full h-full bg-zinc-950">
+
                 {isLoaded ? (
                     <GoogleMap
                         mapContainerStyle={mapContainerStyle}
@@ -408,18 +479,41 @@ const WorldSimPage: React.FC = () => {
             </div>
           </ThemePanel>
 
-          <div onMouseDown={handleMouseDown} className="resize-handle w-1.5 h-full cursor-col-resize bg-zinc-800 hover:bg-zinc-700 transition-colors flex-shrink-0 rounded-full"></div>
-          
-          <ThemePanel translucent className="h-full overflow-hidden relative z-10">
-             <div className="flex flex-col h-full overflow-hidden">
-                <div className="px-4 py-3 border-b border-zinc-800 shrink-0 bg-transparent">
-                    <h2 className="text-subheading font-normal text-white uppercase tracking-tighter">WORLDSIM DOMAIN</h2>
-                </div>
-                <div className="flex-1 p-4 overflow-hidden">
-                    <DesignInput onSubmit={handleCreateDesign} isGenerating={isGenerating} agentLogs={agentLogs.filter(log => !log.projectId || log.projectId === activeProjectId)} activeProject={activeProject} onUpdateProjectConstraint={() => {}} />
-                </div>
-             </div>
+          {/* Right Vertical Views Bar */}
+          <div className="flex flex-col h-full bg-black/50 backdrop-blur-sm rounded-lg overflow-y-auto overflow-x-hidden border border-zinc-800/80 items-center py-2 space-y-2 relative z-20">
+              <div className="text-[8px] text-zinc-500 uppercase font-black rotate-180 tracking-widest mb-2" style={{ writingMode: 'vertical-rl' }}>Views</div>
+              <button onClick={() => setIsOriginLocked(!isOriginLocked)} className={`p-1.5 rounded transition-colors group flex flex-col items-center gap-1 mb-1 border ${isOriginLocked ? 'bg-[#00ffcc]/30 border-[#00ffcc]/40 text-[#00ffcc] shadow-inner' : 'bg-transparent border-transparent text-zinc-500 hover:bg-[#00ffcc]/20 hover:text-[#00ffcc]'}`} title={isOriginLocked ? 'Unlock Camera Matrix' : 'Lock Origin Viewport'}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                  <span className="text-[7px] font-black uppercase tracking-widest">Lock</span>
+              </button>
+              <div className="w-6 h-px bg-zinc-800 my-1 rounded-full"></div>
+              {[
+                  { face: '3D', title: 'Default 3D View (45° Tilt)' },
+                  { face: 'TOP', title: 'North Up Projection' },
+                  { face: 'BOTTOM', title: 'South Projection' },
+                  { face: 'FRONT', title: 'North 45° Projection' },
+                  { face: 'REAR', title: 'South 45° Projection' },
+                  { face: 'LEFT', title: 'East 45° Projection' },
+                  { face: 'RIGHT', title: 'West 45° Projection' }
+              ].map(v => (
+                  <button key={v.face} onClick={() => handleViewCube(v.face)} className={`p-1.5 rounded transition-colors group flex flex-col items-center gap-1 ${cameraView === v.face ? 'bg-[#00ffcc]/20 shadow-inner' : 'hover:bg-[#00ffcc]/10'}`} title={v.title}>
+                      <ViewCubeIcon face={v.face} />
+                      <span className={`text-[7px] font-black uppercase tracking-widest ${cameraView === v.face ? 'text-[#00ffcc]' : 'text-zinc-600 group-hover:text-[#00ffcc]'}`}>{v.face}</span>
+                  </button>
+              ))}
+          </div>
+
+          {/* Resizer Handle */}
+          <div className="resize-handle w-1.5 h-full bg-zinc-800 flex-shrink-0 cursor-col-resize hover:bg-[#00ffcc] transition-colors z-30"></div>
+
+          {/* Right AI Agent Sidebar */}
+          <ThemePanel translucent className="h-full overflow-hidden flex flex-col relative z-20 border-[#00ffcc]/10 shadow-[inset_0_0_30px_rgba(0,0,0,0.8)] p-0 w-full col-start-5 col-end-6">
+              <AgentSidebar 
+                  onSubmit={handleCreateDesign}
+                  isThinking={isGenerating}
+              />
           </ThemePanel>
+
         </div>
       </div>
     </>

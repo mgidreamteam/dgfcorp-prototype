@@ -12,7 +12,7 @@ const PublicLayout: React.FC = () => {
                 <nav className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
                     <div className="flex items-center gap-6">
                         <NavLink to="/login" className="cursor-pointer">
-                            <span className="text-xl font-medium text-white tracking-wider font-kido">D.R.E.A.M.</span>
+                            <span className="text-xl font-medium text-white tracking-wider">D.R.E.A.M.</span>
                         </NavLink>
                         <div className="hidden md:flex items-center gap-6 border-l border-zinc-700 ml-2 pl-6">
                             <NavLink to="/about" className={({isActive}) => `flex items-center gap-2 transition-colors ${isActive ? 'text-white' : 'text-zinc-400 hover:text-white'}`}>

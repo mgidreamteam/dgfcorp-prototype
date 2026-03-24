@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useThree } from '@react-three/fiber';
 
-export type ViewMode = '3D' | 'FRONT' | 'TOP';
+export type ViewMode = '3D' | 'FRONT' | 'TOP' | 'BOTTOM' | 'REAR' | 'LEFT' | 'RIGHT';
 
 export const CameraPresets: React.FC<{ mode: ViewMode }> = ({ mode }) => {
   const { camera, controls } = useThree();
@@ -19,6 +19,18 @@ export const CameraPresets: React.FC<{ mode: ViewMode }> = ({ mode }) => {
         break;
       case 'TOP':
         camera.position.set(0, 150, 0);
+        break;
+      case 'BOTTOM':
+        camera.position.set(0, -150, 0);
+        break;
+      case 'REAR':
+        camera.position.set(0, 0, -150);
+        break;
+      case 'LEFT':
+        camera.position.set(-150, 0, 0);
+        break;
+      case 'RIGHT':
+        camera.position.set(150, 0, 0);
         break;
     }
     camera.lookAt(0, 0, 0);

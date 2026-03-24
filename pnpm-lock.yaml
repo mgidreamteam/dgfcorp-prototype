@@ -44,6 +44,9 @@ importers:
       lucide-react:
         specifier: ^0.554.0
         version: 0.554.0(react@19.2.4)
+      occt-import-js:
+        specifier: ^0.0.23
+        version: 0.0.23
       path:
         specifier: ^0.12.7
         version: 0.12.7
@@ -64,7 +67,13 @@ importers:
         version: 0.183.2
       three-bvh-csg:
         specifier: ^0.0.18
-        version: 0.0.18(three-mesh-bvh@0.8.3(three@0.183.2))(three@0.183.2)
+        version: 0.0.18(three-mesh-bvh@0.9.9(three@0.183.2))(three@0.183.2)
+      three-mesh-bvh:
+        specifier: ^0.9.9
+        version: 0.9.9(three@0.183.2)
+      three-stdlib:
+        specifier: ^2.36.1
+        version: 2.36.1(three@0.183.2)
       uuid:
         specifier: ^13.0.0
         version: 13.0.0
@@ -1576,6 +1585,9 @@ packages:
     resolution: {integrity: sha512-W67iLl4J2EXEGTbfeHCffrjDfitvLANg0UlX3wFUUSTx92KXRFegMHUVgSqE+wvhAbi4WqjGg9czysTV2Epbew==}
     engines: {node: '>= 0.4'}
 
+  occt-import-js@0.0.23:
+    resolution: {integrity: sha512-RFfYQXYFX5C1mB1Aywm0ShcUKzXOr/VzTnlzhBSDJOR6YCAPt1HYCzeXWg1vwwjn/cUxwqRNhhtf1dlewoZYCQ==}
+
   on-finished@2.4.1:
     resolution: {integrity: sha512-oVlzkg3ENAhCk2zdv7IJwd/QUD4z2RxRwpkcGY8psCVcCYZNq4wYnVWALHM+brtuJjePWiYF/ClmuDr8Ch5+kg==}
     engines: {node: '>= 0.8'}
@@ -1873,6 +1885,11 @@ packages:
 
   three-mesh-bvh@0.8.3:
     resolution: {integrity: sha512-4G5lBaF+g2auKX3P0yqx+MJC6oVt6sB5k+CchS6Ob0qvH0YIhuUk1eYr7ktsIpY+albCqE80/FVQGV190PmiAg==}
+    peerDependencies:
+      three: '>= 0.159.0'
+
+  three-mesh-bvh@0.9.9:
+    resolution: {integrity: sha512-FJKitcjvbALmeQRK+Sc+nLGorCpkrZBrbgJZFzhdyWboak37DZikn46hvQkNqSbJPm227ahYmS6k3N/GXaAyXw==}
     peerDependencies:
       three: '>= 0.159.0'
 
@@ -3644,6 +3661,8 @@ snapshots:
 
   object-inspect@1.13.4: {}
 
+  occt-import-js@0.0.23: {}
+
   on-finished@2.4.1:
     dependencies:
       ee-first: 1.1.1
@@ -3975,16 +3994,20 @@ snapshots:
       three: 0.183.2
       three-mesh-bvh: 0.6.8(three@0.183.2)
 
-  three-bvh-csg@0.0.18(three-mesh-bvh@0.8.3(three@0.183.2))(three@0.183.2):
+  three-bvh-csg@0.0.18(three-mesh-bvh@0.9.9(three@0.183.2))(three@0.183.2):
     dependencies:
       three: 0.183.2
-      three-mesh-bvh: 0.8.3(three@0.183.2)
+      three-mesh-bvh: 0.9.9(three@0.183.2)
 
   three-mesh-bvh@0.6.8(three@0.183.2):
     dependencies:
       three: 0.183.2
 
   three-mesh-bvh@0.8.3(three@0.183.2):
+    dependencies:
+      three: 0.183.2
+
+  three-mesh-bvh@0.9.9(three@0.183.2):
     dependencies:
       three: 0.183.2
 

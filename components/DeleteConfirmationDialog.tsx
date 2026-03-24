@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { AlertTriangle, X } from 'lucide-react';
 
 interface DeleteConfirmationDialogProps {
@@ -8,9 +9,9 @@ interface DeleteConfirmationDialogProps {
 }
 
 const DeleteConfirmationDialog: React.FC<DeleteConfirmationDialogProps> = ({ projectName, onConfirm, onCancel }) => {
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 animate-fade-in"
+      className="fixed inset-0 bg-black/80 z-[200] flex items-center justify-center p-4 animate-fade-in"
       role="dialog" aria-modal="true" aria-labelledby="delete-dialog-title"
     >
       <div className="bg-zinc-900 border border-zinc-800 rounded-2xl w-full max-w-md shadow-2xl">
@@ -39,7 +40,8 @@ const DeleteConfirmationDialog: React.FC<DeleteConfirmationDialogProps> = ({ pro
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

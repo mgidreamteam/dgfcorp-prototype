@@ -10,21 +10,21 @@ The application is split into three primary interconnected domains: **Design Stu
 
 ```mermaid
 graph TD
-    subgraph D.R.E.A.M. Frontend
+    subgraph Frontend
         A[Dashboard] --> B(Design Studio)
         A --> C(Simulation Matrices)
         A --> D(Production & Vendoring)
         A --> M(Innovation Hub)
     end
     
-    subgraph Core Engines
+    subgraph CoreEngines
         B -->|Prompts| E[Gemini AI Engine]
         E -->|JSON Specs & OpenSCAD| B
         C -->|Mapping| F[Google Maps API]
         C -->|WebGL| G[React-Three-Fiber]
     end
 
-    subgraph Simulation Matrices
+    subgraph SimulationMatrices
         C --> H[WorldSim 2D Vectors]
         C --> I[StudioSim]
         C --> J[WorldSim3D OpenGL]
@@ -84,16 +84,16 @@ This tab mounts a raw `@react-three/fiber` environment completely isolated from 
 
 ```mermaid
 graph LR
-    subgraph Input Handlers
-    K[W/A/S/D] --> P(Pitch/Yaw/Roll)
-    T[Arrows/Space] --> V(Thrust/Elevation)
+    subgraph InputHandlers
+    K[WASD] --> P[PitchYawRoll]
+    T[ArrowsSpace] --> V[ThrustElevation]
     end
     
-    subgraph WorldSim3D Rendering Loop
-    P --> C(FlightCamera)
+    subgraph RenderingLoop
+    P --> C[FlightCamera]
     V --> C
-    C -->|mutates| M[(useThree().camera.position)]
-    M -->|useFrame(delta)| R[Three.js Renderer]
+    C --> M[CameraPosition]
+    M --> R[ThreeJSRenderer]
     end
 ```
 

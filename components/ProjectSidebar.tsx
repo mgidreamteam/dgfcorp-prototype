@@ -4,6 +4,7 @@ import { DesignProject, BillOfMaterialItem } from '../types';
 import { Plus, Cpu, ChevronRight, ArrowLeft, Wrench, CircuitBoard, Cog, Package, Cloud, Box, Factory, Trash2 } from 'lucide-react';
 import ThemePanel from './ThemePanel';
 import LoadingModal from './LoadingModal';
+import DeleteConfirmationDialog from './DeleteConfirmationDialog';
 
 interface ProjectSidebarProps {
   projects: DesignProject[];
@@ -138,6 +139,7 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
   const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState('');
   const [isHierarchyVisible, setHierarchyVisible] = useState(false);
+  const [projectToDelete, setProjectToDelete] = useState<{ id: string, name: string, isCloud: boolean } | null>(null);
 
   const activeProject = projects.find(p => p.id === activeProjectId);
 
@@ -186,71 +188,110 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
             </div>
             
             <div className="flex-1 flex flex-col overflow-hidden">
-                <div className="shrink-0 pt-3 pb-1 px-4">
-                    <h3 className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider">Local Projects</h3>
+                <div className="shrink-0 pt-3 pb-2 px-4 flex flex-col gap-1">
+                    <h3 className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider flex items-center gap-1.5"><Cpu className="w-3.5 h-3.5" /> Local Storage</h3>
+                    <div className="flex px-2 text-[8px] text-zinc-600 font-bold uppercase tracking-widest mt-1 justify-between">
+                        <span className="w-16">Filetype</span>
+                        <span className="flex-1 text-left pl-3">Filename</span>
+                    </div>
                 </div>
                 <div className="flex-1 overflow-y-auto px-2 space-y-1 pb-4">
                     {projects.length === 0 && <div className="text-zinc-500 text-detail text-center py-4 italic px-4 bg-zinc-900/50 rounded border border-zinc-800/50 mx-2">No local projects.</div>}
                     
-                    {projects.map((project) => (
-                    <NavLink
-                        key={project.id}
-                        to={`${baseRoute}/${project.id}`}
-                        onDoubleClick={() => handleRename(project)}
-                        className={({ isActive }) => `w-full group px-3 py-3 rounded-md flex items-center gap-3 transition-all cursor-pointer ${
-                            isActive
-                            ? 'bg-zinc-800 text-white border-l-2 border-white'
-                            : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-white'
-                        }`}
-                    >
-                    <Cpu className="w-4 h-4 opacity-70 shrink-0" />
-                    <div className="flex-1 truncate">
-                        {editingProjectId === project.id ? (
-                            <form onSubmit={handleRenameSubmit}>
-                                <input type="text" value={editingName} onChange={(e) => setEditingName(e.target.value)} onFocus={(e) => e.target.select()} onBlur={() => setEditingProjectId(null)} autoFocus className="w-full bg-zinc-700 text-white text-detail p-1 rounded border-none outline-none focus:ring-1 focus:ring-blue-500" />
-                            </form>
-                        ) : (
-                            <div className="font-medium text-detail truncate" title="Double-click to rename">{project.name}</div>
-                        )}
-                        <div className="text-micro text-zinc-500 truncate">{new Date(project.createdAt).toLocaleDateString()}</div>
-                    </div>
-                    {activeProjectId === project.id && project.specs && (
-                        <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); setHierarchyVisible(true); }} className="p-1 -mr-1 rounded-md text-zinc-500 group-hover:text-white group-hover:bg-zinc-700 transition-colors">
-                             <ChevronRight className="w-4 h-4" />
-                        </button>
-                    )}
-                </NavLink>
-                ))}
+                    {projects.map((project) => {
+                        const ext = project.appExtension || '.dream';
+                        const isStudio = ext === '.dream';
+                        const isPro = ext === '.dreampro';
+                        const isFab = ext === '.fabflow';
+                        const isSim = ext === '.studiosim';
+                        const isWSim = ext === '.wsim';
+                        const isTSim = ext === '.tsim';
+
+                        const extColor = isPro ? 'text-blue-400 bg-blue-900/20 border-blue-500/20' : isFab ? 'text-yellow-400 bg-yellow-900/20 border-yellow-500/20' : isSim ? 'text-emerald-400 bg-emerald-900/20 border-emerald-500/20' : isWSim ? 'text-cyan-400 bg-cyan-900/20 border-cyan-500/20' : isTSim ? 'text-rose-400 bg-rose-900/20 border-rose-500/20' : 'text-purple-400 bg-purple-900/20 border-purple-500/20';
+                        const bgHighlight = isPro ? 'bg-blue-900/10' : isFab ? 'bg-yellow-900/10' : isSim ? 'bg-emerald-900/10' : isWSim ? 'bg-cyan-900/10' : isTSim ? 'bg-rose-900/10' : 'bg-purple-900/10';
+                        const routeStr = isPro ? '/prostudio' : isFab ? '/fabflow' : isSim ? '/studiosim' : isWSim ? '/worldsim' : isTSim ? '/worldsim3d' : '/studio';
+
+                        return (
+                            <NavLink
+                                key={project.id}
+                                to={`${routeStr}/${project.id}`}
+                                onDoubleClick={() => handleRename(project)}
+                                className={({ isActive }) => `w-full group px-2 py-2 rounded-md flex items-center gap-2 transition-all cursor-pointer ${
+                                    isActive
+                                    ? 'bg-zinc-800 text-white border-l-2 border-white'
+                                    : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-white'
+                                }`}
+                            >
+                            <div className={`text-[9px] font-mono px-1.5 py-0.5 rounded border ${extColor} w-16 text-center uppercase tracking-wider shrink-0`}>
+                                {ext}
+                            </div>
+                            <div className={`flex-1 truncate flex flex-col justify-center rounded px-2 py-1 ${bgHighlight}`}>
+                                {editingProjectId === project.id ? (
+                                    <form onSubmit={handleRenameSubmit}>
+                                        <input type="text" value={editingName} onChange={(e) => setEditingName(e.target.value)} onFocus={(e) => e.target.select()} onBlur={() => setEditingProjectId(null)} autoFocus className="w-full bg-zinc-700 text-white text-[11px] p-0.5 rounded outline-none" />
+                                    </form>
+                                ) : (
+                                    <div className="font-semibold text-[11px] truncate text-white drop-shadow-md" title={project.name}>{project.name}</div>
+                                )}
+                                <div className="text-[9px] text-zinc-500 truncate mt-0.5">{new Date(project.createdAt).toLocaleDateString()}</div>
+                            </div>
+                            {onDeleteLocalProject && (
+                                <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); setProjectToDelete({ id: project.id, name: project.name, isCloud: false }); }} className="p-1.5 rounded text-red-500/40 hover:text-red-400 hover:bg-red-500/10 opacity-0 group-hover:opacity-100 transition-all shrink-0" title="Delete Local Project">
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                            )}
+                            {activeProjectId === project.id && project.specs && (
+                                <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); setHierarchyVisible(true); }} className="p-1 rounded text-zinc-500 hover:text-white hover:bg-zinc-700 transition-colors shrink-0">
+                                     <ChevronRight className="w-4 h-4" />
+                                </button>
+                            )}
+                            </NavLink>
+                        );
+                    })}
                 </div>
                 
                 {cloudProjects && cloudProjects.length > 0 && (
                     <>
-                        <div className="shrink-0 pt-2 pb-1 px-4 border-t border-zinc-800/50 mt-2">
-                            <h3 className="text-[10px] text-blue-500 font-bold uppercase tracking-wider flex items-center gap-2">
-                                <Cloud className="w-3 h-3" /> Global Cloud Storage
+                        <div className="shrink-0 pt-2 pb-2 px-4 border-t border-zinc-800/50 mt-2 flex flex-col gap-1">
+                            <h3 className="text-[10px] text-blue-500 font-bold uppercase tracking-wider flex items-center gap-1.5">
+                                <Cloud className="w-3.5 h-3.5" /> Cloud Storage
                             </h3>
+                            <div className="flex px-2 text-[8px] text-zinc-600 font-bold uppercase tracking-widest mt-1 justify-between">
+                                <span className="w-16">Filetype</span>
+                                <span className="flex-1 text-left pl-3">Filename</span>
+                            </div>
                         </div>
                         <div className="flex-1 overflow-y-auto px-2 space-y-1 pb-4 min-h-[150px]">
-                            {cloudProjects.sort((a,b) => b.uploadedAt - a.uploadedAt).map((p) => (
+                            {cloudProjects.sort((a,b) => b.uploadedAt - a.uploadedAt).map((p) => {
+                                const ext = p.appExtension || '.dream';
+                                const isPro = ext === '.dreampro';
+                                const isFab = ext === '.fabflow';
+                                const isSim = ext === '.studiosim';
+                                const isWSim = ext === '.wsim';
+                                const isTSim = ext === '.tsim';
+        
+                                const extColor = isPro ? 'text-blue-400 bg-blue-900/20 border-blue-500/20' : isFab ? 'text-yellow-400 bg-yellow-900/20 border-yellow-500/20' : isSim ? 'text-emerald-400 bg-emerald-900/20 border-emerald-500/20' : isWSim ? 'text-cyan-400 bg-cyan-900/20 border-cyan-500/20' : isTSim ? 'text-rose-400 bg-rose-900/20 border-rose-500/20' : 'text-purple-400 bg-purple-900/20 border-purple-500/20';
+                                const bgHighlight = isPro ? 'bg-blue-900/10' : isFab ? 'bg-yellow-900/10' : isSim ? 'bg-emerald-900/10' : isWSim ? 'bg-cyan-900/10' : isTSim ? 'bg-rose-900/10' : 'bg-purple-900/10';
+
+                                return (
                                 <div key={`cloud-${p.id}`} className="relative group w-full flex items-center">
                                     <button
                                         onClick={() => onLoadCloudProject && onLoadCloudProject(p)}
                                         disabled={cloudLoadingAction === p.id}
-                                        className="w-full text-left px-3 py-3 rounded-md flex items-center gap-3 transition-all cursor-pointer text-blue-400 hover:bg-blue-900/20 hover:text-blue-300 disabled:opacity-50"
+                                        className="w-full text-left px-2 py-2 rounded-md flex items-center gap-2 transition-all cursor-pointer text-zinc-400 hover:bg-zinc-800/50 hover:text-white disabled:opacity-50"
                                         title="Click to stream from cloud"
                                     >
-                                        <Cloud className={`w-4 h-4 opacity-70 shrink-0 ${cloudLoadingAction === p.id ? 'animate-pulse text-blue-300' : ''}`} />
-                                        <div className="flex-1 truncate pr-8">
-                                            <div className="font-medium text-detail truncate">{p.name}</div>
-                                            <div className="text-micro text-blue-500/70 truncate flex gap-2">
-                                                <span>{(p.sizeBytes / 1000000).toFixed(2)} MB</span>
-                                                <span>{new Date(p.uploadedAt).toLocaleDateString()}</span>
-                                            </div>
+                                        <div className={`text-[9px] font-mono px-1.5 py-0.5 rounded border ${extColor} w-16 text-center uppercase tracking-wider shrink-0 ${cloudLoadingAction === p.id ? 'animate-pulse' : ''}`}>
+                                            {ext}
+                                        </div>
+                                        <div className={`flex-1 truncate flex flex-col justify-center rounded px-2 py-1 ${bgHighlight}`}>
+                                            <div className="font-semibold text-[11px] truncate text-zinc-200 drop-shadow-md" title={p.name}>{p.name}</div>
+                                            <div className="text-[9px] text-zinc-500 truncate mt-0.5">{(p.sizeBytes / 1024 / 1024).toFixed(2)} MB</div>
                                         </div>
                                     </button>
                                     {onDeleteCloudProject && (
                                         <button 
-                                            onClick={(e) => { e.stopPropagation(); onDeleteCloudProject(p); }}
+                                            onClick={(e) => { e.stopPropagation(); setProjectToDelete({ id: p.id, name: p.name, isCloud: true }); }}
                                             className="absolute right-2 p-1.5 opacity-0 group-hover:opacity-100 text-red-500 hover:text-white hover:bg-red-500 border border-red-500/50 hover:border-red-500 rounded transition-all z-10 disabled:opacity-0 bg-[#09090b]/80 backdrop-blur-sm"
                                             disabled={cloudLoadingAction === p.id}
                                             title="Delete from Cloud"
@@ -259,7 +300,8 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
                                         </button>
                                     )}
                                 </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     </>
                 )}
@@ -271,12 +313,58 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
         </div>
       </div>
       
-      <div className="p-4 border-t border-zinc-800 text-micro relative z-10">
-        <p className="text-zinc-500">A DREAM Gigafactories Corp. Product</p>
-        <p className="text-yellow-600 tracking-wide mt-1">Limited trial alpha</p>
+      <div className="pt-2 pb-3 shrink-0 flex flex-col items-center justify-center gap-4 bg-[#09090b]/90 border-t border-zinc-800/80 relative z-10 shadow-[0_-4px_20px_rgba(0,0,0,0.5)]">
+        {onPrepareForSim && (
+          <div className="flex items-center gap-4 px-2 w-full justify-center">
+            <button 
+                onClick={() => activeProject && onPrepareForSim?.(activeProject, 'prostudio')}
+                disabled={!activeProject}
+                className="p-2 rounded-xl border border-blue-500/20 bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 shadow-[0_0_10px_rgba(59,130,246,0.15)] transition-all disabled:opacity-30 disabled:cursor-not-allowed group relative"
+            >
+                <Cpu className="w-5 h-5 fill-blue-500/20 drop-shadow" />
+                <span className="absolute -top-7 left-1/2 -translate-x-1/2 bg-blue-900/90 border border-blue-500/30 text-blue-300 text-[10px] font-bold tracking-wider uppercase px-2 py-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap shadow-xl">ProStudio</span>
+            </button>
+            <button 
+                onClick={() => activeProject && onPrepareForSim?.(activeProject, 'studiosim')}
+                disabled={!activeProject}
+                className="p-2 rounded-xl border border-emerald-500/20 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.15)] transition-all disabled:opacity-30 disabled:cursor-not-allowed group relative"
+            >
+                <Box className="w-5 h-5 fill-emerald-500/20 drop-shadow" />
+                <span className="absolute -top-7 left-1/2 -translate-x-1/2 bg-emerald-900/90 border border-emerald-500/30 text-emerald-300 text-[10px] font-bold tracking-wider uppercase px-2 py-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap shadow-xl">StudioSim</span>
+            </button>
+            <button 
+                onClick={() => activeProject && onPrepareForSim?.(activeProject, 'fabflow')}
+                disabled={!activeProject}
+                className="p-2 rounded-xl border border-yellow-500/20 bg-yellow-500/10 text-yellow-400 hover:bg-yellow-500/20 shadow-[0_0_10px_rgba(234,179,8,0.15)] transition-all disabled:opacity-30 disabled:cursor-not-allowed group relative"
+            >
+                <Factory className="w-5 h-5 fill-yellow-500/20 drop-shadow" />
+                <span className="absolute -top-7 left-1/2 -translate-x-1/2 bg-yellow-900/90 border border-yellow-500/30 text-yellow-300 text-[10px] font-bold tracking-wider uppercase px-2 py-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap shadow-xl">FabFlow</span>
+            </button>
+          </div>
+        )}
+        <div className="flex flex-col items-center w-full px-4 text-center pb-2">
+            <span className="text-[9px] font-mono text-zinc-500 uppercase tracking-[0.2em]">A DREAM Gigafactories Corp. Product</span>
+            <span className="text-[8px] font-mono text-blue-500/70 uppercase tracking-widest mt-0.5">Limited trial alpha</span>
+        </div>
       </div>
 
       <LoadingModal isOpen={!!cloudLoadingAction} message="Downloading Project from Cloud..." />
+      
+      {projectToDelete && (
+          <DeleteConfirmationDialog
+              projectName={projectToDelete.name}
+              onCancel={() => setProjectToDelete(null)}
+              onConfirm={() => {
+                  if (projectToDelete.isCloud && onDeleteCloudProject) {
+                      const p = cloudProjects?.find(cp => cp.id === projectToDelete.id);
+                      if (p) onDeleteCloudProject(p);
+                  } else if (!projectToDelete.isCloud && onDeleteLocalProject) {
+                      onDeleteLocalProject(projectToDelete.id);
+                  }
+                  setProjectToDelete(null);
+              }}
+          />
+      )}
     </ThemePanel>
   );
 };

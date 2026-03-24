@@ -88,6 +88,7 @@ export interface DesignProject {
   assemblyParts?: { id: string; name: string; stlUrl: string; transform: [number, number, number] }[];
   vendorMatches?: VendorMatch[];
   nodes?: any[];
+  appExtension?: string;
 }
 
 export type VendorCategory = 'Injection Molding' | 'PCB & Electronics' | 'CNC Machining' | '3D Printing' | 'Assembly' | 'Materials';
@@ -147,4 +148,5 @@ export interface CloudProject {
   name: string;
   sizeBytes: number;
   uploadedAt: number;
+  appExtension?: string;
 }

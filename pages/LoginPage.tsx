@@ -60,7 +60,7 @@ const LoginPage: React.FC = () => {
                     placeholder="Email Address"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full bg-black/40 border border-zinc-700/50 text-white placeholder-zinc-600 rounded-none px-4 py-3 outline-none focus:border-white transition-colors font-kido"
+                    className="w-full bg-black/40 border border-zinc-700/50 text-white placeholder-zinc-600 rounded-none px-4 py-3 outline-none focus:border-white transition-colors"
                 />
                 <div className="relative w-full">
                   <input
@@ -68,7 +68,7 @@ const LoginPage: React.FC = () => {
                       placeholder="Password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="w-full bg-black/40 border border-zinc-700/50 text-white placeholder-zinc-600 rounded-none px-4 py-3 outline-none focus:border-white transition-colors font-kido"
+                      className="w-full bg-black/40 border border-zinc-700/50 text-white placeholder-zinc-600 rounded-none px-4 py-3 outline-none focus:border-white transition-colors"
                   />
                   <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white transition-colors">
                       {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
@@ -107,7 +107,7 @@ const LoginPage: React.FC = () => {
                       </Link>.
                   </p>
                 </div>
-                <p className="text-yellow-600 text-xs font-kido tracking-wide pt-2 mt-4">
+                <p className="text-yellow-600 text-xs tracking-wide pt-2 mt-4">
                     Limited trial alpha
                 </p>
               </div>

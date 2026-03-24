@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import AgentSidebar from '../components/AgentSidebar';
 import ProjectSidebar from '../components/ProjectSidebar';
 import FileMenuBar from '../components/MenuBar';
 import DeleteConfirmationDialog from '../components/DeleteConfirmationDialog';
@@ -11,10 +12,13 @@ import { auth, db, storage } from '../services/firebase';
 import { collection, doc, setDoc, getDocs, deleteDoc } from 'firebase/firestore';
 import { ref, getDownloadURL, deleteObject, uploadString } from 'firebase/storage';
 import CloudLoadModal from '../components/CloudLoadModal';
-import { Wrench, X, Box, Cylinder, Cpu, Layers, Maximize2, Move, RefreshCw, MousePointer2, Settings2, UploadCloud, Activity, FileCode2, Trash2, ArrowDownRight, Expand, Cuboid, Settings, Scissors, Target, ArrowDownToLine, Database, CircleDot, ChevronRight, ChevronDown, Sliders, ArrowDown, Bot, MousePointerClick, AlertCircle } from 'lucide-react';
+import LoadingModal from '../components/LoadingModal';
+import { ImportedCADGeometry } from '../components/ImportedCADGeometry';
+import { PlusCircle, Trash2, CloudDownload, XSquare, ZoomIn, ZoomOut } from 'lucide-react';
+import { Wrench, X, Box, Cylinder, Cpu, Layers, Maximize2, Move, RefreshCw, MousePointer2, Settings2, UploadCloud, Activity, FileCode2, ArrowDownRight, Expand, Cuboid, Settings, Scissors, Target, ArrowDownToLine, Database, CircleDot, ChevronRight, ChevronDown, Sliders, ArrowDown, Bot, MousePointerClick, AlertCircle, AlertTriangle, Save } from 'lucide-react';
 import { Canvas, useThree } from '@react-three/fiber';
 import { Geometry, Base, Addition, Subtraction } from '@react-three/csg';
-import { OrbitControls, Grid, Environment, ContactShadows, TransformControls, GizmoHelper, GizmoViewport, Edges } from '@react-three/drei';
+import { OrbitControls, Grid, Environment, ContactShadows, TransformControls, GizmoHelper, GizmoViewport, Edges, Bvh } from '@react-three/drei';
 import * as THREE from 'three';
 
 export interface CSGOperation {
@@ -38,7 +42,7 @@ export interface CSGOperation {
 
 export interface MechatronicNode {
     id: string;
-    type: 'primitive' | 'imported_stl' | 'imported_circuit' | 'imported_dxf';
+    type: 'primitive' | 'imported_cad' | 'imported_stl' | 'imported_circuit' | 'imported_dxf';
     name: string;
     shape?: 'box' | 'cylinder' | 'sphere' | 'screw_thread';
     dimensions?: [number, number, number];
@@ -55,7 +59,7 @@ export interface MechatronicNode {
 
 const ViewCubeIcon = ({ face }: { face: string }) => {
     return (
-        <svg viewBox="0 0 100 100" className="w-5 h-5 transform transition-transform group-hover:scale-[1.15]">
+        <svg viewBox="0 0 100 100" className="w-[30px] h-[30px] transform transition-transform group-hover:scale-[1.15]">
             <g strokeLinejoin="round" strokeLinecap="round" className="stroke-zinc-600 stroke-[4] fill-transparent transition-colors">
                 <path d="M50 20 L80 35 L50 50 L20 35 Z" className={face === 'top' ? 'fill-orange-500/60 stroke-orange-400' : face === 'bottom' ? 'fill-blue-500/30 stroke-blue-400 stroke-dasharray-[4_4]' : ''} />
                 <path d="M20 35 L50 50 L50 80 L20 65 Z" className={face === 'front' ? 'fill-orange-500/60 stroke-orange-400' : face === 'rear' ? 'fill-blue-500/30 stroke-blue-400 stroke-dasharray-[4_4]' : ''} />
@@ -73,8 +77,31 @@ const ViewCubeIcon = ({ face }: { face: string }) => {
     );
 };
 
+const CameraManager = () => {
+    const { camera, controls } = useThree();
+    useEffect(() => {
+        const handleZoom = (e: any) => {
+            if (!controls) return;
+            const ctrl = controls as any;
+            if (e.detail === 'in') {
+                camera.position.multiplyScalar(0.8);
+            } else if (e.detail === 'out') {
+                camera.position.multiplyScalar(1.2);
+            } else if (e.detail === 'fit') {
+                camera.position.set(150, 100, 150);
+                camera.lookAt(0,0,0);
+                if (ctrl.target) ctrl.target.set(0,0,0);
+            }
+            ctrl.update();
+        };
+        window.addEventListener('viewport-zoom', handleZoom);
+        return () => window.removeEventListener('viewport-zoom', handleZoom);
+    }, [camera, controls]);
+    return null;
+};
+
 const MeshedCubeIcon = () => (
-    <svg viewBox="0 0 100 100" className="w-4 h-4 overflow-visible">
+    <svg viewBox="0 0 100 100" className="w-6 h-6 overflow-visible">
         <g strokeLinejoin="round" strokeLinecap="round" className="stroke-zinc-300 stroke-[3.5] fill-transparent">
             <path d="M50 20 L80 35 L50 50 L20 35 Z" className="fill-black/40" />
             <path d="M20 35 L50 50 L50 80 L20 65 Z" className="fill-black/60" />
@@ -133,11 +160,12 @@ const MechatronicNodeMesh = React.memo(({
 
     return (
         <group position={[posX, posY, posZ]} rotation={node.rotation} scale={node.scale}>
-            <mesh
-                castShadow
-                receiveShadow
-                onClick={(e) => {
-                    e.stopPropagation();
+            <Bvh firstHitOnly>
+                <mesh
+                    castShadow
+                    receiveShadow
+                    onClick={(e) => {
+                        e.stopPropagation();
                     if (csgPendingPlacement === 'boolean_union' || csgPendingPlacement === 'boolean_subtract') {
                         if (!isSelected) {
                             setCsgDialogParams((prev: any) => ({ ...prev, toolNodeId: node.id }));
@@ -205,14 +233,15 @@ const MechatronicNodeMesh = React.memo(({
                 onPointerOut={(e) => { setHoverFace(null); setHoverFaceData(null); }}
                 onDoubleClick={(e) => { e.stopPropagation(); setSelectedNodeId(node.id); }}
             >
-                {(node.type === 'primitive' || node.type === 'imported_circuit' || node.type === 'imported_dxf' || node.type === 'imported_stl') && (
+                {(node.type === 'primitive' || node.type === 'imported_circuit' || node.type === 'imported_dxf') && (
                     <Geometry>
                         <Base>
                             {node.shape === 'box' && <boxGeometry args={node.dimensions || [10, 10, 10]} />}
                             {node.shape === 'cylinder' && <cylinderGeometry args={node.dimensions || [5, 5, 20]} />}
                             {node.shape === 'sphere' && <sphereGeometry args={[node.dimensions?.[0] || 10, 32, 32]} />}
                             {node.shape === 'screw_thread' && <cylinderGeometry args={node.dimensions || [3, 3, 15]} />}
-                            {node.type !== 'primitive' && <boxGeometry args={node.type === 'imported_circuit' ? [60, 2, 40] : [20, 20, 20]} />}
+                            {node.type === 'imported_circuit' && <boxGeometry args={[60, 2, 40]} />}
+                            {node.type === 'imported_dxf' && <boxGeometry args={[20, 20, 20]} />}
                         </Base>
 
                         {node.csgStack && node.csgStack.map((csg: any) => {
@@ -396,16 +425,21 @@ const MechatronicNodeMesh = React.memo(({
                     </Geometry>
                 )}
 
+                {(node.type === 'imported_cad' || node.type === 'imported_stl') && node.fileData && (
+                    <ImportedCADGeometry fileUrl={node.fileData} extension={node.extension || 'stl'} />
+                )}
+
                 <meshStandardMaterial
                     color={node.color}
                     roughness={node.shape === 'screw_thread' ? 0.6 : 0.3}
                     metalness={node.shape === 'screw_thread' || node.type === 'imported_circuit' ? 0.9 : 0.8}
                     wireframe={renderMode === 'wireframe'}
                 />
-                {renderMode === 'edges' && <Edges threshold={15} color="#3b82f6" />}
-                {isSelected && renderMode !== 'edges' && <Edges threshold={15} color="#3b82f6" />}
-                {isHovered && !isSelected && renderMode !== 'edges' && <Edges threshold={15} color="#60a5fa" opacity={0.5} transparent />}
+                {renderMode === 'edges' && !['imported_cad', 'imported_dxf'].includes(node.type as string) && <Edges threshold={15} color="#3b82f6" />}
+                {isSelected && renderMode !== 'edges' && !['imported_cad', 'imported_dxf'].includes(node.type as string) && <Edges threshold={15} color="#3b82f6" />}
+                {isHovered && !isSelected && renderMode !== 'edges' && !['imported_cad', 'imported_dxf'].includes(node.type as string) && <Edges threshold={15} color="#60a5fa" opacity={0.5} transparent />}
             </mesh>
+            </Bvh>
         </group>
     );
 }, (prev, next) => {
@@ -425,6 +459,25 @@ const MechatronicNodeMesh = React.memo(({
     return true;
 });
 
+class EngineErrorBoundary extends React.Component<{ fallback: React.ReactNode, children: React.ReactNode }, { hasError: boolean }> {
+    constructor(props: any) {
+        super(props);
+        this.state = { hasError: false };
+    }
+    static getDerivedStateFromError(error: any) {
+        return { hasError: true };
+    }
+    componentDidCatch(error: any, errorInfo: any) {
+        console.error("ProStudio Engine Crash Intercepted:", error, errorInfo);
+    }
+    render() {
+        if (this.state.hasError) {
+            return <>{this.props.fallback}</>;
+        }
+        return <>{this.props.children}</>;
+    }
+}
+
 const ProStudioPage: React.FC = () => {
     const { projectId } = useParams<{ projectId: string }>();
     const navigate = useNavigate();
@@ -439,7 +492,7 @@ const ProStudioPage: React.FC = () => {
     // Mechatronics CAD Engine State
     const [nodes, setNodes] = useState<MechatronicNode[]>([]);
     const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
-    const [hiloPanelWidth, setHiloPanelWidth] = useState(350);
+    const [agentPanelWidth, setAgentPanelWidth] = useState(300);
     const [renderMode, setRenderMode] = useState<'solid' | 'wireframe' | 'edges'>('solid');
     const [isRenderModalOpen, setIsRenderModalOpen] = useState(false);
     const [hoverFace, setHoverFace] = useState<string | null>(null);
@@ -609,21 +662,46 @@ const ProStudioPage: React.FC = () => {
 
     const cloudStorageUsed = cloudProjects.reduce((acc, p) => acc + p.sizeBytes, 0);
 
+    const encodeProjectBlobs = async (project: any) => {
+        if (!project) return null;
+        const cloned = JSON.parse(JSON.stringify(project));
+        for (const node of cloned.nodes) {
+            if (node.fileData && node.fileData.startsWith('blob:')) {
+                try {
+                    const response = await fetch(node.fileData);
+                    const blob = await response.blob();
+                    const reader = new FileReader();
+                    const base64 = await new Promise((resolve, reject) => {
+                        reader.onloadend = () => resolve(reader.result);
+                        reader.onerror = reject;
+                        reader.readAsDataURL(blob);
+                    });
+                    node.fileData = base64;
+                } catch (e) {
+                    console.error("Failed to encode blob for node", node.id, e);
+                }
+            }
+        }
+        return cloned;
+    };
+
     const handleSaveToCloud = async () => {
         if (!activeProject || !auth.currentUser) return;
         try {
             setIsCloudSaving(true);
-            const dataStr = JSON.stringify(activeProject);
+            const encodedProject = await encodeProjectBlobs(activeProject);
+            const dataStr = JSON.stringify(encodedProject);
             const sizeBytes = new Blob([dataStr]).size;
 
-            const fileRef = ref(storage, `users/${auth.currentUser.uid}/projects/${activeProject.id}.dream`);
+            const fileRef = ref(storage, `users/${auth.currentUser.uid}/projects/${activeProject.id}.dreampro`);
             await uploadString(fileRef, dataStr, 'raw');
 
             const cloudMeta: CloudProject = {
                 id: activeProject.id,
                 name: activeProject.name,
                 sizeBytes,
-                uploadedAt: Date.now()
+                uploadedAt: Date.now(),
+                appExtension: '.dreampro'
             };
             await setDoc(doc(db, `users/${auth.currentUser.uid}/cloudProjects`, activeProject.id), cloudMeta);
 
@@ -636,14 +714,15 @@ const ProStudioPage: React.FC = () => {
         }
     };
 
-    const handleSaveLocal = () => {
+    const handleSaveLocal = async () => {
         if (!activeProject) return;
-        const dataStr = JSON.stringify(activeProject);
+        const encodedProject = await encodeProjectBlobs(activeProject);
+        const dataStr = JSON.stringify(encodedProject);
         const blob = new Blob([dataStr], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `${activeProject.name}_ProStudio.dream`;
+        a.download = `${activeProject.name}_ProStudio.dreampro`;
         a.click();
         URL.revokeObjectURL(url);
         
@@ -657,7 +736,7 @@ const ProStudioPage: React.FC = () => {
         if (!auth.currentUser) return;
         try {
             setCloudLoadingAction(cloudProj.id);
-            const fileRef = ref(storage, `users/${auth.currentUser.uid}/projects/${cloudProj.id}.dream`);
+            const fileRef = ref(storage, `users/${auth.currentUser.uid}/projects/${cloudProj.id}.dreampro`);
             const url = await getDownloadURL(fileRef);
             const response = await fetch(url);
             const text = await response.text();
@@ -683,7 +762,7 @@ const ProStudioPage: React.FC = () => {
         try {
             if (!window.confirm("Delete cloud asset permanently?")) return;
             setCloudLoadingAction(cloudProj.id);
-            const fileRef = ref(storage, `users/${auth.currentUser.uid}/projects/${cloudProj.id}.dream`);
+            const fileRef = ref(storage, `users/${auth.currentUser.uid}/projects/${cloudProj.id}.dreampro`);
             await deleteObject(fileRef);
             await deleteDoc(doc(db, `users/${auth.currentUser.uid}/cloudProjects`, cloudProj.id));
             await fetchCloudProjects();
@@ -700,13 +779,15 @@ const ProStudioPage: React.FC = () => {
         if (!file) return;
         setIsUploading(true);
         const ext = file.name.split('.').pop()?.toLowerCase() || '';
-
+        const baseName = file.name.replace(/\.[^/.]+$/, "");
+        
         const reader = new FileReader();
-        reader.onload = (ev) => {
-            const content = ev.target?.result as string;
+        reader.onloadend = () => {
+            const base64Data = reader.result as string;
+            
             const newNode: MechatronicNode = {
                 id: `node_${Date.now()}`,
-                type: ['stl', 'step', 'obj'].includes(ext) ? 'imported_stl' : ['skidl', 'gerber', 'gbr'].includes(ext) ? 'imported_circuit' : 'imported_dxf',
+                type: ['stl', 'obj', 'step', 'stp', 'iges', 'igs'].includes(ext) ? 'imported_cad' : ['skidl', 'gerber', 'gbr'].includes(ext) ? 'imported_circuit' : 'imported_dxf',
                 name: file.name,
                 position: [0, 0, 0],
                 rotation: [0, 0, 0],
@@ -714,14 +795,36 @@ const ProStudioPage: React.FC = () => {
                 materialType: ext === 'skidl' || ext === 'gbr' ? 'fr4' : 'metal',
                 color: ext === 'skidl' || ext === 'gbr' ? '#065f46' : '#71717a',
                 functionTag: ext === 'skidl' || ext === 'gbr' ? 'PCB Routing / Logic' : 'Structural Component',
-                fileData: content,
+                fileData: base64Data,
                 extension: ext
             };
+            
+            const isUnsavedOrSystemName = !activeProjectId || assemblyName === 'Unsaved Assembly' || assemblyName === '' || /^Assembly_\d+$/.test(assemblyName);
+            
             setNodes(prev => [...prev, newNode]);
+            
+            if (isUnsavedOrSystemName) {
+                setAssemblyName(baseName);
+                if (activeProjectId) {
+                    setProjects(all => all.map(p => p.id === activeProjectId ? { ...p, name: baseName } : p));
+                } else {
+                    const newId = `proj_${Date.now()}`;
+                    const newProj = { id: newId, name: baseName, nodes: [newNode], lastModified: Date.now(), createdAt: Date.now(), prompt: '', specs: null, assetUrls: null, status: 'IDLE', isConstrained: false, appExtension: '.dreampro' } as any;
+                    setProjects(all => [newProj, ...all]);
+                    setActiveProjectId(newId);
+                }
+            }
+            
+            if (fileInputRef.current) fileInputRef.current.value = '';
             setSelectedNodeId(newNode.id);
             setIsUploading(false);
         };
-        reader.readAsText(file); // Temporary mock for solid ingestion, ideally arrayBuffer for binary STLs
+        reader.onerror = () => {
+            console.error("Failed to read imported CAD file.");
+            setIsUploading(false);
+        };
+        
+        reader.readAsDataURL(file);
     };
 
     const addPrimitive = (shape: 'box' | 'cylinder' | 'sphere' | 'screw_thread') => {
@@ -771,13 +874,13 @@ const ProStudioPage: React.FC = () => {
         setContextMenuTarget(null);
     };
 
-    const handleAgentSubmit = async () => {
-        if (!agentPrompt.trim()) return;
+    const handleAgentSubmit = async (prompt: string) => {
+        if (!prompt.trim()) return;
         setIsAgentThinking(true);
 
         await new Promise(r => setTimeout(r, 800)); // Simulate Gemini Processing
 
-        const lower = agentPrompt.toLowerCase();
+        const lower = prompt.toLowerCase();
         const vectorMatch = lower.match(/(?:move|translate|shift|position).*?\[\s*(-?\d*\.?\d+)\s*,\s*(-?\d*\.?\d+)\s*,\s*(-?\d*\.?\d+)\s*\]/);
 
         const xzPlaneMatch = lower.match(/(?:move|translate|shift|position).*?xz\splane/i);
@@ -876,7 +979,6 @@ const ProStudioPage: React.FC = () => {
             logEvent('error', `Context missing. Please select a shape from the Assembly view explicitly, or ask me to add a new basic shape first.`);
         }
 
-        setAgentPrompt('');
         setIsAgentThinking(false);
     };
 
@@ -1030,7 +1132,8 @@ const ProStudioPage: React.FC = () => {
             simulationData: null,
             openScadCode: null,
             isConstrained: false,
-            circuitComponents: null
+            circuitComponents: null,
+            appExtension: '.dreampro'
         };
         setProjects((prev: any) => [newProject as any, ...prev]);
         setNodes([]);
@@ -1051,83 +1154,60 @@ const ProStudioPage: React.FC = () => {
         navigate('/prostudio', { replace: true });
     };
 
-    const gridTemplateColumns = `220px 220px 50px minmax(400px, 1fr) 50px 6px ${hiloPanelWidth}px`;
+    const handleDeleteLocalProject = async (id: string) => {
+        try {
+            setProjects(prev => prev.filter(p => p.id !== id));
+            if (activeProjectId === id) {
+                setActiveProjectId(null);
+                setNodes([]);
+                setAssemblyName('Unsaved Assembly');
+            }
+        } catch (err) {
+            console.error('Failed to delete project', err);
+        }
+    };
+
+    const handleDeleteCloudProject = async (cloudProj: CloudProject) => {
+        if (!auth.currentUser) return;
+        setCloudLoadingAction(cloudProj.id);
+        try {
+            await deleteDoc(doc(db, `users/${auth.currentUser.uid}/cloudProjects/${cloudProj.id}`));
+            try {
+                await deleteObject(ref(storage, `users/${auth.currentUser.uid}/projects/${cloudProj.id}.dreampro`));
+            } catch(e) { console.warn("Storage object missing", e); }
+            setCloudProjects(prev => prev.filter(p => p.id !== cloudProj.id));
+            window.dispatchEvent(new Event('update-cloud-quota'));
+        } catch (err) {
+            console.error("Failed to delete from cloud", err);
+        } finally {
+            setCloudLoadingAction(null);
+        }
+    };
+
+    const gridTemplateColumns = `256px 220px 50px minmax(400px, 1fr) 50px 6px ${agentPanelWidth}px`;
 
     return (
         <div className="h-full flex flex-col gap-2 p-2 relative bg-black/90">
             <ThemePanel className="w-full shrink-0 border border-blue-500/20 shadow-[inset_0_0_20px_rgba(59,130,246,0.05)] text-blue-400">
-                <FileMenuBar
-                    onNewProject={handleNewProject}
-                    onSave={() => {
-                        if (!activeProject) {
-                            const newId = `proj_${Date.now()}`;
-                            const newProj = { 
-                                id: newId, 
-                                name: assemblyName || 'Unsaved Assembly', 
-                                nodes: [], 
-                                createdAt: Date.now(), 
-                                prompt: '',
-                                specs: null,
-                                assetUrls: null,
-                                simulationData: null,
-                                openScadCode: null,
-                                status: 'draft' as any,
-                                isConstrained: false,
-                                circuitComponents: null
-                            };
-                            setProjects(prev => [newProj as import('../types').DesignProject, ...prev]);
-                            setActiveProjectId(newId);
-                        } else {
-                            handleRenameRoot();
-                        }
-                    }}
-                    onImport={() => fileInputRef.current?.click()}
-                    onDownload={handleSaveLocal}
-                    onCloseProject={() => { setActiveProjectId(null); setNodes([]); navigate('/prostudio'); }}
-                    onDeleteProject={() => {
-                        if (activeProject) {
-                            setIsDeleteModalVisible(true);
-                        } else {
-                            // If unsaved assembly, just clear it directly.
-                            isClearingRef.current = true;
-                            setActiveProjectId(null);
-                            setNodes([]);
-                            setAssemblyName('Unsaved Assembly');
-                        }
-                    }}
-                    onImportStl={() => fileInputRef.current?.click()}
-                    onExportStl={() => { }}
-                    isStlReady={nodes.length > 0}
-                    onExportImages={() => { setIsRenderModalOpen(true); }}
-                    areImagesExportable={nodes.length > 0}
-                    isProjectActive={true} // Force true so users can save/download new Unsaved Assemblies
-                    onSaveToCloud={handleSaveToCloud}
-                    onLoadFromCloud={handleCloudModalOpen}
-                    isCloudSaving={isCloudSaving}
-                    cloudStorageUsed={cloudStorageUsed}
-                />
+                <FileMenuBar projectName={activeProject?.name || assemblyName} />
             </ThemePanel>
             <div className="flex-1 grid overflow-hidden gap-2" style={{ gridTemplateColumns }}>
-
-                {/* Project Registry Sidebar */}
-                <div className="flex flex-col h-full bg-black/40 backdrop-blur-md rounded-lg overflow-hidden border border-zinc-800/80">
-                    <ProjectSidebar
-                        projects={projects}
-                        activeProjectId={activeProjectId}
-                        onNewProject={handleNewProject}
-                        hideNewProjectButton={true}
-                        baseRoute="/prostudio"
-                        onRenameProject={(id, newName) => {
-                            setProjects(prev => prev.map(p => p.id === id ? { ...p, name: newName } : p));
-                            if (id === activeProjectId) setAssemblyName(newName);
-                        }}
-                        cloudProjects={cloudProjects}
-                        onLoadCloudProject={handleDownloadFromCloud}
-                        onDeleteCloudProject={handleDeleteFromCloud}
-                        triggerHierarchyView={null}
-                        onHierarchyViewClosed={() => {}}
-                    />
-                </div>
+                {/* Left Local/Cloud Explorer */}
+                <ProjectSidebar 
+                    projects={projects} 
+                    activeProjectId={activeProjectId} 
+                    onNewProject={handleNewProject} 
+                    onRenameProject={(id, name) => setProjects(prev => prev.map(p => p.id === id ? { ...p, name } : p))} 
+                    triggerHierarchyView={null} 
+                    onHierarchyViewClosed={() => {}} 
+                    cloudProjects={cloudProjects}
+                    onLoadCloudProject={(proj) => {
+                        window.alert('Please instantiate cloud payloads from simulation workspaces first.');
+                    }}
+                    onDeleteCloudProject={handleDeleteCloudProject}
+                    onDeleteLocalProject={handleDeleteLocalProject}
+                    cloudLoadingAction={cloudLoadingAction}
+                />
 
                 {/* Assembly Panel Split 75/25 */}
                 <div className="flex flex-col h-full bg-black/40 backdrop-blur-md rounded-lg overflow-hidden border border-zinc-800/80">
@@ -1178,7 +1258,7 @@ const ProStudioPage: React.FC = () => {
                                                     {node.type === 'primitive' && node.shape === 'cylinder' && <Cylinder className="w-3 h-3 shrink-0 text-blue-500" />}
                                                     {node.type === 'primitive' && node.shape === 'screw_thread' && <Wrench className="w-3 h-3 shrink-0 text-zinc-400" />}
                                                     {node.type === 'imported_circuit' && <Cpu className="w-3 h-3 shrink-0 text-emerald-500" />}
-                                                    {(node.type === 'imported_stl' || node.type === 'imported_dxf') && <Layers className="w-3 h-3 shrink-0 text-zinc-400" />}
+                                                    {(node.type === 'imported_cad' || node.type === 'imported_dxf') && <Layers className="w-3 h-3 shrink-0 text-zinc-400" />}
                                                     {editingNodeId === node.id && !editingCsgId ? (
                                                         <input
                                                             type="text"
@@ -1302,123 +1382,149 @@ const ProStudioPage: React.FC = () => {
                 {/* Vertical Left Toolbar for Primitives & CSG Features */}
                 <div className="flex flex-col h-full bg-black/50 backdrop-blur-sm rounded-lg overflow-y-auto overflow-x-hidden border border-zinc-800/80 items-center py-2 space-y-3">
                     <div className="text-[8px] text-zinc-500 uppercase font-black rotate-180" style={{ writingMode: 'vertical-rl' }}>Basic Shapes</div>
-                    <button onClick={() => addPrimitive('box')} className="p-2 text-zinc-400 hover:text-blue-400 hover:bg-blue-900/30 rounded transition-colors" title="Solid Box"><Box className="w-4 h-4 fill-zinc-500/30 group-hover:fill-blue-500/50" /></button>
-                    <button onClick={() => addPrimitive('cylinder')} className="p-2 text-zinc-400 hover:text-blue-400 hover:bg-blue-900/30 rounded transition-colors" title="Solid Cylinder"><Cylinder className="w-4 h-4 fill-zinc-500/30 group-hover:fill-blue-500/50" /></button>
-                    <button onClick={() => addPrimitive('screw_thread')} className="p-2 text-zinc-400 hover:text-blue-400 hover:bg-blue-900/30 rounded transition-colors" title="Fastener Thread"><Wrench className="w-4 h-4 fill-zinc-500/30" /></button>
+                    <button onClick={() => addPrimitive('box')} className="p-2 text-zinc-400 hover:text-blue-400 hover:bg-blue-900/30 rounded transition-colors" title="Solid Box"><Box className="w-6 h-6 fill-zinc-500/30 group-hover:fill-blue-500/50" /></button>
+                    <button onClick={() => addPrimitive('cylinder')} className="p-2 text-zinc-400 hover:text-blue-400 hover:bg-blue-900/30 rounded transition-colors" title="Solid Cylinder"><Cylinder className="w-6 h-6 fill-zinc-500/30 group-hover:fill-blue-500/50" /></button>
+                    <button onClick={() => addPrimitive('screw_thread')} className="p-2 text-zinc-400 hover:text-blue-400 hover:bg-blue-900/30 rounded transition-colors" title="Fastener Thread"><Wrench className="w-6 h-6 fill-zinc-500/30" /></button>
 
                     <div className="w-8 h-px bg-zinc-800 my-1"></div>
                     <button onClick={() => initiateCSG('hole')} className="p-2 text-red-400 hover:text-red-300 hover:bg-red-900/40 rounded transition-colors" title="Drill Hole">
-                        <svg viewBox="0 0 24 24" className="w-4 h-4 fill-red-500/30 stroke-red-500 stroke-[1.5]" strokeLinecap="round" strokeLinejoin="round"><path d="M9 2v4l-2 2v9a3 3 0 0 0 6 0V8l-2-2V2H9z" /><path d="M7 10l6 3" /><path d="M7 13l6 3" /></svg>
+                        <svg viewBox="0 0 24 24" className="w-6 h-6 fill-red-500/30 stroke-red-500 stroke-[1.5]" strokeLinecap="round" strokeLinejoin="round"><path d="M9 2v4l-2 2v9a3 3 0 0 0 6 0V8l-2-2V2H9z" /><path d="M7 10l6 3" /><path d="M7 13l6 3" /></svg>
                     </button>
                     <button onClick={() => initiateCSG('chamfer')} className="p-2 text-orange-400 hover:text-orange-300 hover:bg-orange-900/40 rounded transition-colors" title="Chamfer Edge">
-                        <svg viewBox="0 0 24 24" className="w-4 h-4 fill-orange-500/30 stroke-orange-500 stroke-[1.5]" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16v16H4V4z" fill="none" strokeWidth="1" strokeOpacity="0.2"/><path d="M4 14l10-10h6v16H4V14z" /></svg>
+                        <svg viewBox="0 0 24 24" className="w-6 h-6 fill-orange-500/30 stroke-orange-500 stroke-[1.5]" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16v16H4V4z" fill="none" strokeWidth="1" strokeOpacity="0.2"/><path d="M4 14l10-10h6v16H4V14z" /></svg>
                     </button>
                     <button onClick={() => initiateCSG('round')} className="p-2 text-emerald-400 hover:text-emerald-300 hover:bg-emerald-900/40 rounded transition-colors" title="Round / Fillet Edge">
-                        <svg viewBox="0 0 24 24" className="w-4 h-4 fill-emerald-500/30 stroke-emerald-500 stroke-[1.5]" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16v16H4V4z" fill="none" strokeWidth="1" strokeOpacity="0.2"/><path d="M20 20H4V4h6a10 10 0 0 1 10 10v6z" /></svg>
+                        <svg viewBox="0 0 24 24" className="w-6 h-6 fill-emerald-500/30 stroke-emerald-500 stroke-[1.5]" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16v16H4V4z" fill="none" strokeWidth="1" strokeOpacity="0.2"/><path d="M20 20H4V4h6a10 10 0 0 1 10 10v6z" /></svg>
                     </button>
                     <button onClick={() => initiateCSG('taper')} className="p-2 text-orange-400 hover:text-orange-300 hover:bg-orange-900/40 rounded transition-colors" title="Taper Face">
-                        <svg viewBox="0 0 24 24" className="w-4 h-4 fill-orange-500/30 stroke-orange-500 stroke-[1.5]" strokeLinecap="round" strokeLinejoin="round"><polygon points="6 20 18 20 14 4 10 4" /></svg>
+                        <svg viewBox="0 0 24 24" className="w-6 h-6 fill-orange-500/30 stroke-orange-500 stroke-[1.5]" strokeLinecap="round" strokeLinejoin="round"><polygon points="6 20 18 20 14 4 10 4" /></svg>
                     </button>
                     <button onClick={() => initiateCSG('countersink')} className="p-2 text-red-400 hover:text-red-300 hover:bg-red-900/40 rounded transition-colors" title="Countersink Hole">
-                        <svg viewBox="0 0 24 24" className="w-4 h-4 fill-red-500/30 stroke-red-500 stroke-[1.5]" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16v4L15 14v6H9v-6L4 8V4z" /></svg>
+                        <svg viewBox="0 0 24 24" className="w-6 h-6 fill-red-500/30 stroke-red-500 stroke-[1.5]" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16v4L15 14v6H9v-6L4 8V4z" /></svg>
                     </button>
                     <div className="w-8 h-px bg-zinc-800 my-1"></div>
                     <button onClick={() => initiateCSG('boolean_union')} className="p-2 text-blue-400 hover:text-blue-300 hover:bg-blue-900/40 rounded transition-colors" title="Boolean Union">
-                        <svg viewBox="0 0 24 24" className="w-4 h-4 fill-blue-500/30 stroke-blue-500 stroke-[1.5]" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="4" width="12" height="12" rx="2" /><rect x="8" y="8" width="12" height="12" rx="2" /></svg>
+                        <svg viewBox="0 0 24 24" className="w-6 h-6 fill-blue-500/30 stroke-blue-500 stroke-[1.5]" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="4" width="12" height="12" rx="2" /><rect x="8" y="8" width="12" height="12" rx="2" /></svg>
                     </button>
                     <button onClick={() => initiateCSG('boolean_subtract')} className="p-2 text-indigo-400 hover:text-indigo-300 hover:bg-indigo-900/40 rounded transition-colors" title="Boolean Subtract">
-                        <svg viewBox="0 0 24 24" className="w-4 h-4 fill-indigo-500/30 stroke-indigo-500 stroke-[1.5]" strokeLinecap="round" strokeLinejoin="round"><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M4 4h8v8H4z" fill="none" strokeDasharray="2 2" /></svg>
+                        <svg viewBox="0 0 24 24" className="w-6 h-6 fill-indigo-500/30 stroke-indigo-500 stroke-[1.5]" strokeLinecap="round" strokeLinejoin="round"><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M4 4h8v8H4z" fill="none" strokeDasharray="2 2" /></svg>
                     </button>
                 </div>
 
                 <ThemePanel translucent className="flex flex-col h-full overflow-hidden relative z-10 border border-blue-500/10 shadow-[inset_0_0_50px_rgba(59,130,246,0.02)]">
 
-                    {/* Top Multi-CAD Toolbar */}
-                    <div className="px-4 py-2 border-b border-zinc-800/80 shrink-0 bg-transparent flex justify-between items-center bg-black/60 z-20">
-                        <div className="flex items-center gap-1 bg-black/60 p-1 rounded border border-blue-500/20 shadow-inner">
-                            <button onClick={() => setCsgMode('Part')} className={`px-3 py-1 rounded transition-colors text-[10px] font-bold uppercase tracking-widest ${csgMode === 'Part' ? 'bg-blue-900/40 text-blue-400 border border-blue-500/30' : 'text-zinc-500 hover:text-zinc-300'}`}>Part</button>
-                            <button onClick={() => setCsgMode('Assembly')} className={`px-3 py-1 rounded transition-colors text-[10px] font-bold uppercase tracking-widest ${csgMode === 'Assembly' ? 'bg-blue-900/40 text-blue-400 border border-blue-500/30' : 'text-zinc-500 hover:text-zinc-300'}`}>Assembly</button>
-                            <button onClick={() => setCsgMode('Circuit')} className={`px-3 py-1 rounded transition-colors text-[10px] font-bold uppercase tracking-widest gap-1 flex items-center ${csgMode === 'Circuit' ? 'bg-emerald-900/40 text-emerald-400 border border-emerald-500/30' : 'text-zinc-500 hover:text-zinc-300'}`}><Cpu className="w-3 h-3" /> Circuits</button>
-                        </div>
-
-                        <div className="flex justify-center items-center gap-2 bg-black/60 p-1.5 rounded-lg border border-zinc-800/80 shadow-inner absolute left-1/2 -translate-x-1/2">
-                            <button onClick={handleSaveLocal} className="p-1.5 text-blue-400 hover:text-blue-300 hover:bg-blue-900/40 rounded transition-colors flex items-center gap-1.5" title="Save File Locally">
-                                <ArrowDownToLine className="w-4 h-4 fill-blue-500/20" />
-                            </button>
-                            <button onClick={handleSaveToCloud} disabled={isCloudSaving} className="p-1.5 text-blue-400 hover:text-blue-300 hover:bg-blue-900/40 rounded transition-colors flex items-center gap-1.5 disabled:opacity-50" title="Commit to Remote Cloud">
-                                {isCloudSaving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <UploadCloud className="w-4 h-4 fill-blue-500/20" />}
-                            </button>
-
-                            <div className="w-px h-4 bg-zinc-700 mx-1"></div>
-                            <input type="file" ref={fileInputRef} className="hidden" accept=".stl,.obj,.step,.dxf,.skidl,.gbr,.gerber" onChange={handleFileUpload} />
-                            <button onClick={() => fileInputRef.current?.click()} disabled={isUploading} className="p-1 hover:bg-emerald-900/40 rounded transition-colors flex items-center disabled:opacity-50" title="Import 3D Model (STL/DXF/SKIDL)">
-                                {isUploading ? <RefreshCw className="w-4 h-4 m-1 animate-spin text-emerald-400" /> :
+                    {/* Two-Tier Top Multi-CAD Toolbar */}
+                    <div className="px-4 py-2 border-b border-zinc-800/80 shrink-0 bg-transparent flex flex-col items-center bg-black/60 z-20">
+                        
+                        {/* FIRST ROW: File Menu & Main Views */}
+                        <div className="flex justify-between items-center w-full gap-4">
+                            {/* File Main Actions */}
+                            <div className="flex items-center gap-2 bg-black/60 p-1.5 rounded-lg border border-zinc-800/80 shadow-[0_4px_30px_rgba(0,0,0,0.5)] backdrop-blur-sm overflow-x-auto no-scrollbar shrink-0">
+                                <button onClick={handleNewProject} className="p-1.5 text-zinc-300 hover:text-emerald-400 hover:bg-emerald-900/40 rounded transition-colors" title="New Project">
+                                    <PlusCircle className="w-5 h-5 drop-shadow-md" />
+                                </button>
+                                <button onClick={handleSaveLocal} className="p-1.5 px-2 text-blue-400 hover:text-blue-300 hover:bg-blue-900/40 rounded transition-colors flex items-center justify-center gap-1.5" title="Save File Locally">
+                                    <Save className="w-5 h-5 drop-shadow-md fill-blue-500/10" />
+                                    <ArrowDownToLine className="w-3.5 h-3.5 opacity-80" />
+                                </button>
+                                <div className="w-px h-5 bg-zinc-700/80 mx-0.5 rounded"></div>
+                                <input type="file" ref={fileInputRef} className="hidden" accept=".stl,.obj,.step,.dxf,.skidl,.gbr,.gerber" onChange={handleFileUpload} />
+                                <button onClick={() => fileInputRef.current?.click()} disabled={isUploading} className="p-1 hover:bg-emerald-900/40 rounded transition-colors flex items-center disabled:opacity-50" title="Import 3D Model">
                                     <div className="relative p-1 group flex items-center justify-center">
                                         <MeshedCubeIcon />
-                                        <ArrowDown className="w-3.5 h-3.5 text-emerald-500 absolute -right-0.5 -bottom-0.5 drop-shadow-md stroke-[3]" />
-                                    </div>}
-                            </button>
-                            <div className="w-px h-4 bg-zinc-700 mx-1"></div>
-
-                            <button onClick={() => alert("FEA Solvers booting...")} className="relative p-1.5 text-indigo-400 hover:text-indigo-300 hover:bg-indigo-900/40 rounded transition-colors" title="Run FEA">
-                                <Cuboid className="w-4 h-4 opacity-80 fill-indigo-500/30" />
-                                <ArrowDownRight className="w-3 h-3 absolute bottom-0.5 right-0.5 text-emerald-400 drop-shadow shadow-black stroke-[3]" />
-                            </button>
-                            <div className="w-px h-4 bg-zinc-700 mx-1"></div>
-
-                            {/* Automation / Vendor Integration */}
-                            <button onClick={() => setIsVendorModalOpen(true)} className="p-1.5 text-orange-400 hover:text-orange-300 hover:bg-orange-900/40 rounded transition-colors flex items-center gap-1" title="Search Parts Catalog">
-                                <Database className="w-4 h-4 fill-orange-500/30" />
-                            </button>
-
-                            <div className="w-px h-4 bg-zinc-700 mx-1"></div>
-                            {/* Viewport Render Modes */}
-                            <div className="flex items-center gap-1 bg-black/60 p-1 rounded-lg border border-zinc-800/80 shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]">
-                                {/* Wireframe */}
-                                <button onClick={() => setRenderMode('wireframe')} className={`p-1.5 rounded transition-all duration-200 ${renderMode === 'wireframe' ? 'bg-blue-900/60 text-blue-400 shadow-inner scale-95' : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50'}`} title="Wireframe View">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                                        <ArrowDown className="w-[18px] h-[18px] text-emerald-500 absolute -right-0.5 -bottom-0.5 drop-shadow-md stroke-[3]" />
+                                    </div>
                                 </button>
-                                {/* Solid + Edge */}
-                                <button onClick={() => setRenderMode('edges')} className={`p-1.5 rounded transition-all duration-200 ${renderMode === 'edges' ? 'bg-blue-900/60 text-blue-400 shadow-inner scale-95' : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50'}`} title="Solid + Edge View">
-                                    <svg viewBox="0 0 24 24" className="w-4 h-4">
-                                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" fill="currentColor" fillOpacity="0.15" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"></path>
-                                        <polyline points="3.27 6.96 12 12.01 20.73 6.96" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"></polyline>
-                                        <line x1="12" y1="22.08" x2="12" y2="12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"></line>
-                                    </svg>
+                                <button onClick={handleSaveToCloud} disabled={isCloudSaving} className="p-1.5 text-blue-400 hover:text-blue-300 hover:bg-blue-900/40 rounded transition-colors flex items-center gap-1.5 disabled:opacity-50" title="Commit to Remote Cloud">
+                                    {isCloudSaving ? <RefreshCw className="w-5 h-5 animate-spin drop-shadow-md" /> : <UploadCloud className="w-5 h-5 drop-shadow-md fill-blue-500/20" />}
                                 </button>
-                                {/* Solid */}
-                                <button onClick={() => setRenderMode('solid')} className={`p-1.5 rounded transition-all duration-200 ${renderMode === 'solid' ? 'bg-blue-900/60 text-blue-400 shadow-inner scale-95' : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50'}`} title="Solid View">
-                                    <svg viewBox="0 0 24 24" className="w-4 h-4">
-                                        <polygon points="12 2 3 7 12 12 21 7 12 2" fill="currentColor" fillOpacity="0.4"></polygon>
-                                        <polygon points="3 16 3 7 12 12 12 22 3 16" fill="currentColor" fillOpacity="0.8"></polygon>
-                                        <polygon points="12 22 12 12 21 7 21 16 12 22" fill="currentColor"></polygon>
-                                    </svg>
-                                </button>
-
-                                {/* Vertical Bar Separator for Photoreal Modal */}
-                                <div className="w-px h-4 bg-zinc-700/80 mx-1.5 rounded"></div>
-
-                                <button onClick={() => setIsRenderModalOpen(true)} className="w-[26px] h-[26px] mx-0.5 rounded-sm border border-zinc-600/80 hover:border-orange-500 overflow-hidden relative shadow-md group outline-none transition-colors" title="Photorealistic GPU Render">
-                                    <img src="/crankshaft_render.png" alt="Render" className="w-full h-full object-cover group-hover:scale-125 transition-transform duration-700 ease-out" />
-                                    <div className="absolute inset-0 ring-1 ring-inset ring-black/40 group-hover:ring-orange-500/30 mix-blend-overlay pointer-events-none"></div>
+                                <div className="w-px h-5 bg-zinc-700/80 mx-0.5 rounded"></div>
+                                <button onClick={() => { setActiveProjectId(null); setNodes([]); navigate('/prostudio'); }} className="p-1.5 text-zinc-300 hover:text-orange-400 hover:bg-orange-900/40 rounded transition-colors" title="Close Project">
+                                    <XSquare className="w-5 h-5 drop-shadow-md" />
                                 </button>
                             </div>
-                            <div className="w-px h-4 bg-zinc-700 mx-1"></div>
 
-                            {/* Motion Constraints Toolbar Group */}
-                            <div className="flex items-center gap-1 bg-zinc-900/50 px-2 py-0.5 rounded border border-zinc-800">
-                                <span className="text-[8px] text-zinc-500 uppercase font-black mr-1 tracking-widest leading-none">Constraints</span>
-                                <button className="px-2 py-1 text-[9px] text-zinc-400 hover:text-blue-400 font-bold uppercase tracking-widest rounded hover:bg-blue-900/30">Frame</button>
-                                <button className="px-2 py-1 text-[9px] text-zinc-400 hover:text-blue-400 font-bold uppercase tracking-widest rounded hover:bg-blue-900/30">Linear</button>
-                                <button className="px-2 py-1 text-[9px] text-zinc-400 hover:text-blue-400 font-bold uppercase tracking-widest rounded hover:bg-blue-900/30">Rotary</button>
+                            {/* Zoom Controls */}
+                            <div className="flex items-center gap-1 bg-black/60 p-1.5 rounded-lg border border-zinc-800/80 shadow-[0_4px_30px_rgba(0,0,0,0.5)] backdrop-blur-sm shrink-0">
+                                <button onClick={() => window.dispatchEvent(new CustomEvent('viewport-zoom', { detail: 'in' }))} className="p-1.5 text-blue-400 hover:text-white hover:bg-blue-900/40 rounded transition-colors" title="Zoom In">
+                                    <ZoomIn className="w-5 h-5 drop-shadow-md" />
+                                </button>
+                                <button onClick={() => window.dispatchEvent(new CustomEvent('viewport-zoom', { detail: 'out' }))} className="p-1.5 text-blue-400 hover:text-white hover:bg-blue-900/40 rounded transition-colors" title="Zoom Out">
+                                    <ZoomOut className="w-5 h-5 drop-shadow-md" />
+                                </button>
+                                <div className="w-px h-4 bg-zinc-700/80 mx-1 rounded"></div>
+                                <button onClick={() => window.dispatchEvent(new CustomEvent('viewport-zoom', { detail: 'fit' }))} className="p-1.5 text-indigo-400 hover:text-white hover:bg-indigo-900/40 rounded transition-colors" title="Zoom to Fit All">
+                                    <Maximize2 className="w-5 h-5 drop-shadow-md" />
+                                </button>
+                            </div>
+
+                            {/* App-Specific Tools (FEA, Vendor) */}
+                            <div className="flex items-center gap-1 bg-black/60 p-1.5 rounded-lg border border-indigo-500/20 shadow-[0_4px_30px_rgba(0,0,0,0.5)] backdrop-blur-sm overflow-x-auto no-scrollbar shrink-0">
+                                <button onClick={() => alert("FEA Solvers booting...")} className="relative p-1.5 text-indigo-400 hover:text-indigo-300 hover:bg-indigo-900/40 rounded transition-colors" title="Run FEA">
+                                    <Cuboid className="w-5 h-5 opacity-80 fill-indigo-500/30 drop-shadow-md" />
+                                    <ArrowDownRight className="w-[16px] h-[16px] absolute bottom-1 right-0 text-emerald-400 drop-shadow shadow-black stroke-[3]" />
+                                </button>
+                                <div className="w-px h-4 bg-zinc-700/80 mx-1 rounded"></div>
+                                <button onClick={() => setIsVendorModalOpen(true)} className="p-1.5 text-orange-400 hover:text-orange-300 hover:bg-orange-900/40 rounded transition-colors flex items-center gap-1" title="Search Parts Catalog">
+                                    <Database className="w-5 h-5 fill-orange-500/30 drop-shadow-md" />
+                                </button>
+                            </div>
+
+                            {/* View / CAD Mode */}
+                            <div className="flex items-center gap-1 bg-black/60 p-1 rounded border border-blue-500/20 shadow-inner shrink-0">
+                                <button onClick={() => setCsgMode('Part')} className={`px-3 py-1 rounded transition-colors text-[10px] font-bold uppercase tracking-widest ${csgMode === 'Part' ? 'bg-blue-900/40 text-blue-400 border border-blue-500/30' : 'text-zinc-500 hover:text-zinc-300'}`}>Part</button>
+                                <button onClick={() => setCsgMode('Assembly')} className={`px-3 py-1 rounded transition-colors text-[10px] font-bold uppercase tracking-widest ${csgMode === 'Assembly' ? 'bg-blue-900/40 text-blue-400 border border-blue-500/30' : 'text-zinc-500 hover:text-zinc-300'}`}>Assembly</button>
+                                <button onClick={() => setCsgMode('Circuit')} className={`px-3 py-1 rounded transition-colors text-[10px] font-bold uppercase tracking-widest gap-1 flex items-center ${csgMode === 'Circuit' ? 'bg-emerald-900/40 text-emerald-400 border border-emerald-500/30' : 'text-zinc-500 hover:text-zinc-300'}`}><Cpu className="w-[18px] h-[18px]" /> Circuits</button>
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-1 bg-black/60 p-1 rounded-lg border border-zinc-800/80 shadow-inner">
-                            <button onClick={() => setIsExploded(!isExploded)} className={`mr-2 p-1.5 rounded transition-colors border ${isExploded ? 'bg-orange-900/40 text-orange-400 border-orange-500/50' : 'text-zinc-500 border-transparent hover:text-zinc-300 hover:bg-zinc-800'}`} title="Toggle Exploded View"><Expand className="w-4 h-4" /></button>
-                            <button onClick={() => setTransformMode('translate')} className={`p-1.5 rounded transition-colors ${transformMode === 'translate' ? 'bg-blue-900/40 text-blue-400' : 'text-zinc-500 hover:text-zinc-300'}`} title="Translate"><Move className="w-4 h-4" /></button>
-                            <button onClick={() => setTransformMode('rotate')} className={`p-1.5 rounded transition-colors ${transformMode === 'rotate' ? 'bg-blue-900/40 text-blue-400' : 'text-zinc-500 hover:text-zinc-300'}`} title="Rotate"><RefreshCw className="w-4 h-4" /></button>
-                            <button onClick={() => setTransformMode('scale')} className={`p-1.5 rounded transition-colors ${transformMode === 'scale' ? 'bg-blue-900/40 text-blue-400' : 'text-zinc-500 hover:text-zinc-300'}`} title="Scale"><Maximize2 className="w-4 h-4" /></button>
+                        {/* SECOND ROW: App-Specific Workspace Menubars */}
+                        <div className="flex justify-between items-center w-full gap-4 mt-2">
+                            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+                                {/* Viewport Render Modes */}
+                                <div className="flex items-center gap-1 bg-black/60 p-1 rounded-lg border border-zinc-800/80 shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]">
+                                    <button onClick={() => setRenderMode('wireframe')} className={`p-1.5 rounded transition-all duration-200 ${renderMode === 'wireframe' ? 'bg-blue-900/60 text-blue-400 shadow-inner scale-95' : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50'}`} title="Wireframe View">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                                    </button>
+                                    <button onClick={() => setRenderMode('edges')} className={`p-1.5 rounded transition-all duration-200 ${renderMode === 'edges' ? 'bg-blue-900/60 text-blue-400 shadow-inner scale-95' : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50'}`} title="Solid + Edge View">
+                                        <svg viewBox="0 0 24 24" className="w-6 h-6">
+                                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" fill="currentColor" fillOpacity="0.15" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"></path>
+                                            <polyline points="3.27 6.96 12 12.01 20.73 6.96" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"></polyline>
+                                            <line x1="12" y1="22.08" x2="12" y2="12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"></line>
+                                        </svg>
+                                    </button>
+                                    <button onClick={() => setRenderMode('solid')} className={`p-1.5 rounded transition-all duration-200 ${renderMode === 'solid' ? 'bg-blue-900/60 text-blue-400 shadow-inner scale-95' : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50'}`} title="Solid View">
+                                        <svg viewBox="0 0 24 24" className="w-6 h-6">
+                                            <polygon points="12 2 3 7 12 12 21 7 12 2" fill="currentColor" fillOpacity="0.4"></polygon>
+                                            <polygon points="3 16 3 7 12 12 12 22 3 16" fill="currentColor" fillOpacity="0.8"></polygon>
+                                            <polygon points="12 22 12 12 21 7 21 16 12 22" fill="currentColor"></polygon>
+                                        </svg>
+                                    </button>
+
+                                    <div className="w-px h-4 bg-zinc-700/80 mx-1.5 rounded"></div>
+
+                                    <button onClick={() => setIsRenderModalOpen(true)} className="w-[39px] h-[39px] mx-0.5 rounded-sm border border-zinc-600/80 hover:border-orange-500 overflow-hidden relative shadow-md group outline-none transition-colors" title="Photorealistic GPU Render">
+                                        <img src="/crankshaft_render.png" alt="Render" className="w-full h-full object-cover group-hover:scale-125 transition-transform duration-700 ease-out" />
+                                        <div className="absolute inset-0 ring-1 ring-inset ring-black/40 group-hover:ring-orange-500/30 mix-blend-overlay pointer-events-none"></div>
+                                    </button>
+                                </div>
+                                <div className="w-px h-4 bg-zinc-700 mx-1"></div>
+                                {/* Motion Constraints */}
+                                <div className="flex items-center gap-1 bg-zinc-900/50 px-2 py-0.5 rounded border border-zinc-800">
+                                    <span className="text-[8px] text-zinc-500 uppercase font-black mr-1 tracking-widest leading-none">Constraints</span>
+                                    <button className="px-2 py-1 text-[9px] text-zinc-400 hover:text-blue-400 font-bold uppercase tracking-widest rounded hover:bg-blue-900/30">Frame</button>
+                                    <button className="px-2 py-1 text-[9px] text-zinc-400 hover:text-blue-400 font-bold uppercase tracking-widest rounded hover:bg-blue-900/30">Linear</button>
+                                    <button className="px-2 py-1 text-[9px] text-zinc-400 hover:text-blue-400 font-bold uppercase tracking-widest rounded hover:bg-blue-900/30">Rotary</button>
+                                </div>
+                            </div>
+                            
+                            {/* Transform Tools */}
+                            <div className="flex items-center gap-1 bg-black/60 p-1 rounded-lg border border-zinc-800/80 shadow-inner shrink-0">
+                                <button onClick={() => setIsExploded(!isExploded)} className={`mr-2 p-1.5 rounded transition-colors border ${isExploded ? 'bg-orange-900/40 text-orange-400 border-orange-500/50' : 'text-zinc-500 border-transparent hover:text-zinc-300 hover:bg-zinc-800'}`} title="Toggle Exploded View"><Expand className="w-6 h-6" /></button>
+                                <button onClick={() => setTransformMode('translate')} className={`p-1.5 rounded transition-colors ${transformMode === 'translate' ? 'bg-blue-900/40 text-blue-400' : 'text-zinc-500 hover:text-zinc-300'}`} title="Translate"><Move className="w-6 h-6" /></button>
+                                <button onClick={() => setTransformMode('rotate')} className={`p-1.5 rounded transition-colors ${transformMode === 'rotate' ? 'bg-blue-900/40 text-blue-400' : 'text-zinc-500 hover:text-zinc-300'}`} title="Rotate"><RefreshCw className="w-6 h-6" /></button>
+                                <button onClick={() => setTransformMode('scale')} className={`p-1.5 rounded transition-colors ${transformMode === 'scale' ? 'bg-blue-900/40 text-blue-400' : 'text-zinc-500 hover:text-zinc-300'}`} title="Scale"><Maximize2 className="w-6 h-6" /></button>
+                            </div>
                         </div>
                     </div>
 
@@ -1622,7 +1728,17 @@ const ProStudioPage: React.FC = () => {
                             </div>
                         )}
 
-                        <Canvas camera={{ position: [50, 40, 50], fov: 45 }}>
+                        <EngineErrorBoundary fallback={
+                            <div className="flex flex-col items-center justify-center h-full bg-red-950/20 border border-red-900/50 rounded-lg p-8 text-center space-y-4">
+                                <AlertTriangle className="w-16 h-16 text-red-500 drop-shadow-[0_0_15px_rgba(239,68,68,0.5)]" />
+                                <h2 className="text-xl font-black text-red-400 tracking-widest uppercase">3D Render Engine Crash Recovered</h2>
+                                <p className="text-zinc-400 text-sm max-w-md font-mono">The loaded geometry encountered an unrecoverable WebGL or topological parsing exception. ProStudio forcefully halted the thread to protect your local environment.</p>
+                                <button onClick={() => window.location.reload()} className="px-6 py-2.5 mt-4 bg-red-600 hover:bg-red-500 text-white rounded font-bold shadow-lg transition-colors tracking-wider uppercase text-xs">
+                                    Reboot Simulation Matrix
+                                </button>
+                            </div>
+                        }>
+                        <Canvas dpr={[1, 2]} camera={{ position: [20, 20, 30], fov: 40 }} className="w-full h-full cursor-crosshair">
                             <CameraController view={cameraView} />
                             <color attach="background" args={['#09090b']} />
                             <fog attach="fog" args={['#09090b', 50, 400]} />
@@ -1690,7 +1806,9 @@ const ProStudioPage: React.FC = () => {
                             )}
 
                             <OrbitControls makeDefault enablePan={!isOriginLocked} enableZoom={!isOriginLocked} enableRotate={!isOriginLocked} minDistance={10} maxDistance={400} />
+                            <CameraManager />
                         </Canvas>
+                        </EngineErrorBoundary>
                     </div>
                 </ThemePanel>
 
@@ -1698,7 +1816,7 @@ const ProStudioPage: React.FC = () => {
                 <div className="flex flex-col h-full bg-black/50 backdrop-blur-sm rounded-lg overflow-y-auto overflow-x-hidden border border-zinc-800/80 items-center py-2 space-y-2 relative z-20">
                     <div className="text-[8px] text-zinc-500 uppercase font-black rotate-180 tracking-widest mb-2" style={{ writingMode: 'vertical-rl' }}>Views</div>
                     <button onClick={() => setIsOriginLocked(!isOriginLocked)} className={`p-1.5 rounded transition-colors group flex flex-col items-center gap-1 mb-1 border ${isOriginLocked ? 'bg-indigo-900/60 border-indigo-500/40 text-indigo-400 shadow-inner' : 'bg-transparent border-transparent text-zinc-500 hover:bg-indigo-900/30 hover:text-indigo-400'}`} title={isOriginLocked ? 'Unlock Camera Matrix' : 'Lock Origin Viewport'}>
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
                         <span className="text-[7px] font-black uppercase tracking-widest">Lock</span>
                     </button>
                     <div className="w-6 h-px bg-zinc-800 my-1 rounded-full"></div>
@@ -1718,59 +1836,15 @@ const ProStudioPage: React.FC = () => {
                     ))}
                 </div>
 
-                <div className="resize-handle w-1.5 h-full bg-zinc-800 flex-shrink-0 rounded-full cursor-col-resize hover:bg-blue-500 transition-colors"></div>
+                {/* Resizer Handle */}
+                <div className="resize-handle w-1.5 h-full bg-zinc-800 flex-shrink-0 cursor-col-resize hover:bg-blue-500 transition-colors z-30"></div>
 
-                {/* Right Side: Agent Panel & Properties */}
-                <ThemePanel translucent className="h-full overflow-hidden relative z-10 flex flex-col">
-                    {/* Agent Input Module - Mounted at Top as requested */}
-                    <div className="shrink-0 p-4 border-b border-zinc-800 bg-black/80 backdrop-blur z-20 sticky top-0">
-                        <div className="flex items-center gap-2 mb-2">
-                            <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(59,130,246,0.8)]"></div>
-                            <span className="text-[10px] text-blue-400 font-bold uppercase tracking-widest leading-none">Hilo (AI Agent) is Active</span>
-                        </div>
-                        <div className="relative">
-                            <input
-                                type="text"
-                                value={agentPrompt}
-                                onChange={e => setAgentPrompt(e.target.value)}
-                                onKeyDown={e => e.key === 'Enter' && handleAgentSubmit()}
-                                disabled={isAgentThinking}
-                                placeholder="Ask Hilo to add features or modify nodes..."
-                                className="w-full bg-[#09090b] border border-blue-900/50 rounded-lg py-2.5 px-3 pr-10 text-sm text-white focus:outline-none focus:border-blue-500 shadow-inner disabled:opacity-50"
-                            />
-                            <button onClick={handleAgentSubmit} disabled={isAgentThinking} className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded transition-colors disabled:opacity-50">
-                                <RefreshCw className={`w-3 h-3 ${isAgentThinking ? 'animate-spin' : ''}`} />
-                            </button>
-                        </div>
-                        <p className="text-[9px] text-zinc-500 mt-2 text-center opacity-80 leading-tight">Hilo actively parses instructions into topological parameters.</p>
-                    </div>
-
-                    <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-2">
-                        {eventLog.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center h-full text-center opacity-70 mt-10">
-                                <Activity className="w-8 h-8 text-blue-500 mb-3" />
-                                <p className="text-[10px] uppercase tracking-widest text-blue-200 font-bold">Interactive Event Log</p>
-                                <p className="text-zinc-500 text-xs mt-2">No events recorded yet. Construct models via Hilo or UI tools.</p>
-                            </div>
-                        ) : (
-                                eventLog.map(log => (
-                                <div key={log.id} className={`bg-[#09090b] border ${log.type === 'error' ? 'border-red-900/50 bg-red-950/20' : 'border-zinc-800'} rounded p-2 text-xs flex items-start gap-2 shadow opacity-90 transition-opacity hover:opacity-100`}>
-                                    <div className="shrink-0 mt-0.5">
-                                        {log.type === 'agent' ? <Bot className="w-3.5 h-3.5 text-blue-400" /> : 
-                                         log.type === 'error' ? <AlertCircle className="w-3.5 h-3.5 text-red-500" /> :
-                                         <MousePointerClick className="w-3.5 h-3.5 text-orange-400" />}
-                                    </div>
-                                    <div className={`flex-1 ${log.type === 'error' ? 'text-red-300' : 'text-zinc-300'}`}>
-                                        <div className="flex justify-between items-center mb-0.5 opacity-60">
-                                            <span className={`font-bold text-[9px] uppercase tracking-widest ${log.type === 'error' ? 'text-red-400' : 'text-blue-100'}`}>{log.type} Event</span>
-                                            <span className="text-[8px]">{new Date(log.timestamp).toLocaleTimeString()}</span>
-                                        </div>
-                                        <p className="leading-relaxed">{log.message}</p>
-                                    </div>
-                                </div>
-                            ))
-                        )}
-                    </div>
+                {/* Right AI Agent Sidebar */}
+                <ThemePanel translucent className="h-full overflow-hidden flex flex-col relative z-20 border-blue-500/10 shadow-[inset_0_0_30px_rgba(0,0,0,0.8)] p-0 w-full col-start-7 col-end-8">
+                    <AgentSidebar 
+                        onSubmit={handleAgentSubmit}
+                        isThinking={isAgentThinking}
+                    />
                 </ThemePanel>
 
                 {/* Global Context Menu Modal for Materials & Destruction */}
@@ -1962,6 +2036,7 @@ const ProStudioPage: React.FC = () => {
                     projectName={activeProject?.name || ''}
                 />
             )}
+            <LoadingModal isOpen={isUploading} message="Loading & Initializing Model..." />
         </div>
     );
 };

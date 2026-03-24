@@ -42,7 +42,7 @@ const MainLayout: React.FC = () => {
             <header className="w-full px-8 py-4 flex justify-between items-center bg-[#09090b]/80 backdrop-blur-md border-b border-zinc-800 shrink-0 z-10">
                 <div className="flex items-center gap-8">
                     <div className="flex items-center gap-3">
-                        <span className="text-xl font-medium text-white tracking-wider font-kido">D.R.E.A.M.</span>
+                        <span className="text-xl font-medium text-white tracking-wider">D.R.E.A.M.</span>
                     </div>
                      <nav className="flex items-center gap-2">
                         <NavLink
@@ -215,8 +215,14 @@ const MainLayout: React.FC = () => {
                 </div>
             </header>
             
-            <div className="flex-1 min-h-0">
+            <div className="flex-1 min-h-0 relative">
                 <Outlet />
+
+                {/* Universal Global Footer Panel */}
+                <div className="absolute bottom-0 left-0 w-[256px] px-4 py-3 bg-[#09090b]/90 backdrop-blur-md border-t border-r border-zinc-800/80 text-micro z-[100] pointer-events-none">
+                    <p className="text-zinc-500 font-medium">A DREAM Gigafactories Corp. Product</p>
+                    <p className="text-yellow-600 tracking-wide mt-1">Limited trial alpha</p>
+                </div>
             </div>
 
             {isManualOpen && <UserManual onClose={() => setIsManualOpen(false)} />}

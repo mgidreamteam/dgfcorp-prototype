@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { Cloud, X, CloudDownload, Loader2, Trash2 } from 'lucide-react';
 import ThemePanel from './ThemePanel';
 import { CloudProject } from '../types';
@@ -14,7 +15,7 @@ export interface CloudLoadModalProps {
 
 const CloudLoadModal: React.FC<CloudLoadModalProps> = ({ isOpen, onClose, projects, onLoad, onDelete, loadingAction }) => {
     if (!isOpen) return null;
-    return (
+    return createPortal(
         <div className="fixed inset-0 bg-black/80 z-[100] flex items-center justify-center p-4" onClick={onClose}>
             <ThemePanel translucent interactive={false} className="rounded-2xl w-full max-w-2xl shadow-2xl flex flex-col max-h-[90vh]">
                 <div className="p-6 border-b border-zinc-800 flex justify-between items-center" onClick={e => e.stopPropagation()}>
@@ -55,7 +56,8 @@ const CloudLoadModal: React.FC<CloudLoadModalProps> = ({ isOpen, onClose, projec
                     )}
                 </div>
             </ThemePanel>
-        </div>
+        </div>,
+        document.body
     );
 };
 
