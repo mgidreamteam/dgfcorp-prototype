@@ -88,7 +88,12 @@ const CameraManager = () => {
             } else if (e.detail === 'out') {
                 camera.position.multiplyScalar(1.2);
             } else if (e.detail === 'fit') {
-                camera.position.set(150, 100, 150);
+                const dir = camera.position.clone().normalize();
+                if (dir.lengthSq() === 0) {
+                    camera.position.set(100, 80, 100);
+                } else {
+                    camera.position.copy(dir.multiplyScalar(180));
+                }
                 camera.lookAt(0,0,0);
                 if (ctrl.target) ctrl.target.set(0,0,0);
             }

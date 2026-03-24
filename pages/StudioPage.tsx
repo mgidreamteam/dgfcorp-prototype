@@ -621,23 +621,7 @@ const StudioPage: React.FC = () => {
       
       <div className="h-full flex flex-col gap-2 p-2">
         <ThemePanel className="w-full shrink-0">
-        <FileMenuBar 
-          onNewProject={handleNewProject}
-          onSave={handleSaveProject}
-          onImport={handleImportProject}
-          onDownload={handleDownloadProject}
-          onCloseProject={handleCloseProject}
-          onDeleteProject={handleDeleteProject}
-          onImportStl={() => alert("Import STL native mesh replacement tool launching shortly")}
-          onExportStl={handleExportStl}
-          isStlReady={!!activeProject?.assetUrls?.stl}
-          onExportImages={handleExportImages}
-          areImagesExportable={!!(activeProject?.assetUrls?.rendered || activeProject?.assetUrls?.exploded)}
-          isProjectActive={!!activeProject} 
-          onSaveToCloud={handleSaveToCloud}
-          isCloudSaving={isCloudSaving}
-          cloudStorageUsed={cloudStorageUsed}
-        />
+        <FileMenuBar projectName={activeProject?.name} />
         </ThemePanel>
         <div className="flex-1 grid overflow-hidden gap-2" style={{ gridTemplateColumns }}>
           <ProjectSidebar 
