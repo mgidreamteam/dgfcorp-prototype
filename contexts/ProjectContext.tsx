@@ -65,6 +65,9 @@ export const ProjectProvider: React.FC<{ children: ReactNode }> = ({ children })
       if (fieldPath === 'specs.description' && p.specs) {
           return { ...p, specs: { ...p.specs, description: value } };
       }
+      if (fieldPath === 'specs.bom') {
+          return { ...p, specs: p.specs ? { ...p.specs, bom: value } : { bom: value } as any };
+      }
       if (fieldPath === 'openScadCode') {
           return { ...p, openScadCode: value };
       }

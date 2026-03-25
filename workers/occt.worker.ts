@@ -23,11 +23,46 @@ self.onmessage = async (e: MessageEvent) => {
         }
 
         if (result && result.meshes) {
-            // We must extract the Float32Arrays out of the WASM heap to transfer them safely
-            const payload = result.meshes.map((mesh: any) => {
+            const nameCounts = new Map<string, number>();
+
+            const payload = result.meshes.map((mesh: any, idx: number) => {
+                let baseName = mesh.name ? mesh.name.trim() : `Component`;
+                const nameLower = baseName.toLowerCase();
+                
+                // Add unique suffix
+                const currentCount = nameCounts.get(baseName) || 0;
+                const newCount = currentCount + 1;
+                nameCounts.set(baseName, newCount);
+                
+                const name = `${baseName}_${newCount.toString().padStart(2, '0')}`;
+                
+                let assignedColor = mesh.color ? mesh.color : null;
+                let constraintType = null;
+
+                // Circular / Revolute -> Yellow
+                if (nameLower.includes('pin') || nameLower.includes('axle') || nameLower.includes('shaft') || nameLower.includes('hinge') || nameLower.includes('bearing') || nameLower.includes('revolute') || nameLower.includes('collar')) {
+                    constraintType = 'circular';
+                    assignedColor = assignedColor || [0.91, 0.70, 0.03]; 
+                } 
+                // Linear / Prismatic -> Blue
+                else if (nameLower.includes('slider') || nameLower.includes('track') || nameLower.includes('rail') || nameLower.includes('linear') || nameLower.includes('guide')) {
+                    constraintType = 'linear';
+                    assignedColor = assignedColor || [0.23, 0.51, 0.96]; 
+                } 
+                // Angular / Spherical -> Emerald
+                else if (nameLower.includes('ball') || nameLower.includes('socket') || nameLower.includes('spherical') || nameLower.includes('knuckle')) {
+                    constraintType = 'angular';
+                    assignedColor = assignedColor || [0.06, 0.72, 0.50]; 
+                } 
+                // Undeclared material fallback to 50% Gray
+                else if (!assignedColor) {
+                    assignedColor = [0.5, 0.5, 0.5];
+                }
+
                 return {
-                    name: mesh.name || 'Body',
-                    color: mesh.color || [0.7, 0.7, 0.7],
+                    name,
+                    color: assignedColor,
+                    constraint: constraintType,
                     positions: new Float32Array(mesh.attributes.position.array),
                     normals: new Float32Array(mesh.attributes.normal.array),
                     indices: new Uint32Array(mesh.index.array),

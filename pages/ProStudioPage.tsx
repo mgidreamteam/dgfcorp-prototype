@@ -15,7 +15,7 @@ import CloudLoadModal from '../components/CloudLoadModal';
 import LoadingModal from '../components/LoadingModal';
 import { ImportedCADGeometry } from '../components/ImportedCADGeometry';
 import { PlusCircle, Trash2, CloudDownload, XSquare, ZoomIn, ZoomOut } from 'lucide-react';
-import { Wrench, X, Box, Cylinder, Cpu, Layers, Maximize2, Move, RefreshCw, MousePointer2, Settings2, UploadCloud, Activity, FileCode2, ArrowDownRight, Expand, Cuboid, Settings, Scissors, Target, ArrowDownToLine, Database, CircleDot, ChevronRight, ChevronDown, Sliders, ArrowDown, Bot, MousePointerClick, AlertCircle, AlertTriangle, Save, FolderOpen } from 'lucide-react';
+import { Wrench, X, Box, Cylinder, Cpu, Layers, Maximize2, Move, RefreshCw, MousePointer2, Settings2, UploadCloud, Activity, FileCode2, ArrowDownRight, Expand, Cuboid, Settings, Scissors, Target, ArrowDownToLine, Database, CircleDot, ChevronRight, ChevronDown, Sliders, ArrowDown, Bot, MousePointerClick, AlertCircle, AlertTriangle, Save, FolderOpen, Component } from 'lucide-react';
 import { Canvas, useThree } from '@react-three/fiber';
 import { Geometry, Base, Addition, Subtraction } from '@react-three/csg';
 import { OrbitControls, Grid, Environment, ContactShadows, TransformControls, GizmoHelper, GizmoViewport, Edges, Bvh } from '@react-three/drei';
@@ -152,13 +152,16 @@ const MechatronicNodeMesh = React.memo(({
     csgEditTarget,
     csgDialogParams,
     renderMode,
+    explodeDistance,
     setSelectedNodeId,
     setCsgPendingPlacement,
     setCsgDialogParams,
     setHoverFace,
     setHoverFaceData
 }: any) => {
-    const offset = isExploded ? [(index - nodesLength / 2) * 30, Math.sin(index) * 20, (index % 3) * 30] : [0, 0, 0];
+    const dist = explodeDistance !== undefined ? explodeDistance : 60;
+    const progress = dist / 100;
+    const offset = isExploded ? [(index - nodesLength / 2) * (progress * 60), Math.sin(index) * (progress * 40), (index % 3) * (progress * 60)] : [0, 0, 0];
     const posX = node.position[0] + offset[0];
     const posY = node.position[1] + offset[1];
     const posZ = node.position[2] + offset[2];
@@ -166,10 +169,10 @@ const MechatronicNodeMesh = React.memo(({
     return (
         <group position={[posX, posY, posZ]} rotation={node.rotation} scale={node.scale}>
             <Bvh firstHitOnly>
-                <mesh
-                    castShadow
-                    receiveShadow
-                    onClick={(e) => {
+                {(() => {
+                    const isCAD = node.type === 'imported_cad' || node.type === 'imported_stl';
+                    const handlers = {
+                        onClick: (e: any) => {
                         e.stopPropagation();
                     if (csgPendingPlacement === 'boolean_union' || csgPendingPlacement === 'boolean_subtract') {
                         if (!isSelected) {
@@ -224,8 +227,8 @@ const MechatronicNodeMesh = React.memo(({
                             setCsgDialogParams((prev: any) => ({ ...prev, axis: axisName as any }));
                         }
                     }
-                }}
-                onPointerMove={(e) => {
+                },
+                onPointerMove: (e: any) => {
                     e.stopPropagation();
                     if (e.face && e.point) {
                         const objectMatrix = e.object.matrixWorld.clone();
@@ -233,12 +236,22 @@ const MechatronicNodeMesh = React.memo(({
                         const worldNormal = e.face.normal.clone().applyMatrix3(normalMatrix).normalize();
                         setHoverFaceData({ nodeId: node.id, point: e.point.clone(), normal: worldNormal });
                     }
-                }}
-                onPointerOver={(e) => { e.stopPropagation(); setHoverFace(node.id); }}
-                onPointerOut={(e) => { setHoverFace(null); setHoverFaceData(null); }}
-                onDoubleClick={(e) => { e.stopPropagation(); setSelectedNodeId(node.id); }}
-            >
-                {(node.type === 'primitive' || node.type === 'imported_circuit' || node.type === 'imported_dxf') && (
+                },
+                onPointerOver: (e: any) => { e.stopPropagation(); setHoverFace(node.id); },
+                onPointerOut: (e: any) => { setHoverFace(null); setHoverFaceData(null); },
+                onDoubleClick: (e: any) => { e.stopPropagation(); setSelectedNodeId(node.id); }
+            };
+
+            if (isCAD) {
+                return (
+                    <group {...handlers}>
+                        {node.fileData && <ImportedCADGeometry fileUrl={node.fileData} extension={node.extension || 'stl'} isExploded={isExploded} explodeDistance={explodeDistance} />}
+                    </group>
+                );
+            }
+
+            return (
+                <mesh castShadow receiveShadow {...handlers}>
                     <Geometry>
                         <Base>
                             {node.shape === 'box' && <boxGeometry args={node.dimensions || [10, 10, 10]} />}
@@ -428,11 +441,6 @@ const MechatronicNodeMesh = React.memo(({
                             );
                         })}
                     </Geometry>
-                )}
-
-                {(node.type === 'imported_cad' || node.type === 'imported_stl') && node.fileData && (
-                    <ImportedCADGeometry fileUrl={node.fileData} extension={node.extension || 'stl'} />
-                )}
 
                 <meshStandardMaterial
                     color={node.color}
@@ -440,10 +448,12 @@ const MechatronicNodeMesh = React.memo(({
                     metalness={node.shape === 'screw_thread' || node.type === 'imported_circuit' ? 0.9 : 0.8}
                     wireframe={renderMode === 'wireframe'}
                 />
-                {renderMode === 'edges' && !['imported_cad', 'imported_dxf'].includes(node.type as string) && <Edges threshold={15} color="#3b82f6" />}
-                {isSelected && renderMode !== 'edges' && !['imported_cad', 'imported_dxf'].includes(node.type as string) && <Edges threshold={15} color="#3b82f6" />}
-                {isHovered && !isSelected && renderMode !== 'edges' && !['imported_cad', 'imported_dxf'].includes(node.type as string) && <Edges threshold={15} color="#60a5fa" opacity={0.5} transparent />}
+                {renderMode === 'edges' && node.type !== 'imported_dxf' && <Edges threshold={15} color="#3b82f6" />}
+                {isSelected && renderMode !== 'edges' && node.type !== 'imported_dxf' && <Edges threshold={15} color="#3b82f6" />}
+                {isHovered && !isSelected && renderMode !== 'edges' && node.type !== 'imported_dxf' && <Edges threshold={15} color="#60a5fa" opacity={0.5} transparent />}
             </mesh>
+            );
+            })()}
             </Bvh>
         </group>
     );
@@ -453,6 +463,7 @@ const MechatronicNodeMesh = React.memo(({
     if (prev.nodesLength !== next.nodesLength) return false;
     if (prev.csgMode !== next.csgMode) return false;
     if (prev.renderMode !== next.renderMode) return false;
+    if (prev.explodeDistance !== next.explodeDistance) return false;
     if (prev.isSelected !== next.isSelected) return false;
     if (prev.isHovered !== next.isHovered) return false;
     
@@ -487,7 +498,7 @@ const ProStudioPage: React.FC = () => {
     const { projectId } = useParams<{ projectId: string }>();
     const navigate = useNavigate();
 
-    const { projects, setProjects, activeProjectId, setActiveProjectId } = useProject();
+    const { projects, setProjects, activeProjectId, setActiveProjectId, updateProjectField } = useProject();
 
     const [cloudProjects, setCloudProjects] = useState<CloudProject[]>([]);
     const [isCloudSaving, setIsCloudSaving] = useState(false);
@@ -521,6 +532,7 @@ const ProStudioPage: React.FC = () => {
     const [agentPrompt, setAgentPrompt] = useState('');
     const [isAgentThinking, setIsAgentThinking] = useState(false);
     const [isExploded, setIsExploded] = useState(false);
+    const [explodeDistance, setExplodeDistance] = useState(0);
 
     const [contextMenuTarget, setContextMenuTarget] = useState<{ nodeId: string, csgId?: string } | null>(null);
     const [contextMenuPos, setContextMenuPos] = useState({ x: 0, y: 0 });
@@ -1340,6 +1352,66 @@ const ProStudioPage: React.FC = () => {
                                                     </select>
                                                 </div>
                                                 
+                                                {node.type === 'imported_cad' && activeProject?.specs?.bom && (
+                                                    <div className="mt-2 space-y-1">
+                                                        <div className="text-[8px] text-zinc-500 font-bold uppercase tracking-widest px-2 mb-1">Extracted Sub-Components</div>
+                                                        {activeProject.specs.bom.map((bomItem, bIdx) => {
+                                                            const isJoint = bomItem.type.includes('joint');
+                                                            const itemColor = bomItem.color || (isJoint ? (bomItem.type.includes('CIRCULAR') ? '#eab308' : bomItem.type.includes('LINEAR') ? '#3b82f6' : '#10b981') : '#7f7f7f');
+                                                            return (
+                                                                <div key={bIdx} className="flex flex-col gap-0.5 pl-2 py-1 relative group/bom">
+                                                                    <div className="absolute left-[-10px] top-[10px] w-2 h-px bg-zinc-700"></div>
+                                                                    <div className="flex justify-between items-center pr-2">
+                                                                        <span className="text-[10px] font-bold text-zinc-300 truncate tracking-wider" title={bomItem.component}>{bomItem.component}</span>
+                                                                        
+                                                                        <select
+                                                                            className="bg-black/80 text-[8px] border border-zinc-700/50 rounded px-1 outline-none text-zinc-400 max-w-[70px] cursor-pointer opacity-50 group-hover/bom:opacity-100 transition-opacity"
+                                                                            value={bomItem.color || ''}
+                                                                            onChange={(e) => {
+                                                                                e.stopPropagation();
+                                                                                const val = e.target.value;
+                                                                                const mat = materialsLib.find(m => m.color === val);
+                                                                                if (!activeProject.specs) return;
+                                                                                
+                                                                                const newBom = [...activeProject.specs.bom];
+                                                                                newBom[bIdx] = { 
+                                                                                    ...bomItem, 
+                                                                                    color: val,
+                                                                                    materialType: mat ? mat.type.toLowerCase() : (val === '#3b82f6' ? 'plastic' : val === '#71717a' ? 'metal' : val === '#52525b' ? 'custom' : val === '#10b981' ? 'fr4' : 'custom')
+                                                                                };
+                                                                                updateProjectField(activeProjectId!, 'specs.bom', newBom);
+                                                                            }}
+                                                                            onClick={e => e.stopPropagation()}
+                                                                            title="Override Sub-Part Material"
+                                                                        >
+                                                                            {!bomItem.color && <option value="" hidden>Default</option>}
+                                                                            {(!materialsLib.some(m => m.color === bomItem.color) && !["#3b82f6", "#71717a", "#52525b", "#10b981"].includes(bomItem.color || '')) && bomItem.color && (
+                                                                                <option value={bomItem.color} hidden>Custom</option>
+                                                                            )}
+                                                                            {materialsLib.length > 0 ? materialsLib.map(m => (
+                                                                                <option key={m.id} value={m.color}>{m.name}</option>
+                                                                            )) : (
+                                                                                <>
+                                                                                    <option value="#3b82f6">Plastic</option>
+                                                                                    <option value="#71717a">Aluminum</option>
+                                                                                    <option value="#52525b">Steel</option>
+                                                                                    <option value="#10b981">FR4</option>
+                                                                                </>
+                                                                            )}
+                                                                        </select>
+                                                                    </div>
+                                                                    <div className="flex items-center gap-1.5">
+                                                                        <div className="w-1.5 h-1.5 rounded-full border border-zinc-700 shrink-0" style={{ backgroundColor: itemColor }}></div>
+                                                                        <span className={`text-[8px] font-mono tracking-widest ${isJoint ? (bomItem.type.includes('CIRCULAR') ? 'text-yellow-500' : bomItem.type.includes('LINEAR') ? 'text-blue-500' : 'text-emerald-500') : 'text-zinc-600'}`}>
+                                                                            {bomItem.type}
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            )
+                                                        })}
+                                                    </div>
+                                                )}
+                                                
                                                 {hasChildren && node.csgStack!.map(csg => (
                                                     <div
                                                         key={csg.id}
@@ -1536,9 +1608,21 @@ const ProStudioPage: React.FC = () => {
                                 </div>
                             </div>
                             
-                            {/* Transform Tools */}
+                             {/* Transform Tools */}
                             <div className="flex items-center gap-1 bg-black/60 p-1 rounded-lg border border-zinc-800/80 shadow-inner shrink-0">
-                                <button onClick={() => setIsExploded(!isExploded)} className={`mr-2 p-1.5 rounded transition-colors border ${isExploded ? 'bg-orange-900/40 text-orange-400 border-orange-500/50' : 'text-zinc-500 border-transparent hover:text-zinc-300 hover:bg-zinc-800'}`} title="Toggle Exploded View"><Expand className="w-6 h-6" /></button>
+                                <button onClick={() => setIsExploded(!isExploded)} className={`mr-2 p-1.5 rounded transition-colors border ${isExploded ? 'bg-orange-900/40 text-orange-400 border-orange-500/50' : 'text-zinc-500 border-transparent hover:text-zinc-300 hover:bg-zinc-800'}`} title="Exploded View (Right-Click Canvas to Cycle Modes)"><Component className="w-6 h-6" /></button>
+                                {isExploded && (
+                                    <input 
+                                        type="range" 
+                                        min="0" 
+                                        max="100" 
+                                        step="2"
+                                        value={explodeDistance} 
+                                        onChange={(e) => setExplodeDistance(Number(e.target.value))}
+                                        className="w-16 accent-orange-500 cursor-pointer mx-1" 
+                                        title={`Explosion Distance: ${explodeDistance}%`} 
+                                    />
+                                )}
                                 <button onClick={() => setTransformMode('translate')} className={`p-1.5 rounded transition-colors ${transformMode === 'translate' ? 'bg-blue-900/40 text-blue-400' : 'text-zinc-500 hover:text-zinc-300'}`} title="Translate"><Move className="w-6 h-6" /></button>
                                 <button onClick={() => setTransformMode('rotate')} className={`p-1.5 rounded transition-colors ${transformMode === 'rotate' ? 'bg-blue-900/40 text-blue-400' : 'text-zinc-500 hover:text-zinc-300'}`} title="Rotate"><RefreshCw className="w-6 h-6" /></button>
                                 <button onClick={() => setTransformMode('scale')} className={`p-1.5 rounded transition-colors ${transformMode === 'scale' ? 'bg-blue-900/40 text-blue-400' : 'text-zinc-500 hover:text-zinc-300'}`} title="Scale"><Maximize2 className="w-6 h-6" /></button>
@@ -1546,7 +1630,14 @@ const ProStudioPage: React.FC = () => {
                         </div>
                     </div>
 
-                    <div className="flex-1 w-full bg-[#09090b] relative z-0" onContextMenu={(e) => { e.preventDefault(); setCsgMode('Assembly'); }}>
+                    <div className="flex-1 w-full bg-[#09090b] relative z-0" onContextMenu={(e) => { 
+                        e.preventDefault(); 
+                        if (isExploded) {
+                            window.dispatchEvent(new CustomEvent('cycle-explosion-mode'));
+                        } else {
+                            setCsgMode('Assembly'); 
+                        }
+                    }}>
 
                         {/* Camera Corner Watermarks */}
                         <div className="absolute inset-4 pointer-events-none select-none z-10 flex flex-col justify-between">
@@ -1786,6 +1877,7 @@ const ProStudioPage: React.FC = () => {
                                             csgEditTarget={csgEditTarget}
                                             csgDialogParams={csgDialogParams}
                                             renderMode={renderMode}
+                                            explodeDistance={explodeDistance}
                                             setSelectedNodeId={setSelectedNodeId}
                                             setCsgPendingPlacement={setCsgPendingPlacement}
                                             setCsgDialogParams={setCsgDialogParams}

@@ -22,6 +22,8 @@ export interface BillOfMaterialItem {
   type: string;
   quantity: number;
   estimatedCost: string; // e.g., "$0.50"
+  color?: string;
+  materialType?: string;
 }
 
 export interface CircuitComponent {
