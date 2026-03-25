@@ -79,10 +79,10 @@ const FileMenuBar: React.FC<FileMenuBarProps> = ({ projectName, appType, onToggl
     return (
         <div className={`w-full px-4 py-2 flex justify-between items-center ${bgColorClass} shrink-0 relative z-10 border-b`}>
             <div className="flex items-center gap-2">
-                <span className="text-[11px] font-black text-white uppercase tracking-widest drop-shadow-sm">{projectName || 'D.R.E.A.M. Workspace'}</span>
+                <span className="text-[11px] font-normal text-white uppercase tracking-widest drop-shadow-sm">{projectName || 'D.R.E.A.M. Workspace'}</span>
             </div>
             
-            <div className="flex items-center gap-4 text-[10px] font-bold text-zinc-500 uppercase tracking-widest font-mono select-none">
+            <div className="flex items-center gap-4 text-[10px] font-normal text-zinc-500 uppercase tracking-widest font-mono select-none">
                 <span className="text-zinc-300 pointer-events-none">{formattedUser}</span>
                 <span className="w-1 h-1 rounded-full bg-zinc-700"></span>
                 <span className="pointer-events-none">{formattedGroup}</span>
@@ -102,7 +102,7 @@ const FileMenuBar: React.FC<FileMenuBarProps> = ({ projectName, appType, onToggl
                             title={isAgentOpen ? "Minimize HELO Agent" : "Summon HELO Agent"}
                         >
                             <HeloIcon appType={appType || 'studio'} className={`w-5 h-5 ${isAgentOpen ? 'drop-shadow-[0_0_10px_theme(colors.white)]' : 'opacity-70'}`} />
-                            <span className={`text-[12px] font-black tracking-widest ${isAgentOpen ? 'text-white' : 'text-zinc-400'}`}>HELO</span>
+                            <span className={`text-[12px] font-normal tracking-widest ${isAgentOpen ? 'text-white' : 'text-zinc-400'}`}>HELO</span>
                         </button>
                     </>
                 )}

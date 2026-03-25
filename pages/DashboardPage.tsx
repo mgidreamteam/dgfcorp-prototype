@@ -197,7 +197,16 @@ const DashboardPage: React.FC = () => {
         <div 
             className={`min-h-full p-4 overflow-y-auto w-full transition-colors duration-500 relative ${dashboardTheme === 'blueprint' ? 'bg-theme-blueprint' : 'bg-theme-dream-giga'}`}
         >
+            {/* Decorative Background Image Layer */}
+            <div className="absolute inset-0 z-0 pointer-events-none flex items-center justify-center overflow-hidden opacity-10 mx-auto max-w-[1000px]">
+                <img src="/DREAM.png" alt="" className="w-full object-contain" />
+            </div>
+
             <div className={`max-w-7xl mx-auto space-y-6 relative z-10 ${dashboardTheme === 'blueprint' ? 'py-4' : 'py-2'}`}>
+                <div className="flex flex-col items-center w-full px-4 text-center pb-2 pt-4">
+                    <span className="text-[9px] font-mono text-zinc-500 uppercase tracking-[0.2em]">A DREAM Gigafactories Corp. Product</span>
+                    <span className="text-[8px] font-mono text-blue-500/70 uppercase tracking-widest mt-0.5">Limited trial alpha</span>
+                </div>
                 <section>
                     {renderUserPanels()}
                 </section>

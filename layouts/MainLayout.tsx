@@ -217,12 +217,6 @@ const MainLayout: React.FC = () => {
             
             <div className="flex-1 min-h-0 relative">
                 <Outlet />
-
-                {/* Universal Global Footer Panel */}
-                <div className="absolute bottom-0 left-0 w-[256px] px-4 py-3 bg-[#09090b]/90 backdrop-blur-md border-t border-r border-zinc-800/80 text-micro z-[100] pointer-events-none">
-                    <p className="text-zinc-500 font-medium">A DREAM Gigafactories Corp. Product</p>
-                    <p className="text-yellow-600 tracking-wide mt-1">Limited trial alpha</p>
-                </div>
             </div>
 
             {isManualOpen && <UserManual onClose={() => setIsManualOpen(false)} />}
