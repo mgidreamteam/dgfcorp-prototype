@@ -91,7 +91,7 @@ const DesignInput: React.FC<DesignInputProps> = ({ onSubmit, isGenerating, agent
                     onChange={handleFileChange}
                     disabled={isInputDisabled}
                 />
-                <div className="flex items-center gap-2" title="Constrained mode requires you to specify all parameters. Unconstrained lets Hilo assume them.">
+                <div className="flex items-center gap-2" title="Constrained mode requires you to specify all parameters. Unconstrained lets HELO assume them.">
                     <input
                         type="checkbox"
                         id="constrained-mode"

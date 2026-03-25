@@ -210,7 +210,7 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
 
                         const extColor = isPro ? 'text-blue-400 bg-blue-900/20 border-blue-500/20' : isFab ? 'text-yellow-400 bg-yellow-900/20 border-yellow-500/20' : isSim ? 'text-emerald-400 bg-emerald-900/20 border-emerald-500/20' : isWSim ? 'text-cyan-400 bg-cyan-900/20 border-cyan-500/20' : isTSim ? 'text-rose-400 bg-rose-900/20 border-rose-500/20' : 'text-purple-400 bg-purple-900/20 border-purple-500/20';
                         const bgHighlight = isPro ? 'bg-blue-900/10' : isFab ? 'bg-yellow-900/10' : isSim ? 'bg-emerald-900/10' : isWSim ? 'bg-cyan-900/10' : isTSim ? 'bg-rose-900/10' : 'bg-purple-900/10';
-                        const routeStr = isPro ? '/prostudio' : isFab ? '/fabflow' : isSim ? '/studiosim' : isWSim ? '/worldsim' : isTSim ? '/worldsim3d' : '/studio';
+                        const routeStr = isPro ? '/prostudio' : isFab ? '/fabflow' : isSim ? '/studiosim' : isWSim ? '/worldsim' : isTSim ? '/tacticalsim' : '/studio';
 
                         return (
                             <NavLink

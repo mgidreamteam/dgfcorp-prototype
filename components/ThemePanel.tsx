@@ -11,7 +11,7 @@ interface ThemePanelProps {
     translucent?: boolean;
 }
 
-const ThemePanel: React.FC<ThemePanelProps> = ({ children, className = '', interactive = false, colorTheme = 'blue', style, onClick, translucent = false }) => {
+const ThemePanel = React.forwardRef<HTMLDivElement, ThemePanelProps>(({ children, className = '', interactive = false, colorTheme = 'blue', style, onClick, translucent = false }, ref) => {
     const { dashboardTheme } = useTheme();
 
     if (dashboardTheme === 'dream-giga') {
@@ -32,6 +32,7 @@ const ThemePanel: React.FC<ThemePanelProps> = ({ children, className = '', inter
         
         return (
             <div 
+                ref={ref}
                 className={`${baseClass} ${interactiveClass} ${className}`} 
                 style={mergedStyle}
                 onClick={interactive ? onClick : undefined}
@@ -48,6 +49,7 @@ const ThemePanel: React.FC<ThemePanelProps> = ({ children, className = '', inter
 
         return (
             <div 
+                ref={ref}
                 className={`${baseClass} ${interactiveClass} ${className}`}
                 style={style}
                 onClick={interactive ? onClick : undefined}
@@ -65,6 +67,6 @@ const ThemePanel: React.FC<ThemePanelProps> = ({ children, className = '', inter
             </div>
         );
     }
-}
+})
 
 export default ThemePanel;

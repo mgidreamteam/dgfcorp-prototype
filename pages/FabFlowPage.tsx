@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { Loader2, PlusCircle, Trash2, CloudDownload, XSquare, ArrowDownToLine, Save, UploadCloud, Box, Cuboid, Database, Maximize2, RefreshCw, Sun, Moon, Droplet, Box as BoxIcon, Search, Wrench, Package, ListTree, ArrowRight, Activity, Zap, Server, ChevronRight, Eye, Layers, Settings2, Share2, Printer, CheckCircle2, AlertCircle, FileText, Download, Upload, Cpu, Factory, ShieldCheck, Globe2, ArrowDownToLine as ArrowDownToLineIcon, UploadCloud as UploadCloudIcon, Minimize2, Lightbulb, LightbulbOff, Sparkles, Grid3X3 } from 'lucide-react';
+import { Loader2, PlusCircle, Trash2, CloudDownload, XSquare, ArrowDownToLine, Save, UploadCloud, Box, Cuboid, Database, Maximize2, RefreshCw, Sun, Moon, Droplet, Box as BoxIcon, Search, Wrench, Package, ListTree, ArrowRight, Activity, Zap, Server, ChevronRight, Eye, Layers, Settings2, Share2, Printer, CheckCircle2, AlertCircle, FileText, Download, Upload, Cpu, Factory, ShieldCheck, Globe2, ArrowDownToLine as ArrowDownToLineIcon, UploadCloud as UploadCloudIcon, Minimize2, Lightbulb, LightbulbOff, Sparkles, Grid3X3, FolderOpen } from 'lucide-react';
 import { useParams, useNavigate } from 'react-router-dom';
 import ThemePanel from '../components/ThemePanel';
 import AgentSidebar from '../components/AgentSidebar';
@@ -203,11 +203,52 @@ const ExplodedNode: React.FC<ExplodedNodeProps> = ({
 };
 
 const FabFlowPage: React.FC = () => {
-  const [agentPanelWidth, setAgentPanelWidth] = useState(300);
+  const [agentPanelWidth, setAgentPanelWidth] = useState(300); 
+
+  const centerPanelRef = React.useRef<HTMLDivElement>(null);
+  const [bottomPanelHeight, setBottomPanelHeight] = useState(250);
+
+  useEffect(() => {
+    if (centerPanelRef.current) {
+        setBottomPanelHeight(Math.max(150, centerPanelRef.current.clientHeight / 3));
+    }
+  }, []);
+
+  const handleBottomPanelMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    document.addEventListener('mousemove', handleBottomPanelMouseMove);
+    document.addEventListener('mouseup', handleBottomPanelMouseUp);
+  };
+
+  const handleBottomPanelMouseMove = (e: MouseEvent) => {
+    const newHeight = window.innerHeight - e.clientY;
+    if (newHeight > 100 && newHeight < window.innerHeight * 0.8) {
+      setBottomPanelHeight(newHeight);
+    }
+  };
+
+  const handleBottomPanelMouseUp = () => {
+    document.removeEventListener('mousemove', handleBottomPanelMouseMove);
+    document.removeEventListener('mouseup', handleBottomPanelMouseUp);
+  };
+
+  const [isAgentOpen, setIsAgentOpen] = useState(() => {
+    if (typeof window !== 'undefined') {
+        const saved = localStorage.getItem('dream_agent_open');
+        if (saved !== null) {
+            try { return JSON.parse(saved); } catch(e){}
+        }
+    }
+    return false;
+  });
+
+  React.useEffect(() => {
+      localStorage.setItem('dream_agent_open', JSON.stringify(isAgentOpen));
+  }, [isAgentOpen]);
   const [cadMode, setCadMode] = useState<'Assembly' | 'Circuit'>('Assembly');
   const [renderMode, setRenderMode] = useState<'wireframe' | 'edges' | 'solid'>('solid');
   const [triggerHierarchyView, setTriggerHierarchyView] = useState<string | null>(null);
-  const gridTemplateColumns = `256px minmax(500px, 1fr) 60px 6px ${agentPanelWidth}px`;
+
   
   const { projects, setProjects, activeProjectId, setActiveProjectId } = useProject();
   const activeProject = React.useMemo(() => projects.find(p => p.id === activeProjectId) || null, [projects, activeProjectId]);
@@ -338,7 +379,8 @@ const FabFlowPage: React.FC = () => {
       if (!auth.currentUser) return;
       try {
           setCloudLoadingAction(cloudProj.id);
-          const fileRef = ref(storage, `users/${auth.currentUser.uid}/projects/${cloudProj.id}.dream`);
+          const ext = cloudProj.appExtension || '.dream';
+          const fileRef = ref(storage, `users/${auth.currentUser.uid}/projects/${cloudProj.id}${ext}`);
           const url = await getDownloadURL(fileRef);
           const response = await fetch(url);
           const text = await response.text();
@@ -348,7 +390,8 @@ const FabFlowPage: React.FC = () => {
                   const filtered = prev.filter(p => p.id !== projectData.id);
                   return [projectData, ...filtered];
               });
-              navigate(`/fabflow/${projectData.id}`);
+              const routeStr = ext === '.dreampro' ? '/prostudio' : ext === '.fabflow' ? '/fabflow' : ext === '.studiosim' ? '/studiosim' : ext === '.wsim' ? '/worldsim' : ext === '.tsim' ? '/tacticalsim' : '/studio';
+              navigate(`${routeStr}/${projectData.id}`);
               setIsCloudModalOpen(false);
           }
       } catch (err: any) {
@@ -362,7 +405,8 @@ const FabFlowPage: React.FC = () => {
       if (!auth.currentUser || !window.confirm("Permanently delete this cloud asset?")) return;
       try {
           setCloudLoadingAction(cloudProj.id);
-          const fileRef = ref(storage, `users/${auth.currentUser.uid}/projects/${cloudProj.id}.dream`);
+          const ext = cloudProj.appExtension || '.dream';
+          const fileRef = ref(storage, `users/${auth.currentUser.uid}/projects/${cloudProj.id}${ext}`);
           await deleteObject(fileRef);
           await deleteDoc(doc(db, `users/${auth.currentUser.uid}/cloudProjects`, cloudProj.id));
           await fetchCloudProjects();
@@ -425,10 +469,14 @@ const FabFlowPage: React.FC = () => {
       } catch (err) { }
   };
 
+
+
+  const gridTemplateColumns = isAgentOpen ? `256px minmax(500px, 1fr) 60px 6px ${agentPanelWidth}px` : `256px minmax(500px, 1fr) 60px`;
+
   return (
     <div className="h-full flex flex-col gap-2 p-2 relative bg-black/90">
       <ThemePanel className="w-full shrink-0">
-        <FileMenuBar projectName={activeProject?.name || 'FabFlow Workspace'} />
+        <FileMenuBar projectName={activeProject?.name || 'FabFlow Production'} appType="fabflow" onToggleAgent={() => setIsAgentOpen(!isAgentOpen)} isAgentOpen={isAgentOpen} />
       </ThemePanel>
       <div className="flex-1 grid overflow-hidden gap-2" style={{ gridTemplateColumns }}>
         
@@ -449,10 +497,10 @@ const FabFlowPage: React.FC = () => {
             hideNewProjectButton
         />
         
-        {/* Central Vertical Stack: Canvas & BOM */}
-        <div className="flex flex-col h-full gap-2 relative z-10 overflow-hidden min-w-0">
+        {/* Central Map / Canvas Area with Split */}
+        <div className="flex flex-col h-full gap-2 relative z-10 overflow-hidden min-w-0" ref={centerPanelRef}>
             {/* Top 70% Map / Exploded WebGL Canvas */}
-            <ThemePanel translucent className="flex-1 flex flex-col overflow-hidden relative border border-yellow-500/10 shadow-[inset_0_0_50px_rgba(234,179,8,0.03)] rounded-xl bg-[#09090b]">
+            <ThemePanel translucent className="flex-1 flex flex-col overflow-hidden relative z-10 p-0 border border-yellow-500/10 shadow-[inset_0_0_50px_rgba(234,179,8,0.05)] rounded-lg xl bg-[#09090b]">
             {/* Two-Tier Top Multi-CAD Toolbar */}
             <div className="px-4 py-2 border-b border-zinc-800/80 shrink-0 bg-transparent flex flex-col items-center bg-black/60 z-20 relative">
                 
@@ -468,8 +516,10 @@ const FabFlowPage: React.FC = () => {
                             <ArrowDownToLine className="w-3.5 h-3.5 opacity-80" />
                         </button>
                         <div className="w-px h-5 bg-zinc-700/80 mx-0.5 rounded"></div>
-                        <button onClick={() => alert("Please import natively via ProStudio before running Simulation.")} className="p-1 hover:bg-emerald-900/40 rounded transition-colors flex items-center" title="Import 3D Model">
-                            <Box className="w-5 h-5 text-emerald-500 mx-0.5 drop-shadow-md" />
+                        <button onClick={() => alert("Please import natively via ProStudio before running Simulation.")} className="p-1 hover:bg-emerald-900/40 rounded transition-colors flex items-center" title="Load Local File">
+                            <div className="relative p-1 flex items-center justify-center">
+                                <FolderOpen className="w-5 h-5 text-emerald-500 drop-shadow-md" />
+                            </div>
                         </button>
                         <button onClick={handleSaveToCloud} disabled={isCloudSaving} className="p-1.5 text-blue-400 hover:text-blue-300 hover:bg-blue-900/40 rounded transition-colors flex items-center gap-1.5 disabled:opacity-50" title="Commit to Remote Cloud">
                             {isCloudSaving ? <RefreshCw className="w-5 h-5 animate-spin drop-shadow-md" /> : <UploadCloud className="w-5 h-5 drop-shadow-md fill-blue-500/20" />}
@@ -704,8 +754,14 @@ const FabFlowPage: React.FC = () => {
             </div>
         </ThemePanel>
 
-        {/* Bottom 30% BOM & Vendor List */}
-        <ThemePanel translucent className="h-[30%] shrink-0 flex flex-col overflow-hidden relative shadow-[inset_0_0_30px_rgba(0,0,0,0.8)] border border-yellow-500/10 rounded-xl">
+                {/* Horizontal Resizer Handle */}
+        <div 
+          onMouseDown={handleBottomPanelMouseDown}
+          className="resize-handle h-1.5 w-full bg-zinc-800 flex-shrink-0 cursor-row-resize hover:bg-yellow-500 transition-colors z-30"
+        ></div>
+
+        {/* Bottom Panel */}
+        <ThemePanel translucent className="shrink-0 flex flex-col overflow-hidden relative shadow-[inset_0_0_30px_rgba(0,0,0,0.8)] border border-yellow-500/10 rounded-xl" style={{ height: bottomPanelHeight }}>
             <div className="px-5 py-2.5 border-b border-zinc-800/80 bg-black/60 relative z-10 flex justify-between items-center shrink-0">
                 <h2 className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest flex items-center gap-2"><Globe2 className="w-3.5 h-3.5 text-yellow-500" /> Bill of Materials & Vendor Matching</h2>
                 <span className="text-[9px] bg-yellow-900/40 text-yellow-300 px-2 py-0.5 rounded uppercase tracking-widest font-bold border border-yellow-500/20 shadow-inner block">Algorithm Under Development</span>
@@ -784,16 +840,14 @@ const FabFlowPage: React.FC = () => {
             ))}
         </div>
 
-        {/* Resizer Handle */}
-        <div className="resize-handle w-1.5 h-full bg-zinc-800 flex-shrink-0 cursor-col-resize hover:bg-[#00ffcc] transition-colors z-30"></div>
-
-        {/* Right AI Agent Sidebar */}
-        <ThemePanel translucent className="h-full overflow-hidden flex flex-col relative z-20 border-yellow-500/10 shadow-[inset_0_0_30px_rgba(0,0,0,0.8)] p-0 w-full col-start-5 col-end-6">
-            <AgentSidebar 
-                onSubmit={() => alert("Simulation environments rely on ProStudio for direct parametric modeling instructions.")}
-                isThinking={false}
-            />
-        </ThemePanel>
+        {isAgentOpen && (
+            <>
+                <div onMouseDown={() => {}} className="resize-handle w-1.5 h-full cursor-col-resize bg-zinc-800 hover:bg-yellow-500 transition-colors flex-shrink-0 z-30 flex items-center justify-center"></div>
+                <ThemePanel translucent className="h-full overflow-hidden relative z-10" style={{ width: agentPanelWidth }}>
+                    <AgentSidebar onSubmit={(prompt) => console.log('HELO FabFlow prompt:', prompt)} isThinking={false} onClose={() => setIsAgentOpen(false)} />
+                </ThemePanel>
+            </>
+        )}
 
       </div>
 

@@ -111,7 +111,7 @@ const MainLayout: React.FC = () => {
                             <span className="hidden xl:inline">StudioSim</span>
                         </NavLink>
                         <NavLink
-                            to={`/worldsim3d${suffix}`}
+                            to={`/tacticalsim${suffix}`}
                             className={({ isActive }) =>
                                 `px-3 py-2 rounded-md flex items-center gap-2 transition-all text-sm font-medium ${
                                 isActive

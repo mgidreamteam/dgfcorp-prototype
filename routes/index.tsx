@@ -16,7 +16,7 @@ const ProfilePage = React.lazy(() => import('../pages/ProfilePage'));
 const AboutPage = React.lazy(() => import('../pages/AboutPage'));
 const InnovationPage = React.lazy(() => import('../pages/InnovationPage'));
 const WorldSimPage = React.lazy(() => import('../pages/WorldSimPage'));
-const WorldSim3DPage = React.lazy(() => import('../pages/WorldSim3DPage'));
+const TacticalSimPage = React.lazy(() => import('../pages/TacticalSimPage'));
 const StudioSimPage = React.lazy(() => import('../pages/StudioSimPage'));
 const FabFlowPage = React.lazy(() => import('../pages/FabFlowPage'));
 
@@ -77,8 +77,8 @@ const AppRouter: React.FC = () => {
                         <Route path="/studiosim/:projectId" element={<StudioSimPage />} />
                         <Route path="/worldsim" element={<WorldSimPage />} />
                         <Route path="/worldsim/:projectId" element={<WorldSimPage />} />
-                        <Route path="/worldsim3d" element={<WorldSim3DPage />} />
-                        <Route path="/worldsim3d/:projectId" element={<WorldSim3DPage />} />
+                        <Route path="/tacticalsim" element={<TacticalSimPage />} />
+                        <Route path="/tacticalsim/:projectId" element={<TacticalSimPage />} />
                         <Route path="/fabflow" element={<FabFlowPage />} />
                         <Route path="/fabflow/:projectId" element={<FabFlowPage />} />
                     </Route>

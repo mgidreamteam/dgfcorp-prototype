@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Loader2, Box, Move, RefreshCw, Maximize, Play, Pause, SkipBack, SkipForward, MousePointer2, Save, Settings2, CloudUpload, Binary, Hammer, PlusCircle, Trash2, CloudDownload, XSquare, ArrowDownToLine, UploadCloud, Cuboid, Database, Cpu } from 'lucide-react';
+import { Loader2, Box, Move, RefreshCw, Maximize, Play, Pause, SkipBack, SkipForward, MousePointer2, Save, Settings2, CloudUpload, Binary, Hammer, PlusCircle, Trash2, CloudDownload, XSquare, ArrowDownToLine, UploadCloud, Cuboid, Database, Cpu, FolderOpen } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import AgentSidebar from '../components/AgentSidebar';
 import ProjectSidebar from '../components/ProjectSidebar';
@@ -99,7 +99,48 @@ const StlModel = ({ stlData, materialType = 'metallic', baseColor = '#71717a', r
 
 const StudioSimPage: React.FC = () => {
   const navigate = useNavigate();
-  const [agentPanelWidth, setAgentPanelWidth] = useState(400);
+  const [agentPanelWidth, setAgentPanelWidth] = useState(400); 
+
+  const centerPanelRef = React.useRef<HTMLDivElement>(null);
+  const [bottomPanelHeight, setBottomPanelHeight] = React.useState(250);
+
+  React.useEffect(() => {
+    if (centerPanelRef.current) {
+        setBottomPanelHeight(Math.max(150, centerPanelRef.current.clientHeight / 3));
+    }
+  }, []);
+
+  const handleBottomPanelMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    document.addEventListener('mousemove', handleBottomPanelMouseMove);
+    document.addEventListener('mouseup', handleBottomPanelMouseUp);
+  };
+
+  const handleBottomPanelMouseMove = (e: MouseEvent) => {
+    const newHeight = window.innerHeight - e.clientY;
+    if (newHeight > 100 && newHeight < window.innerHeight * 0.8) {
+      setBottomPanelHeight(newHeight);
+    }
+  };
+
+  const handleBottomPanelMouseUp = () => {
+    document.removeEventListener('mousemove', handleBottomPanelMouseMove);
+    document.removeEventListener('mouseup', handleBottomPanelMouseUp);
+  };
+
+  const [isAgentOpen, setIsAgentOpen] = useState(() => {
+    if (typeof window !== 'undefined') {
+        const saved = localStorage.getItem('dream_agent_open');
+        if (saved !== null) {
+            try { return JSON.parse(saved); } catch(e){}
+        }
+    }
+    return false;
+  });
+
+  React.useEffect(() => {
+      localStorage.setItem('dream_agent_open', JSON.stringify(isAgentOpen));
+  }, [isAgentOpen]);
   const [cadMode, setCadMode] = useState<'Assembly' | 'Circuit'>('Assembly');
   const [renderMode, setRenderMode] = useState<'wireframe'|'edges'|'solid'>('solid');
   const [openScadRes, setOpenScadRes] = useState(50);
@@ -117,7 +158,7 @@ const StudioSimPage: React.FC = () => {
   useEffect(() => {
       setGlobalLightIntensitySlider(roomTheme === 'light' ? 500 : 0);
   }, [roomTheme]);
-  const gridTemplateColumns = `256px minmax(500px, 1fr) 60px 6px ${agentPanelWidth}px`;
+  const gridTemplateColumns = isAgentOpen ? `256px minmax(500px, 1fr) 60px 6px ${agentPanelWidth}px` : `256px minmax(500px, 1fr) 60px`;
 
   const { projects, setProjects, agentLogs, addLog, activeProjectId, setActiveProjectId } = useProject();
   const activeProject = projects.find(p => p.id === activeProjectId);
@@ -328,7 +369,8 @@ const StudioSimPage: React.FC = () => {
       if (!auth.currentUser) return;
       try {
           setCloudLoadingAction(cloudProj.id);
-          const fileRef = ref(storage, `users/${auth.currentUser.uid}/projects/${cloudProj.id}.dream`);
+          const ext = cloudProj.appExtension || '.dream';
+          const fileRef = ref(storage, `users/${auth.currentUser.uid}/projects/${cloudProj.id}${ext}`);
           const url = await getDownloadURL(fileRef);
           const response = await fetch(url);
           if (!response.ok) throw new Error("Failed to pull from Google Storage endpoints.");
@@ -339,8 +381,11 @@ const StudioSimPage: React.FC = () => {
                   const filtered = prev.filter(p => p.id !== projectData.id);
                   return [projectData, ...filtered];
               });
+              const routeStr = ext === '.dreampro' ? '/prostudio' : ext === '.fabflow' ? '/fabflow' : ext === '.studiosim' ? '/studiosim' : ext === '.wsim' ? '/worldsim' : ext === '.tsim' ? '/tacticalsim' : '/studio';
+              navigate(`${routeStr}/${projectData.id}`);
               setActiveProjectId(projectData.id);
               localStorage.setItem('lastActiveStudioProjectId', projectData.id);
+              setIsCloudModalOpen(false);
           }
       } catch (err: any) {
           console.error(err);
@@ -355,7 +400,8 @@ const StudioSimPage: React.FC = () => {
       try {
           if (!window.confirm("Permanently delete this cloud asset?")) return;
           setCloudLoadingAction(cloudProj.id);
-          const fileRef = ref(storage, `users/${auth.currentUser.uid}/projects/${cloudProj.id}.dream`);
+          const ext = cloudProj.appExtension || '.dream';
+          const fileRef = ref(storage, `users/${auth.currentUser.uid}/projects/${cloudProj.id}${ext}`);
           await deleteObject(fileRef);
           await deleteDoc(doc(db, `users/${auth.currentUser.uid}/cloudProjects`, cloudProj.id));
           await fetchCloudProjects();
@@ -405,7 +451,7 @@ const StudioSimPage: React.FC = () => {
   return (
     <div className="h-full flex flex-col gap-2 p-2 relative bg-black/90">
       <ThemePanel className="w-full shrink-0">
-        <FileMenuBar projectName={activeProject?.name || 'StudioSim Workspace'} />
+            <FileMenuBar projectName={activeProject?.name || 'Simulation Scenario'} appType="studiosim" onToggleAgent={() => setIsAgentOpen(!isAgentOpen)} isAgentOpen={isAgentOpen} />
       </ThemePanel>
       <div className="flex-1 grid overflow-hidden gap-2" style={{ gridTemplateColumns }}>
         
@@ -433,7 +479,7 @@ const StudioSimPage: React.FC = () => {
         />
         
         {/* Central Vertical Stack: Canvas & Boundary Conditions */}
-        <div className="flex flex-col h-full gap-2 relative z-10 overflow-hidden min-w-0">
+        <div className="flex flex-col h-full gap-2 relative z-10 overflow-hidden min-w-0" ref={centerPanelRef}>
             {/* Top 75% Map / WebGL Canvas */}
             <ThemePanel translucent className="flex-1 flex flex-col overflow-hidden relative border border-[#00ffcc]/10 shadow-[inset_0_0_50px_rgba(0,255,204,0.02)]">
                 
@@ -452,8 +498,10 @@ const StudioSimPage: React.FC = () => {
                             <ArrowDownToLine className="w-3.5 h-3.5 opacity-80" />
                         </button>
                         <div className="w-px h-5 bg-zinc-700/80 mx-0.5 rounded"></div>
-                        <button onClick={() => alert("Please import natively via ProStudio before running Simulation.")} className="p-1 hover:bg-emerald-900/40 rounded transition-colors flex items-center" title="Import 3D Model">
-                            <Box className="w-5 h-5 text-emerald-500 mx-0.5 drop-shadow-md" />
+                        <button onClick={() => alert("Please load local file natively via ProStudio before running Simulation.")} className="p-1 hover:bg-emerald-900/40 rounded transition-colors flex items-center" title="Load Local File">
+                            <div className="relative p-1 flex items-center justify-center">
+                                <FolderOpen className="w-5 h-5 text-emerald-500 drop-shadow-md" />
+                            </div>
                         </button>
                         <button onClick={handleSaveToCloud} disabled={isCloudSaving} className="p-1.5 text-blue-400 hover:text-blue-300 hover:bg-blue-900/40 rounded transition-colors flex items-center gap-1.5 disabled:opacity-50" title="Commit to Remote Cloud">
                             {isCloudSaving ? <RefreshCw className="w-5 h-5 animate-spin drop-shadow-md" /> : <UploadCloud className="w-5 h-5 drop-shadow-md fill-blue-500/20" />}
@@ -584,7 +632,7 @@ const StudioSimPage: React.FC = () => {
                     </div>
                 </div>
             </div>
-            <div className="flex-1 w-full h-full bg-[#09090b] relative cursor-move rounded-b-lg overflow-hidden z-0">
+            <div className="flex-1 w-full min-h-0 bg-[#09090b] relative cursor-move rounded-b-lg overflow-hidden z-0">
                 <Canvas camera={{ position: [100, 75, 100], fov: 45 }}>
                     <color attach="background" args={[roomTheme === 'dark' ? '#09090b' : '#808080']} />
                     <fog attach="fog" args={[roomTheme === 'dark' ? '#09090b' : '#808080', 50, 400]} />
@@ -653,7 +701,13 @@ const StudioSimPage: React.FC = () => {
         </ThemePanel>
 
         {/* Bottom 25% Boundary Conditions List */}
-        <ThemePanel translucent className="h-[25%] shrink-0 flex flex-col overflow-hidden relative shadow-[inset_0_0_30px_rgba(0,0,0,0.8)] border-emerald-500/10">
+        {/* Horizontal Resizer Handle */}
+        <div 
+          onMouseDown={handleBottomPanelMouseDown}
+          className="resize-handle h-1.5 w-full bg-zinc-800 flex-shrink-0 cursor-row-resize hover:bg-emerald-500 transition-colors z-30"
+        ></div>
+
+        <ThemePanel translucent className="shrink-0 flex flex-col overflow-hidden relative shadow-[inset_0_0_30px_rgba(0,0,0,0.8)] border-emerald-500/10" style={{ height: bottomPanelHeight }}>
             <div className="px-5 py-2.5 border-b border-zinc-800/80 bg-black/60 relative z-10 flex justify-between items-center shrink-0">
                 <h2 className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest flex items-center gap-2"><Settings2 className="w-3.5 h-3.5 text-emerald-500" /> Runtime Boundary Conditions</h2>
                 <span className="text-[9px] bg-emerald-900/40 text-emerald-300 px-2 py-0.5 rounded uppercase tracking-widest font-bold border border-emerald-500/20 shadow-inner block">Physics Engine Integration</span>
@@ -661,7 +715,7 @@ const StudioSimPage: React.FC = () => {
             
             <div className="flex-1 overflow-y-auto p-4 custom-scrollbar bg-black/40 flex flex-wrap gap-3">
                 {boundaryConditions.length === 0 ? (
-                    <div className="text-sm text-zinc-600 italic mt-4 text-center w-full">No structural constraints defined by Engine. Instruct Hilo in the Agent panel to set simulation parameters.</div>
+                    <div className="text-sm text-zinc-600 italic mt-4 text-center w-full">No structural constraints defined by Engine. Instruct HELO in the Agent panel to set simulation parameters.</div>
                 ) : (
                     boundaryConditions.map((cond) => (
                         <div key={cond.id} className="bg-zinc-900/60 border border-zinc-700/50 rounded-lg p-3 flex flex-col gap-2 relative group hover:border-zinc-500 transition-colors flex-1 min-w-[300px] max-w-sm">
@@ -715,18 +769,24 @@ const StudioSimPage: React.FC = () => {
             ))}
         </div>
 
-        {/* Resizer Handle */}
-        <div className="resize-handle w-1.5 h-full bg-zinc-800 flex-shrink-0 cursor-col-resize hover:bg-[#00ffcc] transition-colors z-30"></div>
+            
+            {isAgentOpen && (
+                <>
+                    {/* Resizer Handle */}
+                    <div className="resize-handle w-1.5 h-full bg-zinc-800 flex-shrink-0 cursor-col-resize hover:bg-emerald-500 transition-colors z-30"></div>
 
-        {/* Right AI Agent Sidebar */}
-        <ThemePanel translucent className="h-full overflow-hidden flex flex-col relative z-20 border-[#00ffcc]/10 shadow-[inset_0_0_30px_rgba(0,0,0,0.8)] p-0 w-full col-start-5 col-end-6">
-            <AgentSidebar 
-                onSubmit={handleNlpSubmit}
-                isThinking={isGeneratingNlp}
-            />
-        </ThemePanel>
+                    {/* Right AI Agent Sidebar */}
+                    <ThemePanel translucent className="h-full overflow-hidden flex flex-col relative z-20 border-emerald-500/10 shadow-[inset_0_0_30px_rgba(0,0,0,0.8)] p-0 w-full col-start-5 col-end-6">
+                        <AgentSidebar 
+                            onSubmit={() => alert("Simulation environments rely on ProStudio for direct constraints.")}
+                            isThinking={false}
+                            onClose={() => setIsAgentOpen(false)}
+                        />
+                    </ThemePanel>
+                </>
+            )}
 
-      </div>
+        </div>
       
       <CloudLoadModal 
           isOpen={isCloudModalOpen}

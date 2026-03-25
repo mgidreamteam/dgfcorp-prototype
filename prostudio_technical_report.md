@@ -184,7 +184,7 @@ StudioSim is designed for rigid-body physics, thermal, and Finite Element Analys
 *   **Third-Party Hook**: If you are bringing your own simulation software (e.g., Ansys, custom solvers), you should hook into the `activeProject.assetUrls.stl` property within the context. Retrieve this absolute baked mesh, combined with `activeProject.specs.materials` (which defines mass, density, and yield strength).
 
 ### 6.2: Integrating with **TacticalSim / WorldSim** (Fleet & Environment)
-TacticalSim operates at a macro level (e.g., simulating 1,000 drones in a city scenario, found in `WorldSimPage.tsx` or `WorldSim3DPage.tsx`).
+TacticalSim operates at a macro level (e.g., simulating 1,000 drones in a city scenario, found in `WorldSimPage.tsx` or `TacticalSimPage.tsx`).
 *   **The Handoff**: Loading 1,000 high-resolution CSG meshes will crash a browser. TacticalSim requires **Level of Detail (LOD) optimization** and kinematic models.
 *   **Third-Party Hook**: Do not intercept the heavy STL. Instead, intercept the raw ProStudio JSON array (`nodes` in `ProjectContext`). Calculate a strict bounding box or a convex hull for each `MechatronicNode` directly from its mathematical `dimensions` and `position`.
 

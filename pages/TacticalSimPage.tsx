@@ -7,6 +7,7 @@ import { collection, getDocs, doc, deleteDoc, setDoc } from 'firebase/firestore'
 import { ref, getDownloadURL, deleteObject, uploadString } from 'firebase/storage';
 import AgentSidebar from '../components/AgentSidebar';
 import ProjectSidebar from '../components/ProjectSidebar';
+import FileMenuBar from '../components/MenuBar';
 
 import { ShieldAlert, Radar, Globe2, Crosshair, PlusCircle, RefreshCw, UploadCloud, XSquare } from 'lucide-react';
 import ThemePanel from '../components/ThemePanel';
@@ -59,14 +60,55 @@ function DroneModel() {
 
 const generateId = () => (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') ? crypto.randomUUID() : Math.random().toString(36).substring(2) + Date.now().toString(36);
 
-const WorldSim3DPage: React.FC = () => {
+const TacticalSimPage: React.FC = () => {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
 
-  const [agentPanelWidth, setAgentPanelWidth] = useState(400);
+  const [agentPanelWidth, setAgentPanelWidth] = useState(400); 
+
+  const centerPanelRef = React.useRef<HTMLDivElement>(null);
+  const [bottomPanelHeight, setBottomPanelHeight] = React.useState(250);
+
+  React.useEffect(() => {
+    if (centerPanelRef.current) {
+        setBottomPanelHeight(Math.max(150, centerPanelRef.current.clientHeight / 3));
+    }
+  }, []);
+
+  const handleBottomPanelMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    document.addEventListener('mousemove', handleBottomPanelMouseMove);
+    document.addEventListener('mouseup', handleBottomPanelMouseUp);
+  };
+
+  const handleBottomPanelMouseMove = (e: MouseEvent) => {
+    const newHeight = window.innerHeight - e.clientY;
+    if (newHeight > 100 && newHeight < window.innerHeight * 0.8) {
+      setBottomPanelHeight(newHeight);
+    }
+  };
+
+  const handleBottomPanelMouseUp = () => {
+    document.removeEventListener('mousemove', handleBottomPanelMouseMove);
+    document.removeEventListener('mouseup', handleBottomPanelMouseUp);
+  };
+
+  const [isAgentOpen, setIsAgentOpen] = useState(() => {
+    if (typeof window !== 'undefined') {
+        const saved = localStorage.getItem('dream_agent_open');
+        if (saved !== null) {
+            try { return JSON.parse(saved); } catch(e){}
+        }
+    }
+    return false;
+  });
+
+  React.useEffect(() => {
+      localStorage.setItem('dream_agent_open', JSON.stringify(isAgentOpen));
+  }, [isAgentOpen]);
   const [viewMode, setViewMode] = useState<ViewMode>('3D');
   const [isOriginLocked, setIsOriginLocked] = useState(false);
-  const gridTemplateColumns = `256px minmax(500px, 1fr) 60px 6px ${agentPanelWidth}px`;
+  const gridTemplateColumns = isAgentOpen ? `256px minmax(500px, 1fr) 60px 6px ${agentPanelWidth}px` : `256px minmax(500px, 1fr) 60px`;
 
   const { projects, setProjects, activeProjectId, setActiveProjectId } = useProject();
 
@@ -77,7 +119,7 @@ const WorldSim3DPage: React.FC = () => {
     if (projectId && projectId !== activeProjectId) {
         setActiveProjectId(projectId);
     } else if (!projectId && activeProjectId) {
-        navigate(`/worldsim3d/${activeProjectId}`, { replace: true });
+        navigate(`/tacticalsim/${activeProjectId}`, { replace: true });
     }
   }, [projectId, activeProjectId, navigate, setActiveProjectId]);
 
@@ -117,7 +159,8 @@ const WorldSim3DPage: React.FC = () => {
   const handleDownloadFromCloud = async (cloudProj: CloudProject) => {
       if (!auth.currentUser) return;
       try {
-          const fileRef = ref(storage, `users/${auth.currentUser.uid}/projects/${cloudProj.id}.dream`);
+          const ext = cloudProj.appExtension || '.dream';
+          const fileRef = ref(storage, `users/${auth.currentUser.uid}/projects/${cloudProj.id}${ext}`);
           const url = await getDownloadURL(fileRef);
           const response = await fetch(url);
           const text = await response.text();
@@ -127,7 +170,8 @@ const WorldSim3DPage: React.FC = () => {
                   const filtered = prev.filter(p => p.id !== projectData.id);
                   return [projectData, ...filtered];
               });
-              navigate(`/worldsim3d/${projectData.id}`);
+              const routeStr = ext === '.dreampro' ? '/prostudio' : ext === '.fabflow' ? '/fabflow' : ext === '.studiosim' ? '/studiosim' : ext === '.wsim' ? '/worldsim' : ext === '.tsim' ? '/tacticalsim' : '/studio';
+              navigate(`${routeStr}/${projectData.id}`);
           }
       } catch (err: any) { alert(err.message); }
   };
@@ -135,7 +179,8 @@ const WorldSim3DPage: React.FC = () => {
   const handleDeleteFromCloud = async (cloudProj: CloudProject) => {
       if (!auth.currentUser || !window.confirm("Permanently delete this cloud asset?")) return;
       try {
-          const fileRef = ref(storage, `users/${auth.currentUser.uid}/projects/${cloudProj.id}.dream`);
+          const ext = cloudProj.appExtension || '.dream';
+          const fileRef = ref(storage, `users/${auth.currentUser.uid}/projects/${cloudProj.id}${ext}`);
           await deleteObject(fileRef);
           await deleteDoc(doc(db, `users/${auth.currentUser.uid}/cloudProjects`, cloudProj.id));
           await fetchCloudProjects();
@@ -146,7 +191,7 @@ const WorldSim3DPage: React.FC = () => {
   const handleNewProject = () => {
     const id = generateId();
     setProjects(prev => [{ id, name: `Tactical_${prev.length + 1}`, prompt: "", createdAt: Date.now(), specs: null, assetUrls: null, simulationData: null, openScadCode: null, status: DesignStatus.IDLE, isConstrained: false, circuitComponents: null }, ...prev]);
-    navigate(`/worldsim3d/${id}`);
+    navigate(`/tacticalsim/${id}`);
   };
 
   const activeProject = projects.find(p => p.id === activeProjectId);
@@ -157,27 +202,8 @@ const WorldSim3DPage: React.FC = () => {
       
       {/* Two-Tier Top Multi-CAD Toolbar */}
       <ThemePanel className="w-full shrink-0">
-          <div className="px-4 py-2 shrink-0 bg-transparent flex flex-col items-center bg-black/60 z-20 relative">
-              
-              {/* FIRST ROW: File Menu & Main Views */}
-              <div className="flex justify-between items-center w-full gap-4">
-                  {/* File Main Actions */}
-                  <div className="flex items-center gap-2 bg-black/60 p-1.5 rounded-lg border border-zinc-800/80 shadow-[0_4px_30px_rgba(0,0,0,0.5)] backdrop-blur-sm overflow-x-auto no-scrollbar shrink-0">
-                      <button onClick={handleNewProject} className="p-1.5 text-zinc-300 hover:text-emerald-400 hover:bg-emerald-900/40 rounded transition-colors" title="New Project">
-                          <PlusCircle className="w-5 h-5 drop-shadow-md" />
-                      </button>
-                      <div className="w-px h-5 bg-zinc-700/80 mx-0.5 rounded"></div>
-                      <button onClick={handleSaveToCloud} disabled={isCloudSaving} className="p-1.5 text-blue-400 hover:text-blue-300 hover:bg-blue-900/40 rounded transition-colors flex items-center gap-1.5 disabled:opacity-50" title="Commit to Remote Cloud">
-                          {isCloudSaving ? <RefreshCw className="w-5 h-5 animate-spin drop-shadow-md" /> : <UploadCloud className="w-5 h-5 drop-shadow-md fill-blue-500/20" />}
-                      </button>
-                      <div className="w-px h-5 bg-zinc-700/80 mx-0.5 rounded"></div>
-                      <button onClick={() => { setActiveProjectId(null); navigate('/worldsim3d'); }} className="p-1.5 text-zinc-300 hover:text-orange-400 hover:bg-orange-900/40 rounded transition-colors" title="Close Project">
-                          <XSquare className="w-5 h-5 drop-shadow-md" />
-                      </button>
-                  </div>
-              </div>
-          </div>
-      </ThemePanel>
+          <FileMenuBar projectName={activeProject?.name || 'TacticalSim Workspace'} appType="tsim" onToggleAgent={() => setIsAgentOpen(!isAgentOpen)} isAgentOpen={isAgentOpen} />
+          </ThemePanel>
 
       <div className="flex-1 grid overflow-hidden gap-2" style={{ gridTemplateColumns }}>
         
@@ -197,13 +223,34 @@ const WorldSim3DPage: React.FC = () => {
                 if (activeProjectId === id) setActiveProjectId(null);
             }}
             cloudLoadingAction={null}
-            baseRoute="/worldsim3d"
+            baseRoute="/tacticalsim"
             hideNewProjectButton
         />
         
         {/* Central Map / Canvas Area with Split */}
-        <div className="flex flex-col h-full gap-2 relative z-10 overflow-hidden min-w-0">
-            <ThemePanel translucent className="flex-1 flex flex-col overflow-hidden relative z-10 p-0 border border-blue-500/10 shadow-[inset_0_0_50px_rgba(59,130,246,0.05)] rounded-lg">
+        <div className="flex flex-col h-full gap-2 relative z-10 overflow-hidden min-w-0" ref={centerPanelRef}>
+            <ThemePanel translucent className="flex-1 flex flex-col overflow-hidden relative z-10 p-0 border border-blue-500/10 shadow-[inset_0_0_50px_rgba(59,130,246,0.05)] rounded-lg"> 
+            <div className="px-4 py-2 shrink-0 bg-transparent flex flex-col items-center bg-black/60 z-20 relative border-b border-zinc-800/80 shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
+
+              
+              {/* FIRST ROW: File Menu & Main Views */}
+              <div className="flex justify-between items-center w-full gap-4">
+                  {/* File Main Actions */}
+                  <div className="flex items-center gap-2 bg-black/60 p-1.5 rounded-lg border border-zinc-800/80 shadow-[0_4px_30px_rgba(0,0,0,0.5)] backdrop-blur-sm overflow-x-auto no-scrollbar shrink-0">
+                      <button onClick={handleNewProject} className="p-1.5 text-zinc-300 hover:text-emerald-400 hover:bg-emerald-900/40 rounded transition-colors" title="New Project">
+                          <PlusCircle className="w-5 h-5 drop-shadow-md" />
+                      </button>
+                      <div className="w-px h-5 bg-zinc-700/80 mx-0.5 rounded"></div>
+                      <button onClick={handleSaveToCloud} disabled={isCloudSaving} className="p-1.5 text-blue-400 hover:text-blue-300 hover:bg-blue-900/40 rounded transition-colors flex items-center gap-1.5 disabled:opacity-50" title="Commit to Remote Cloud">
+                          {isCloudSaving ? <RefreshCw className="w-5 h-5 animate-spin drop-shadow-md" /> : <UploadCloud className="w-5 h-5 drop-shadow-md fill-blue-500/20" />}
+                      </button>
+                      <div className="w-px h-5 bg-zinc-700/80 mx-0.5 rounded"></div>
+                      <button onClick={() => { setActiveProjectId(null); navigate('/tacticalsim'); }} className="p-1.5 text-zinc-300 hover:text-orange-400 hover:bg-orange-900/40 rounded transition-colors" title="Close Project">
+                          <XSquare className="w-5 h-5 drop-shadow-md" />
+                      </button>
+                  </div>
+              </div>
+          </div>
             {/* View Mode Context Header */}
             <div className="px-4 py-2 border-b border-zinc-800/80 shrink-0 bg-transparent flex justify-between items-center bg-black/60 relative z-20">
                 <div className="flex items-center gap-1 bg-black/60 p-1 rounded border border-blue-500/20 shadow-inner">
@@ -218,7 +265,7 @@ const WorldSim3DPage: React.FC = () => {
                 </div>
             </div>
 
-            <div className="w-full h-full cursor-crosshair relative bg-[#09090b]">
+            <div className="flex-1 min-h-0 w-full cursor-crosshair relative bg-[#09090b] overflow-hidden z-0">
                 <Canvas shadows camera={{ position: [30, 20, 30], fov: 45 }} gl={{ antialias: true }}>
                     <color attach="background" args={['#09090b']} />
                     <fog attach="fog" args={['#09090b', 50, 400]} />
@@ -255,8 +302,14 @@ const WorldSim3DPage: React.FC = () => {
             </div>
             </ThemePanel>
 
+                        {/* Horizontal Resizer Handle */}
+            <div 
+              onMouseDown={handleBottomPanelMouseDown}
+              className="resize-handle h-1.5 w-full bg-zinc-800 flex-shrink-0 cursor-row-resize hover:bg-blue-500 transition-colors z-30"
+            ></div>
+
             {/* Bottom 25% Atmospheric Diagnostics */}
-            <ThemePanel translucent className="h-[25%] shrink-0 flex flex-col overflow-hidden relative z-10 border-blue-500/10 shadow-[inset_0_0_30px_rgba(0,0,0,0.8)]">
+            <ThemePanel translucent className="shrink-0 flex flex-col overflow-hidden relative z-10 border-blue-500/10 shadow-[inset_0_0_30px_rgba(0,0,0,0.8)]" style={{ height: bottomPanelHeight }}>
                 <div className="px-5 py-3 border-b border-zinc-800/80 bg-black/60 shrink-0">
                     <h2 className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest flex items-center gap-2"><Radar className="w-3 h-3 text-blue-500" /> Atmospheric Diagnostics</h2>
                 </div>
@@ -289,21 +342,26 @@ const WorldSim3DPage: React.FC = () => {
                 </button>
             ))}
         </div>
+            
+            {isAgentOpen && (
+                <>
+                    {/* Resizer Handle */}
+                    <div className="resize-handle w-1.5 h-full bg-zinc-800 flex-shrink-0 cursor-col-resize hover:bg-orange-500 transition-colors z-30"></div>
 
-        {/* Resizer Handle */}
-        <div className="resize-handle w-1.5 h-full bg-zinc-800 flex-shrink-0 cursor-col-resize hover:bg-[#00ffcc] transition-colors z-30"></div>
+                    {/* Right AI Agent Sidebar */}
+                    <ThemePanel translucent className="h-full overflow-hidden flex flex-col relative z-20 border-orange-500/10 shadow-[inset_0_0_30px_rgba(0,0,0,0.8)] p-0 w-full col-start-5 col-end-6">
+                        <AgentSidebar 
+                            onSubmit={() => alert("Simulation environments rely on ProStudio for direct constraints.")}
+                            isThinking={false}
+                            onClose={() => setIsAgentOpen(false)}
+                        />
+                    </ThemePanel>
+                </>
+            )}
 
-        {/* Right AI Agent Sidebar */}
-        <ThemePanel translucent className="h-full overflow-hidden flex flex-col relative z-20 border-[#00ffcc]/10 shadow-[inset_0_0_30px_rgba(0,0,0,0.8)] p-0 w-full col-start-5 col-end-6">
-            <AgentSidebar 
-                onSubmit={(p) => alert("Agent instructions received. Tactical Simulator executing flight pattern: " + p)}
-                isThinking={false}
-            />
-        </ThemePanel>
-        
       </div>
     </div>
   );
 };
 
-export default WorldSim3DPage;
+export default TacticalSimPage;

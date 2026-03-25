@@ -13,7 +13,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNewProject }) => {
         </div>
         <h2 className="text-panel-title font-bold text-white tracking-tight">Studio is Empty</h2>
         <p className="mt-4 text-body text-zinc-400 max-w-xl mx-auto">
-          Select a project from the sidebar to view its details, or create a new project to start designing with Hilo.
+          Select a project from the sidebar to view its details, or create a new project to start designing with HELO.
         </p>
         <button 
             onClick={onNewProject} 

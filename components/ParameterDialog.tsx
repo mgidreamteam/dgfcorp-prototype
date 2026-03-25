@@ -85,7 +85,7 @@ const ParameterDialog: React.FC<ParameterDialogProps> = ({ missingParams, origin
             Constrained mode: All parameters are required.
           </div>
         )}
-        <p className="mb-4">Please provide values for the following parameters, or let Hilo make reasonable assumptions.</p>
+        <p className="mb-4">Please provide values for the following parameters, or let HELO make reasonable assumptions.</p>
         <div className="space-y-4">
           {missingParams.map(param => (
             <div key={param}>

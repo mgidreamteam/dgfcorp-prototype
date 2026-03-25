@@ -10,7 +10,7 @@ import DeleteConfirmationDialog from '../components/DeleteConfirmationDialog';
 import ProjectView from '../components/ProjectView';
 import { CloudProject, DesignProject, DesignStatus, HardwareSpec, AgentLog } from '../types';
 import { analyzeUserIntent, getAnswerFromSpec, generateHardwareSpecs, generateProductRenderImage, generateProductExplodedViewImage, generateCircuitDiagramImage, generatePcbLayoutImage, generateOpenScadCode, generateStlFile, generateSkidlCode, runCircuitSimulation, rerunCircuitSimulation } from '../services/gemini';
-import { AlertCircle, Cloud, X, CloudDownload, Trash2, Loader2 } from 'lucide-react';
+import { AlertCircle, Cloud, X, CloudDownload, Trash2, Loader2, PlusCircle, Save, ArrowDownToLine, FolderOpen, RefreshCw, UploadCloud, XSquare, Network, FileText, Box, Activity, Sliders, Layers } from 'lucide-react';
 import { useProject } from '../contexts/ProjectContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -60,6 +60,19 @@ const StudioPage: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [hiloPanelWidth, setHiloPanelWidth] = useState(400);
+  const [isAgentOpen, setIsAgentOpen] = useState(() => {
+    if (typeof window !== 'undefined') {
+        const saved = localStorage.getItem('dream_agent_open');
+        if (saved !== null) {
+            try { return JSON.parse(saved); } catch(e){}
+        }
+    }
+    return false;
+  });
+
+  React.useEffect(() => {
+      localStorage.setItem('dream_agent_open', JSON.stringify(isAgentOpen));
+  }, [isAgentOpen]);
   const isResizing = useRef(false);
   const dragStartX = useRef(0);
   const startWidth = useRef(0);
@@ -323,7 +336,7 @@ const StudioPage: React.FC = () => {
               setValidationState({ missingParams: analysis.missingParams, prompt });
               return;
             }
-            addLog({ content: `Unconstrained: Hilo will assume values for: ${analysis.missingParams.join(', ')}.`, type: 'output', projectId: activeProjectId });
+            addLog({ content: `Unconstrained: HELO will assume values for: ${analysis.missingParams.join(', ')}.`, type: 'output', projectId: activeProjectId });
           }
           await runFullGenerationFlow(prompt, activeProjectId, DesignStatus.GENERATING_SPECS, project.specs);
           break;
@@ -429,7 +442,8 @@ const StudioPage: React.FC = () => {
       if (!auth.currentUser) return;
       try {
           setCloudLoadingAction(cloudProj.id);
-          const fileRef = ref(storage, `users/${auth.currentUser.uid}/projects/${cloudProj.id}.dream`);
+          const ext = cloudProj.appExtension || '.dream';
+          const fileRef = ref(storage, `users/${auth.currentUser.uid}/projects/${cloudProj.id}${ext}`);
           const url = await getDownloadURL(fileRef);
           
           const response = await fetch(url);
@@ -445,7 +459,8 @@ const StudioPage: React.FC = () => {
                   const filtered = prev.filter(p => p.id !== projectData.id);
                   return [projectData, ...filtered];
               });
-              navigate(`/studio/${projectData.id}`);
+              const routeStr = ext === '.dreampro' ? '/prostudio' : ext === '.fabflow' ? '/fabflow' : ext === '.studiosim' ? '/studiosim' : ext === '.wsim' ? '/worldsim' : ext === '.tsim' ? '/tacticalsim' : '/studio';
+              navigate(`${routeStr}/${projectData.id}`);
               addLog({ content: `Recovered global asset "${projectData.name}" via binary stream.`, type: 'output' });
           } else {
               throw new Error("Corrupted asset architecture.");
@@ -462,7 +477,8 @@ const StudioPage: React.FC = () => {
       if (!auth.currentUser) return;
       try {
           setCloudLoadingAction(cloudProj.id);
-          const fileRef = ref(storage, `users/${auth.currentUser.uid}/projects/${cloudProj.id}.dream`);
+          const ext = cloudProj.appExtension || '.dream';
+          const fileRef = ref(storage, `users/${auth.currentUser.uid}/projects/${cloudProj.id}${ext}`);
           await deleteObject(fileRef);
           await deleteDoc(doc(db, `users/${auth.currentUser.uid}/cloudProjects`, cloudProj.id));
           addLog({ content: `Permanently unlinked "${cloudProj.name}" from the global bucket.`, type: 'output' });
@@ -597,7 +613,7 @@ const StudioPage: React.FC = () => {
     addLog({ content: `Exported all generated images for "${activeProject.name}".`, type: 'output', projectId: activeProject.id });
   };
 
-  const gridTemplateColumns = `256px minmax(500px, 1fr) 6px ${hiloPanelWidth}px`;
+  const gridTemplateColumns = isAgentOpen ? `256px 200px minmax(500px, 1fr) 6px ${hiloPanelWidth}px` : `256px 200px minmax(500px, 1fr)`;
   
   return (
     <>
@@ -621,7 +637,7 @@ const StudioPage: React.FC = () => {
       
       <div className="h-full flex flex-col gap-2 p-2">
         <ThemePanel className="w-full shrink-0">
-        <FileMenuBar projectName={activeProject?.name} />
+        <FileMenuBar projectName={activeProject?.name} appType="studio" onToggleAgent={() => setIsAgentOpen(!isAgentOpen)} isAgentOpen={isAgentOpen} />
         </ThemePanel>
         <div className="flex-1 grid overflow-hidden gap-2" style={{ gridTemplateColumns }}>
           <ProjectSidebar 
@@ -641,9 +657,61 @@ const StudioPage: React.FC = () => {
                 else if (target === 'prostudio') navigate(`/prostudio/${project.id}`);
             }}
           />
-          <ThemePanel translucent className="flex flex-col h-full overflow-hidden relative z-10">
-            <div className="px-4 py-3 border-b border-zinc-800 shrink-0 bg-transparent">
-                <h2 className="text-subheading font-normal text-white uppercase tracking-tighter">CANVAS</h2>
+          {/* Design Hierarchy Panel */}
+          <ThemePanel translucent className="flex flex-col h-full overflow-hidden relative z-10 p-0 border-r border-zinc-800/80">
+             <div className="px-4 py-3 border-b border-zinc-800/80 shrink-0 bg-transparent flex items-center justify-between">
+                 <h2 className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest flex items-center gap-2">Design Hierarchy</h2>
+             </div>
+             <div className="flex-1 overflow-y-auto p-2">
+                 <div className="flex flex-col gap-1">
+                    {[
+                        { name: 'Specs', icon: FileText, id: 'specs-section' }, 
+                        { name: '3D Model', icon: Box, id: '3d-model-section' }, 
+                        { name: 'Simulation', icon: Activity, id: 'simulation-section' }, 
+                        { name: 'Details', icon: Sliders, id: 'details-section' }, 
+                        { name: 'Materials', icon: Layers, id: 'materials-section' }, 
+                        { name: 'Network', icon: Network, id: 'network-section' }
+                    ].map(item => {
+                        const Icon = item.icon;
+                        return (
+                        <button key={item.name} className="flex items-center gap-2 text-left px-3 py-2 text-xs font-medium text-zinc-400 hover:text-white hover:bg-zinc-800/50 rounded transition-colors group" onClick={() => {
+                            const el = document.getElementById(item.id);
+                            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }}>
+                            <Icon className="w-3.5 h-3.5 group-hover:text-blue-400 transition-colors" /> {item.name}
+                        </button>
+                    )})}
+                 </div>
+             </div>
+          </ThemePanel>
+
+          {/* Canvas Panel */}
+          <ThemePanel translucent className="flex flex-col h-full overflow-hidden relative z-10 p-0">
+            <div className="px-4 py-2 border-b border-zinc-800/80 shrink-0 bg-transparent flex flex-col items-center bg-black/60 z-20 relative">
+                <div className="flex justify-between items-center w-full gap-4">
+                    <div className="flex items-center gap-2 bg-black/60 p-1.5 rounded-lg border border-zinc-800/80 shadow-[0_4px_30px_rgba(0,0,0,0.5)] backdrop-blur-sm overflow-x-auto no-scrollbar shrink-0">
+                        <button onClick={handleNewProject} className="p-1.5 text-zinc-300 hover:text-emerald-400 hover:bg-emerald-900/40 rounded transition-colors" title="New Project">
+                            <PlusCircle className="w-5 h-5 drop-shadow-md" />
+                        </button>
+                        <button onClick={handleDownloadProject} className="p-1.5 px-2 text-blue-400 hover:text-blue-300 hover:bg-blue-900/40 rounded transition-colors flex items-center justify-center gap-1.5" title="Save File Locally">
+                            <Save className="w-5 h-5 drop-shadow-md fill-blue-500/10" />
+                            <ArrowDownToLine className="w-3.5 h-3.5 opacity-80" />
+                        </button>
+                        <button onClick={handleImportProject} className="p-1 hover:bg-emerald-900/40 rounded transition-colors flex items-center" title="Load Local File">
+                            <div className="relative p-1 flex items-center justify-center">
+                                <FolderOpen className="w-5 h-5 text-emerald-500 drop-shadow-md" />
+                            </div>
+                        </button>
+                        <div className="w-px h-5 bg-zinc-700/80 mx-0.5 rounded"></div>
+                        <button onClick={handleSaveToCloud} disabled={isCloudSaving} className="p-1.5 text-blue-400 hover:text-blue-300 hover:bg-blue-900/40 rounded transition-colors flex items-center gap-1.5 disabled:opacity-50" title="Commit to Remote Cloud">
+                            {isCloudSaving ? <RefreshCw className="w-5 h-5 animate-spin drop-shadow-md" /> : <UploadCloud className="w-5 h-5 drop-shadow-md fill-blue-500/20" />}
+                        </button>
+                        <div className="w-px h-5 bg-zinc-700/80 mx-0.5 rounded"></div>
+                        <button onClick={handleCloseProject} className="p-1.5 text-zinc-300 hover:text-orange-400 hover:bg-orange-900/40 rounded transition-colors" title="Close Project">
+                            <XSquare className="w-5 h-5 drop-shadow-md" />
+                        </button>
+                    </div>
+                </div>
             </div>
             <div className="flex-1 w-full overflow-y-auto printable-area">
               <div className="print-only">
@@ -666,17 +734,22 @@ const StudioPage: React.FC = () => {
               </div>
             </div>
           </ThemePanel>
-          <div onMouseDown={handleMouseDown} className="resize-handle w-1.5 h-full cursor-col-resize bg-zinc-800 hover:bg-zinc-700 transition-colors flex-shrink-0 rounded-full"></div>
-          <ThemePanel translucent className="h-full overflow-hidden relative z-10">
-             <div className="flex flex-col h-full overflow-hidden">
-                <div className="px-4 py-3 border-b border-zinc-800 shrink-0 bg-transparent">
-                    <h2 className="text-subheading font-normal text-white uppercase tracking-tighter">HILO</h2>
-                </div>
-                <div className="flex-1 p-4 overflow-hidden">
-                    <DesignInput onSubmit={handleCreateDesign} isGenerating={isGenerating} agentLogs={agentLogs.filter(log => !log.projectId || log.projectId === activeProjectId)} activeProject={activeProject} onUpdateProjectConstraint={handleUpdateProjectConstraint} />
-                </div>
-             </div>
-          </ThemePanel>
+          {isAgentOpen && (
+              <>
+                  <div onMouseDown={handleMouseDown} className="resize-handle w-1.5 h-full cursor-col-resize bg-zinc-800 hover:bg-zinc-700 transition-colors flex-shrink-0 rounded-full"></div>
+                  <ThemePanel translucent className="h-full overflow-hidden relative z-10" style={{ width: hiloPanelWidth }}>
+                     <div className="flex flex-col h-full overflow-hidden">
+                        <div className="px-4 py-3 border-b border-zinc-800 shrink-0 bg-transparent flex justify-between items-center">
+                            <h2 className="text-subheading font-normal text-white uppercase tracking-tighter">HELO</h2>
+                            <button onClick={() => setIsAgentOpen(false)} className="text-zinc-500 hover:text-white transition-colors"><X className="w-4 h-4"/></button>
+                        </div>
+                        <div className="flex-1 p-4 overflow-hidden relative z-0">
+                            <DesignInput onSubmit={handleCreateDesign} isGenerating={isGenerating} agentLogs={agentLogs.filter(log => !log.projectId || log.projectId === activeProjectId)} activeProject={activeProject} onUpdateProjectConstraint={handleUpdateProjectConstraint} />
+                        </div>
+                     </div>
+                  </ThemePanel>
+              </>
+          )}
         </div>
       </div>
     </>

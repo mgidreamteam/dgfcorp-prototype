@@ -27,7 +27,7 @@ graph TD
     subgraph SimulationMatrices
         C --> H[WorldSim 2D Vectors]
         C --> I[StudioSim]
-        C --> J[WorldSim3D OpenGL]
+        C --> J[TacticalSim OpenGL]
     end
 ```
 
@@ -69,14 +69,14 @@ sequenceDiagram
 
 ---
 
-## 🌍 3. Simulation Architecture (WorldSim & WorldSim3D)
+## 🌍 3. Simulation Architecture (WorldSim & TacticalSim)
 
 The simulation array consists of two completely independent engines designed for stability and high-fidelity testing:
 
 ### **WorldSim** (Stable GIS Engine)
 This tab uses `GoogleMap` locked at a 45-degree angle `satellite` mode. Instead of using complex and unstable WebGL components, we translate X-Plane keyboard kinematics (`W,A,S,D,C`) into programmatic Map mutations (`setHeading`, `panTo`) over a reliable flat vector projecting a pseudo-3D feel.
 
-### **WorldSim3D** (Pure WebGL Simulator)
+### **TacticalSim** (Pure WebGL Simulator)
 This tab mounts a raw `@react-three/fiber` environment completely isolated from Google Maps. 
 - A massive `Grid` component generates an infinite 3D room.
 - A procedural `DroneModel` is generated natively from Three.js primitives.
@@ -127,7 +127,7 @@ graph TD
 * `src/components/ThemePanel.tsx`: The primary wrapper for every UI panel establishing the global translucent zinc/glassmorphism aesthetics.
 * `src/services/gemini.ts`: Centralizes all AI logic, enforcing the strict JSON system prompts before sending payloads to Google.
 * `src/pages/WorldSimPage.tsx`: Stable 2D Vector simulation module wrapped around `@react-google-maps/api`.
-* `src/pages/WorldSim3DPage.tsx`: Next-generation OpenGL WebGL simulation mounting the primitive flight camera engines without strict dependencies.
+* `src/pages/TacticalSimPage.tsx`: Next-generation OpenGL WebGL simulation mounting the primitive flight camera engines without strict dependencies.
 * `src/pages/StudioPage.tsx`: The architectural layout tying OpenSCAD, Gemini, and the Project sidebars natively into the Design loop.
 * `deploy.ps1`: Natively parses local ignored `.env.local` arrays, runs Vite `build` instances, and pipes extracted production variables cleanly into `--set-build-env-vars` onto the `gcloud` remote builder.
 

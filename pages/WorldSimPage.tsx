@@ -7,7 +7,7 @@ import FileMenuBar from '../components/MenuBar';
 import DeleteConfirmationDialog from '../components/DeleteConfirmationDialog';
 import { CloudProject, DesignProject, DesignStatus, AgentLog } from '../types';
 import { generateHardwareSpecs } from '../services/gemini';
-import { AlertCircle, Loader2, Map as MapIcon, Globe, Navigation, ZoomIn, ZoomOut, Compass, Wind, Plane, Eye, PlusCircle, Trash2, CloudDownload, XSquare, ArrowDownToLine, Save, UploadCloud, Cuboid, Database, Box as BoxIcon, RefreshCw, ArrowDown, ArrowDownRight } from 'lucide-react';
+import { AlertCircle, Loader2, Map as MapIcon, Globe, Navigation, ZoomIn, ZoomOut, Compass, Wind, Plane, Eye, PlusCircle, Trash2, CloudDownload, XSquare, ArrowDownToLine, Save, UploadCloud, Cuboid, Database, Box as BoxIcon, RefreshCw, ArrowDown, ArrowDownRight, Box, Move, Maximize, Play, Pause, SkipBack, SkipForward, Settings2, CloudUpload, RadioTower, Wifi, Zap, Activity, Signal, LayoutTemplate, Layers, ChevronRight, Share2, FolderOpen } from 'lucide-react';
 import { useProject } from '../contexts/ProjectContext';
 import { useAuth } from '../contexts/AuthContext';
 import { auth, db, storage } from '../services/firebase';
@@ -86,7 +86,48 @@ const WorldSimPage: React.FC = () => {
   const [cloudProjects, setCloudProjects] = useState<CloudProject[]>([]);
   const [isCloudSaving, setIsCloudSaving] = useState(false);
 
-  const [agentPanelWidth, setAgentPanelWidth] = useState(400);
+  const [agentPanelWidth, setAgentPanelWidth] = useState(400); 
+
+  const centerPanelRef = React.useRef<HTMLDivElement>(null);
+  const [bottomPanelHeight, setBottomPanelHeight] = React.useState(250);
+
+  React.useEffect(() => {
+    if (centerPanelRef.current) {
+        setBottomPanelHeight(Math.max(150, centerPanelRef.current.clientHeight / 3));
+    }
+  }, []);
+
+  const handleBottomPanelMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    document.addEventListener('mousemove', handleBottomPanelMouseMove);
+    document.addEventListener('mouseup', handleBottomPanelMouseUp);
+  };
+
+  const handleBottomPanelMouseMove = (e: MouseEvent) => {
+    const newHeight = window.innerHeight - e.clientY;
+    if (newHeight > 100 && newHeight < window.innerHeight * 0.8) {
+      setBottomPanelHeight(newHeight);
+    }
+  };
+
+  const handleBottomPanelMouseUp = () => {
+    document.removeEventListener('mousemove', handleBottomPanelMouseMove);
+    document.removeEventListener('mouseup', handleBottomPanelMouseUp);
+  };
+
+  const [isAgentOpen, setIsAgentOpen] = useState(() => {
+    if (typeof window !== 'undefined') {
+        const saved = localStorage.getItem('dream_agent_open');
+        if (saved !== null) {
+            try { return JSON.parse(saved); } catch(e){}
+        }
+    }
+    return false;
+  });
+
+  React.useEffect(() => {
+      localStorage.setItem('dream_agent_open', JSON.stringify(isAgentOpen));
+  }, [isAgentOpen]);
 
   useEffect(() => {
     if (projectId && projectId !== activeProjectId) {
@@ -142,7 +183,8 @@ const WorldSimPage: React.FC = () => {
   const handleDownloadFromCloud = async (cloudProj: CloudProject) => {
       if (!auth.currentUser) return;
       try {
-          const fileRef = ref(storage, `users/${auth.currentUser.uid}/projects/${cloudProj.id}.dream`);
+          const ext = cloudProj.appExtension || '.dream';
+          const fileRef = ref(storage, `users/${auth.currentUser.uid}/projects/${cloudProj.id}${ext}`);
           const url = await getDownloadURL(fileRef);
           const response = await fetch(url);
           const text = await response.text();
@@ -152,7 +194,8 @@ const WorldSimPage: React.FC = () => {
                   const filtered = prev.filter(p => p.id !== projectData.id);
                   return [projectData, ...filtered];
               });
-              navigate(`/worldsim/${projectData.id}`);
+              const routeStr = ext === '.dreampro' ? '/prostudio' : ext === '.fabflow' ? '/fabflow' : ext === '.studiosim' ? '/studiosim' : ext === '.wsim' ? '/worldsim' : ext === '.tsim' ? '/tacticalsim' : '/studio';
+              navigate(`${routeStr}/${projectData.id}`);
           }
       } catch (err: any) {
           alert(`Cloud Fetch Failed: ${err.message}`);
@@ -163,7 +206,8 @@ const WorldSimPage: React.FC = () => {
       if (!auth.currentUser || !window.confirm("Permanently delete this cloud asset?")) return;
       try {
           setIsCloudSaving(true);
-          const fileRef = ref(storage, `users/${auth.currentUser.uid}/projects/${cloudProj.id}.dream`);
+          const ext = cloudProj.appExtension || '.dream';
+          const fileRef = ref(storage, `users/${auth.currentUser.uid}/projects/${cloudProj.id}${ext}`);
           await deleteObject(fileRef);
           await deleteDoc(doc(db, `users/${auth.currentUser.uid}/cloudProjects`, cloudProj.id));
           addLog({ content: `Permanently unlinked "${cloudProj.name}" from the global bucket.`, type: 'output' });
@@ -338,9 +382,9 @@ const WorldSimPage: React.FC = () => {
     <>
       <div className="h-full flex flex-col gap-2 p-2">
         <ThemePanel className="w-full shrink-0">
-          <FileMenuBar projectName={activeProject?.name || 'WorldSim Workspace'} />
+            <FileMenuBar projectName={activeProject?.name || 'Network Topology'} appType="wsim" onToggleAgent={() => setIsAgentOpen(!isAgentOpen)} isAgentOpen={isAgentOpen} />
         </ThemePanel>
-        <div className="flex-1 grid overflow-hidden gap-2" style={{ gridTemplateColumns: `256px minmax(500px, 1fr) 60px 6px ${agentPanelWidth}px` }}>
+        <div className="flex-1 grid overflow-hidden gap-2" style={{ gridTemplateColumns: isAgentOpen ? `256px minmax(500px, 1fr) 60px 6px ${agentPanelWidth}px` : `256px minmax(500px, 1fr) 60px` }}>
           
           {/* Left Local/Cloud Explorer */}
           <ProjectSidebar 
@@ -359,7 +403,7 @@ const WorldSimPage: React.FC = () => {
               hideNewProjectButton
           />
           
-          <ThemePanel translucent className="flex flex-col h-full overflow-hidden relative z-10 p-0">
+          <ThemePanel translucent className="flex flex-col h-full overflow-hidden relative z-10 p-0" ref={centerPanelRef}>
             {/* Two-Tier Top Map Toolbar */}
             <div className="px-4 py-2 border-b border-zinc-800/80 shrink-0 bg-transparent flex flex-col items-center bg-black/60 z-30 relative pointer-events-auto shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
                 
@@ -375,10 +419,9 @@ const WorldSimPage: React.FC = () => {
                             <ArrowDownToLine className="w-3.5 h-3.5 opacity-80" />
                         </button>
                         <div className="w-px h-5 bg-zinc-700/80 mx-0.5 rounded"></div>
-                        <button onClick={() => alert("Please import natively via ProStudio before running Simulation.")} className="p-1 hover:bg-emerald-900/40 rounded transition-colors flex items-center" title="Import 3D Model">
-                            <div className="relative p-1 group flex items-center justify-center">
-                                <Cuboid className="w-[22px] h-[22px] stroke-[1.5] text-emerald-500 drop-shadow-md" />
-                                <ArrowDown className="w-[14px] h-[14px] text-emerald-400 absolute -right-1 -bottom-1 drop-shadow stroke-[3]" />
+                        <button onClick={() => alert("Please load local file natively via ProStudio before running Simulation.")} className="p-1 hover:bg-emerald-900/40 rounded transition-colors flex items-center" title="Load Local File">
+                            <div className="relative p-1 flex items-center justify-center">
+                                <FolderOpen className="w-5 h-5 text-emerald-500 drop-shadow-md" />
                             </div>
                         </button>
                         <button onClick={handleSaveToCloud} disabled={isCloudSaving} className="p-1.5 text-blue-400 hover:text-blue-300 hover:bg-blue-900/40 rounded transition-colors flex items-center gap-1.5 disabled:opacity-50" title="Commit to Remote Cloud">
@@ -456,7 +499,7 @@ const WorldSimPage: React.FC = () => {
                 </div>
             </div>
 
-            <div className="w-full h-full bg-zinc-950 relative z-0">
+            <div className="w-full flex-1 min-h-0 bg-zinc-950 relative z-0">
 
 
                 {isLoaded ? (
@@ -477,6 +520,22 @@ const WorldSimPage: React.FC = () => {
                     </div>
                 )}
             </div>
+
+            {/* Horizontal Resizer Handle */}
+            <div 
+              onMouseDown={handleBottomPanelMouseDown}
+              className="resize-handle h-1.5 w-full bg-zinc-800 flex-shrink-0 cursor-row-resize hover:bg-cyan-500 transition-colors z-30 flex items-center justify-center"
+            ></div>
+
+            {/* Bottom Panel (Network Telemetry) */}
+            <ThemePanel translucent className="shrink-0 flex flex-col overflow-hidden relative z-10 border-cyan-500/10 shadow-[inset_0_0_30px_rgba(0,0,0,0.8)] rounded-xl bg-black/60" style={{ height: bottomPanelHeight }}>
+                <div className="px-5 py-3 border-b border-zinc-800/80 bg-black/80 shrink-0">
+                    <h2 className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest flex items-center gap-2"><Activity className="w-3 h-3 text-cyan-500" /> Network Telemetry Context</h2>
+                </div>
+                <div className="flex-1 p-6 flex flex-col items-center justify-center">
+                    <span className="text-zinc-600 text-[10px] font-mono uppercase tracking-widest text-center">Awaiting satellite interconnect handshakes...</span>
+                </div>
+            </ThemePanel>
           </ThemePanel>
 
           {/* Right Vertical Views Bar */}
@@ -503,16 +562,21 @@ const WorldSimPage: React.FC = () => {
               ))}
           </div>
 
-          {/* Resizer Handle */}
-          <div className="resize-handle w-1.5 h-full bg-zinc-800 flex-shrink-0 cursor-col-resize hover:bg-[#00ffcc] transition-colors z-30"></div>
+            {isAgentOpen && (
+                <>
+                    {/* Resizer Handle */}
+                    <div className="resize-handle w-1.5 h-full bg-zinc-800 flex-shrink-0 cursor-col-resize hover:bg-cyan-500 transition-colors z-30"></div>
 
-          {/* Right AI Agent Sidebar */}
-          <ThemePanel translucent className="h-full overflow-hidden flex flex-col relative z-20 border-[#00ffcc]/10 shadow-[inset_0_0_30px_rgba(0,0,0,0.8)] p-0 w-full col-start-5 col-end-6">
-              <AgentSidebar 
-                  onSubmit={handleCreateDesign}
-                  isThinking={isGenerating}
-              />
-          </ThemePanel>
+                    {/* Right AI Agent Sidebar */}
+                    <ThemePanel translucent className="h-full overflow-hidden flex flex-col relative z-20 border-cyan-500/10 shadow-[inset_0_0_30px_rgba(0,0,0,0.8)] p-0 w-full col-start-5 col-end-6">
+                        <AgentSidebar 
+                            onSubmit={() => alert("Simulation environments rely on ProStudio for direct constraints.")}
+                            isThinking={false}
+                            onClose={() => setIsAgentOpen(false)}
+                        />
+                    </ThemePanel>
+                </>
+            )}
 
         </div>
       </div>

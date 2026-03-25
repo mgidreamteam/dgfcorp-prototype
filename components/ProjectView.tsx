@@ -104,7 +104,7 @@ const ProjectView: React.FC<ProjectViewProps> = ({ project, isGenerating, onRetr
          <ToggleButton label="PCB Layout" visibilityKey="pcb" isApplicable={hasElectronics} />
       </div>
 
-      <div className="asset-viewer-grid no-print">
+      <div id="3d-model-section" className="asset-viewer-grid no-print scroll-mt-6">
         <AssetViewer 
           assetUrls={project.assetUrls} 
           status={project.status} 
@@ -149,7 +149,7 @@ const ProjectView: React.FC<ProjectViewProps> = ({ project, isGenerating, onRetr
 
       {project.specs ? (
         <>
-          <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-6 backdrop-blur-sm animate-fade-in">
+          <div id="specs-section" className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-6 backdrop-blur-sm animate-fade-in scroll-mt-6">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <h2 className="text-heading font-normal text-white uppercase tracking-tighter mb-1">{project.specs.productName}</h2>

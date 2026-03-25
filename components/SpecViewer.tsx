@@ -270,43 +270,14 @@ const SpecViewer: React.FC<SpecViewerProps> = ({ specs, vendors, simulationData,
     });
   }, [specs.bom, vendors]);
 
-  const TABS: TabName[] = ['specs', 'model', 'simulation', 'details', 'materials', 'network'];
-
-
   return (
-    <div className="animate-fade-in">
-      <div className="spec-viewer-tabs">
-        <div className="border-b border-zinc-800">
-          <nav className="-mb-px flex space-x-6" aria-label="Tabs">
-            {TABS.map((tabName) => (
-              <button
-                key={tabName}
-                onClick={() => tabName === 'simulation' && !hasElectronics ? null : setActiveTab(tabName)}
-                disabled={tabName === 'simulation' && !hasElectronics}
-                title={tabName === 'simulation' && !hasElectronics ? 'Not applicable for pure mechanical designs' : ''}
-                className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-body transition-colors ${
-                  activeTab === tabName
-                    ? 'border-white text-white'
-                    : tabName === 'simulation' && !hasElectronics
-                        ? 'border-transparent text-zinc-600 cursor-not-allowed'
-                        : 'border-transparent text-zinc-400 hover:text-zinc-200 hover:border-zinc-500'
-                }`}
-              >
-                {tabName === 'simulation' ? 'Simulation' : tabName === 'model' ? '3D Model' : tabName.charAt(0).toUpperCase() + tabName.slice(1).replace('network', 'D.R.E.A.M. Network')}
-              </button>
-            ))}
-          </nav>
-        </div>
-      </div>
-      
-      <div className="animate-fade-in mt-6 spec-tab-content-container">
-        <div className={activeTab === 'specs' ? 'block' : 'hidden'}><SpecsTab specs={specs} /></div>
-        <div className={activeTab === 'model' ? 'block' : 'hidden'}><ModelTab openScadCode={openScadCode} onUpdateCode={(c) => onUpdateProjectField && onUpdateProjectField('openScadCode', c)} /></div>
-        <div className={activeTab === 'simulation' ? 'block' : 'hidden'}><SimulationTab simulationData={simulationData} onRerunSimulation={onRerunSimulation}/></div>
-        <div className={activeTab === 'details' ? 'block' : 'hidden'}><DetailsTab specs={specs} suggestedVendors={suggestedVendors} /></div>
-        <div className={activeTab === 'materials' ? 'block' : 'hidden'}><MaterialsTab specs={specs} /></div>
-        <div className={activeTab === 'network' ? 'block' : 'hidden'}><NetworkTab bomVendorMatches={bomVendorMatches} /></div>
-      </div>
+    <div className="animate-fade-in flex flex-col gap-12 mt-6">
+        <div id="technical-specs-section" className="scroll-mt-6"><SpecsTab specs={specs} /></div>
+        <div id="openscad-model-section" className="scroll-mt-6"><ModelTab openScadCode={openScadCode} onUpdateCode={(c) => onUpdateProjectField && onUpdateProjectField('openScadCode', c)} /></div>
+        {hasElectronics && <div id="simulation-section" className="scroll-mt-6"><SimulationTab simulationData={simulationData} onRerunSimulation={onRerunSimulation}/></div>}
+        <div id="details-section" className="scroll-mt-6"><DetailsTab specs={specs} suggestedVendors={suggestedVendors} /></div>
+        <div id="materials-section" className="scroll-mt-6"><MaterialsTab specs={specs} /></div>
+        <div id="network-section" className="scroll-mt-6"><NetworkTab bomVendorMatches={bomVendorMatches} /></div>
     </div>
   );
 };

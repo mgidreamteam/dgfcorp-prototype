@@ -15,7 +15,7 @@ import CloudLoadModal from '../components/CloudLoadModal';
 import LoadingModal from '../components/LoadingModal';
 import { ImportedCADGeometry } from '../components/ImportedCADGeometry';
 import { PlusCircle, Trash2, CloudDownload, XSquare, ZoomIn, ZoomOut } from 'lucide-react';
-import { Wrench, X, Box, Cylinder, Cpu, Layers, Maximize2, Move, RefreshCw, MousePointer2, Settings2, UploadCloud, Activity, FileCode2, ArrowDownRight, Expand, Cuboid, Settings, Scissors, Target, ArrowDownToLine, Database, CircleDot, ChevronRight, ChevronDown, Sliders, ArrowDown, Bot, MousePointerClick, AlertCircle, AlertTriangle, Save } from 'lucide-react';
+import { Wrench, X, Box, Cylinder, Cpu, Layers, Maximize2, Move, RefreshCw, MousePointer2, Settings2, UploadCloud, Activity, FileCode2, ArrowDownRight, Expand, Cuboid, Settings, Scissors, Target, ArrowDownToLine, Database, CircleDot, ChevronRight, ChevronDown, Sliders, ArrowDown, Bot, MousePointerClick, AlertCircle, AlertTriangle, Save, FolderOpen } from 'lucide-react';
 import { Canvas, useThree } from '@react-three/fiber';
 import { Geometry, Base, Addition, Subtraction } from '@react-three/csg';
 import { OrbitControls, Grid, Environment, ContactShadows, TransformControls, GizmoHelper, GizmoViewport, Edges, Bvh } from '@react-three/drei';
@@ -498,6 +498,19 @@ const ProStudioPage: React.FC = () => {
     const [nodes, setNodes] = useState<MechatronicNode[]>([]);
     const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
     const [agentPanelWidth, setAgentPanelWidth] = useState(300);
+    const [isAgentOpen, setIsAgentOpen] = useState(() => {
+    if (typeof window !== 'undefined') {
+        const saved = localStorage.getItem('dream_agent_open');
+        if (saved !== null) {
+            try { return JSON.parse(saved); } catch(e){}
+        }
+    }
+    return false;
+  });
+
+  React.useEffect(() => {
+      localStorage.setItem('dream_agent_open', JSON.stringify(isAgentOpen));
+  }, [isAgentOpen]);
     const [renderMode, setRenderMode] = useState<'solid' | 'wireframe' | 'edges'>('solid');
     const [isRenderModalOpen, setIsRenderModalOpen] = useState(false);
     const [hoverFace, setHoverFace] = useState<string | null>(null);
@@ -741,7 +754,8 @@ const ProStudioPage: React.FC = () => {
         if (!auth.currentUser) return;
         try {
             setCloudLoadingAction(cloudProj.id);
-            const fileRef = ref(storage, `users/${auth.currentUser.uid}/projects/${cloudProj.id}.dreampro`);
+            const ext = cloudProj.appExtension || '.dream';
+            const fileRef = ref(storage, `users/${auth.currentUser.uid}/projects/${cloudProj.id}${ext}`);
             const url = await getDownloadURL(fileRef);
             const response = await fetch(url);
             const text = await response.text();
@@ -752,7 +766,8 @@ const ProStudioPage: React.FC = () => {
                     const filtered = prev.filter(p => p.id !== projectData.id);
                     return [projectData, ...filtered];
                 });
-                navigate(`/prostudio/${projectData.id}`);
+                const routeStr = ext === '.dreampro' ? '/prostudio' : ext === '.fabflow' ? '/fabflow' : ext === '.studiosim' ? '/studiosim' : ext === '.wsim' ? '/worldsim' : ext === '.tsim' ? '/tacticalsim' : '/studio';
+                navigate(`${routeStr}/${projectData.id}`);
                 setIsCloudModalOpen(false);
             }
         } catch (err: any) {
@@ -1176,9 +1191,10 @@ const ProStudioPage: React.FC = () => {
         if (!auth.currentUser) return;
         setCloudLoadingAction(cloudProj.id);
         try {
+            const ext = cloudProj.appExtension || '.dream';
             await deleteDoc(doc(db, `users/${auth.currentUser.uid}/cloudProjects/${cloudProj.id}`));
             try {
-                await deleteObject(ref(storage, `users/${auth.currentUser.uid}/projects/${cloudProj.id}.dreampro`));
+                await deleteObject(ref(storage, `users/${auth.currentUser.uid}/projects/${cloudProj.id}${ext}`));
             } catch(e) { console.warn("Storage object missing", e); }
             setCloudProjects(prev => prev.filter(p => p.id !== cloudProj.id));
             window.dispatchEvent(new Event('update-cloud-quota'));
@@ -1189,12 +1205,12 @@ const ProStudioPage: React.FC = () => {
         }
     };
 
-    const gridTemplateColumns = `256px 220px 50px minmax(400px, 1fr) 50px 6px ${agentPanelWidth}px`;
+    const gridTemplateColumns = isAgentOpen ? `256px 220px 50px minmax(400px, 1fr) 50px 6px ${agentPanelWidth}px` : `256px 220px 50px minmax(400px, 1fr) 50px`;
 
     return (
         <div className="h-full flex flex-col gap-2 p-2 relative bg-black/90">
             <ThemePanel className="w-full shrink-0 border border-blue-500/20 shadow-[inset_0_0_20px_rgba(59,130,246,0.05)] text-blue-400">
-                <FileMenuBar projectName={activeProject?.name || assemblyName} />
+                <FileMenuBar projectName={activeProject?.name || assemblyName} appType="prostudio" onToggleAgent={() => setIsAgentOpen(!isAgentOpen)} isAgentOpen={isAgentOpen} />
             </ThemePanel>
             <div className="flex-1 grid overflow-hidden gap-2" style={{ gridTemplateColumns }}>
                 {/* Left Local/Cloud Explorer */}
@@ -1432,10 +1448,9 @@ const ProStudioPage: React.FC = () => {
                                 </button>
                                 <div className="w-px h-5 bg-zinc-700/80 mx-0.5 rounded"></div>
                                 <input type="file" ref={fileInputRef} className="hidden" accept=".stl,.obj,.step,.dxf,.skidl,.gbr,.gerber" onChange={handleFileUpload} />
-                                <button onClick={() => fileInputRef.current?.click()} disabled={isUploading} className="p-1 hover:bg-emerald-900/40 rounded transition-colors flex items-center disabled:opacity-50" title="Import 3D Model">
-                                    <div className="relative p-1 group flex items-center justify-center">
-                                        <MeshedCubeIcon />
-                                        <ArrowDown className="w-[18px] h-[18px] text-emerald-500 absolute -right-0.5 -bottom-0.5 drop-shadow-md stroke-[3]" />
+                                <button onClick={() => fileInputRef.current?.click()} disabled={isUploading} className="p-1 hover:bg-emerald-900/40 rounded transition-colors flex items-center disabled:opacity-50" title="Load Local File">
+                                    <div className="relative p-1 flex items-center justify-center">
+                                        <FolderOpen className="w-5 h-5 text-emerald-500 drop-shadow-md" />
                                     </div>
                                 </button>
                                 <button onClick={handleSaveToCloud} disabled={isCloudSaving} className="p-1.5 text-blue-400 hover:text-blue-300 hover:bg-blue-900/40 rounded transition-colors flex items-center gap-1.5 disabled:opacity-50" title="Commit to Remote Cloud">
@@ -1839,16 +1854,25 @@ const ProStudioPage: React.FC = () => {
                     ))}
                 </div>
 
-                {/* Resizer Handle */}
-                <div className="resize-handle w-1.5 h-full bg-zinc-800 flex-shrink-0 cursor-col-resize hover:bg-blue-500 transition-colors z-30"></div>
 
-                {/* Right AI Agent Sidebar */}
-                <ThemePanel translucent className="h-full overflow-hidden flex flex-col relative z-20 border-blue-500/10 shadow-[inset_0_0_30px_rgba(0,0,0,0.8)] p-0 w-full col-start-7 col-end-8">
-                    <AgentSidebar 
-                        onSubmit={handleAgentSubmit}
-                        isThinking={isAgentThinking}
-                    />
-                </ThemePanel>
+
+
+
+                {isAgentOpen && (
+                    <>
+                        {/* Resizer Handle */}
+                        <div className="resize-handle w-1.5 h-full bg-zinc-800 flex-shrink-0 cursor-col-resize hover:bg-blue-500 transition-colors z-30"></div>
+
+                        {/* Right AI Agent Sidebar */}
+                        <ThemePanel translucent className="h-full overflow-hidden flex flex-col relative z-20 border-blue-500/10 shadow-[inset_0_0_30px_rgba(0,0,0,0.8)] p-0 w-full col-start-7 col-end-8">
+                            <AgentSidebar
+                                onSubmit={handleAgentSubmit}
+                                isThinking={isAgentThinking}
+                                onClose={() => setIsAgentOpen(false)}
+                            />
+                        </ThemePanel>
+                    </>
+                )}
 
                 {/* Global Context Menu Modal for Materials & Destruction */}
                 {contextMenuTarget && (
