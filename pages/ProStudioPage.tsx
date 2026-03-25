@@ -245,7 +245,7 @@ const MechatronicNodeMesh = React.memo(({
             if (isCAD) {
                 return (
                     <group {...handlers}>
-                        {node.fileData && <ImportedCADGeometry fileUrl={node.fileData} extension={node.extension || 'stl'} isExploded={isExploded} explodeDistance={explodeDistance} />}
+                        {node.fileData && <ImportedCADGeometry fileUrl={node.fileData} extension={node.extension || 'stl'} isExploded={isExploded} explodeDistance={explodeDistance} assemblyName={node.name} />}
                     </group>
                 );
             }

@@ -10,9 +10,10 @@ interface CADGeometryProps {
     extension: string;
     isExploded?: boolean;
     explodeDistance?: number;
+    assemblyName?: string;
 }
 
-const useOCCTWorker = (fileUrl: string, extension: string) => {
+const useOCCTWorker = (fileUrl: string, extension: string, assemblyName?: string) => {
     const [parts, setParts] = useState<{geometry: THREE.BufferGeometry, name: string, color: number[], constraint?: string}[] | null>(null);
     const [error, setError] = useState<string | null>(null);
 
@@ -27,7 +28,7 @@ const useOCCTWorker = (fileUrl: string, extension: string) => {
             try {
                 const response = await fetch(fileUrl);
                 const buffer = await response.arrayBuffer();
-                worker.postMessage({ buffer, extension, id: fileUrl });
+            worker.postMessage({ buffer, extension, id: fileUrl, assemblyName });
             } catch (err: any) {
                 if (active) setError(err.message);
             }
@@ -216,8 +217,8 @@ const STLViewer = ({ fileUrl, rawPayload }: { fileUrl: string, rawPayload?: stri
     );
 };
 
-const OCCTViewer = ({ fileUrl, extension, isExploded, explodeDistance }: { fileUrl: string, extension: string, isExploded?: boolean, explodeDistance?: number }) => {
-    const { parts, error } = useOCCTWorker(fileUrl, extension);
+const OCCTViewer = ({ fileUrl, extension, isExploded, explodeDistance, assemblyName }: { fileUrl: string, extension: string, isExploded?: boolean, explodeDistance?: number, assemblyName?: string }) => {
+    const { parts, error } = useOCCTWorker(fileUrl, extension, assemblyName);
     const { updateProjectField, activeProjectId, projects } = useProject();
     const activeProject = projects.find(p => p.id === activeProjectId);
 
@@ -379,7 +380,7 @@ const OCCTViewer = ({ fileUrl, extension, isExploded, explodeDistance }: { fileU
 };
 
 
-export const ImportedCADGeometry: React.FC<CADGeometryProps> = ({ fileUrl, extension, isExploded, explodeDistance }) => {
+export const ImportedCADGeometry: React.FC<CADGeometryProps> = ({ fileUrl, extension, isExploded, explodeDistance, assemblyName }) => {
     let effectiveExtension = extension.toLowerCase();
     if (effectiveExtension === 'stl' && fileUrl && fileUrl.includes('firebasestorage')) {
         const urlLower = fileUrl.toLowerCase();
@@ -417,6 +418,6 @@ export const ImportedCADGeometry: React.FC<CADGeometryProps> = ({ fileUrl, exten
     if (isSTL) {
         return <STLViewer fileUrl={safeUrl} rawPayload={isLegacyString ? fileUrl : undefined} />;
     } else {
-        return <OCCTViewer fileUrl={safeUrl} extension={effectiveExtension} isExploded={isExploded} explodeDistance={explodeDistance} />;
+        return <OCCTViewer fileUrl={safeUrl} extension={effectiveExtension} isExploded={isExploded} explodeDistance={explodeDistance} assemblyName={assemblyName} />;
     }
 };

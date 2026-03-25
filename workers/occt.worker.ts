@@ -2,7 +2,7 @@ import initOpenCascade from 'occt-import-js';
 
 // Setup worker context
 self.onmessage = async (e: MessageEvent) => {
-    const { buffer, extension, id } = e.data;
+    const { buffer, extension, id, assemblyName } = e.data;
 
     try {
         // Initialize WASM Runtime
@@ -23,10 +23,56 @@ self.onmessage = async (e: MessageEvent) => {
         }
 
         if (result && result.meshes) {
+            const cleanAssemblyName = assemblyName ? assemblyName.replace(/\.[^/.]+$/, "") : "";
+            const isSingleEntity = cleanAssemblyName.toLowerCase().match(/(bearing|spring|coil|washer|screw|bolt|nut|pin|rivet|bushing)/);
+            
+            if (isSingleEntity && result.meshes.length > 0) {
+                // Merge all solids/faces into a single mesh piece
+                let totalPositions = 0;
+                let totalIndices = 0;
+                result.meshes.forEach((mesh: any) => {
+                    totalPositions += mesh.attributes.position.array.length;
+                    totalIndices += mesh.index.array.length;
+                });
+                
+                const combinedPositions = new Float32Array(totalPositions);
+                const combinedNormals = new Float32Array(totalPositions);
+                const combinedIndices = new Uint32Array(totalIndices);
+                
+                let posOffset = 0;
+                let idxOffset = 0;
+                let vertexOffset = 0;
+                
+                result.meshes.forEach((mesh: any) => {
+                    combinedPositions.set(mesh.attributes.position.array, posOffset);
+                    combinedNormals.set(mesh.attributes.normal.array, posOffset);
+                    
+                    const indices = mesh.index.array;
+                    for (let i = 0; i < indices.length; i++) {
+                        combinedIndices[idxOffset + i] = indices[i] + vertexOffset;
+                    }
+                    
+                    posOffset += mesh.attributes.position.array.length;
+                    idxOffset += indices.length;
+                    vertexOffset += mesh.attributes.position.array.length / 3;
+                });
+                
+                const payload = [{
+                    name: cleanAssemblyName,
+                    color: result.meshes[0].color || [0.5, 0.5, 0.5],
+                    constraint: null,
+                    positions: combinedPositions,
+                    normals: combinedNormals,
+                    indices: combinedIndices
+                }];
+                self.postMessage({ type: 'SUCCESS', id, meshes: payload });
+                return;
+            }
+
             const nameCounts = new Map<string, number>();
 
             const payload = result.meshes.map((mesh: any, idx: number) => {
-                let baseName = mesh.name ? mesh.name.trim() : `Component`;
+                let baseName = mesh.name ? mesh.name.trim() : (cleanAssemblyName || `Component`);
                 const nameLower = baseName.toLowerCase();
                 
                 // Add unique suffix
