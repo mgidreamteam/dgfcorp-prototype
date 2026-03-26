@@ -14,6 +14,8 @@ const RegisterPage: React.FC = () => {
     address: '',
     phone: '',
     username: '',
+    companyName: '',
+    workgroup: '',
     email: '',
     password: ''
   });
@@ -47,6 +49,8 @@ const RegisterPage: React.FC = () => {
         address: formData.address,
         phone: formData.phone,
         username: formData.username,
+        companyName: formData.companyName,
+        workgroup: formData.workgroup,
         email: formData.email,
         status: 'pending',
         createdAt: new Date().toISOString()
@@ -93,6 +97,24 @@ const RegisterPage: React.FC = () => {
               name="username"
               placeholder="Unique Username"
               value={formData.username}
+              onChange={handleChange}
+              className="bg-black/50 border border-zinc-700 text-white placeholder-zinc-500 rounded-lg px-4 py-3 outline-none focus:border-white transition-colors"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <input
+              type="text"
+              name="companyName"
+              placeholder="Company Name"
+              value={formData.companyName}
+              onChange={handleChange}
+              className="bg-black/50 border border-zinc-700 text-white placeholder-zinc-500 rounded-lg px-4 py-3 outline-none focus:border-white transition-colors"
+            />
+            <input
+              type="text"
+              name="workgroup"
+              placeholder="DREAM Workgroup"
+              value={formData.workgroup}
               onChange={handleChange}
               className="bg-black/50 border border-zinc-700 text-white placeholder-zinc-500 rounded-lg px-4 py-3 outline-none focus:border-white transition-colors"
             />

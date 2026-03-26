@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { Loader2, PlusCircle, Trash2, CloudDownload, XSquare, ArrowDownToLine, Save, UploadCloud, Box, Cuboid, Database, Maximize2, RefreshCw, Sun, Moon, Droplet, Box as BoxIcon, Search, Wrench, Package, ListTree, ArrowRight, Activity, Zap, Server, ChevronRight, Eye, Layers, Settings2, Share2, Printer, CheckCircle2, AlertCircle, FileText, Download, Upload, Cpu, Factory, ShieldCheck, Globe2, ArrowDownToLine as ArrowDownToLineIcon, UploadCloud as UploadCloudIcon, Minimize2, Lightbulb, LightbulbOff, Sparkles, Grid3X3, FolderOpen } from 'lucide-react';
+import { Loader2, PlusCircle, Trash2, CloudDownload, XSquare, ArrowDownToLine, Save, UploadCloud, Box, Cuboid, Database, Maximize2, RefreshCw, Sun, Moon, Droplet, Box as BoxIcon, Search, Wrench, Package, ListTree, ArrowRight, Activity, Zap, Server, ChevronRight, Eye, Layers, Settings2, Share2, Printer, CheckCircle2, AlertCircle, FileText, Download, Upload, Cpu, Factory, ShieldCheck, Globe2, ArrowDownToLine as ArrowDownToLineIcon, UploadCloud as UploadCloudIcon, Minimize2, Lightbulb, LightbulbOff, Sparkles, Grid3X3, FolderOpen } , Aperture, Sparkles } from 'lucide-react';
 import { useParams, useNavigate } from 'react-router-dom';
 import ThemePanel from '../components/ThemePanel';
 import AgentSidebar from '../components/AgentSidebar';
@@ -20,7 +20,7 @@ import { CameraPresets, ViewMode } from '../components/CameraPresets';
 import { RoomWalls } from '../components/RoomWalls';
 import { SimHUD } from '../components/SimHUD';
 import { runCompetencyMatch } from '../services/vendorDb';
-import { Binary, Hammer, EyeOff } from 'lucide-react';
+import { Binary, Hammer, EyeOff } , Aperture, Sparkles } from 'lucide-react';
 import { generateStlFile } from '../services/gemini';
 import { StudioLighting } from '../components/StudioLighting';
 
@@ -508,56 +508,15 @@ const FabFlowPage: React.FC = () => {
                 <div className="flex justify-between items-center w-full gap-4">
                     {/* File Main Actions */}
                     <div className="flex items-center gap-2 bg-black/60 p-1.5 rounded-lg border border-zinc-800/80 shadow-[0_4px_30px_rgba(0,0,0,0.5)] backdrop-blur-sm overflow-x-auto no-scrollbar shrink-0">
-                        <button onClick={() => navigate('/studio')} className="p-1.5 text-zinc-300 hover:text-emerald-400 hover:bg-emerald-900/40 rounded transition-colors" title="New Project">
-                            <PlusCircle className="w-5 h-5 drop-shadow-md" />
-                        </button>
-                        <button onClick={() => handleDownloadProject()} className="p-1.5 px-2 text-blue-400 hover:text-blue-300 hover:bg-blue-900/40 rounded transition-colors flex items-center justify-center gap-1.5" title="Save File Locally">
-                            <Save className="w-5 h-5 drop-shadow-md fill-blue-500/10" />
-                            <ArrowDownToLine className="w-3.5 h-3.5 opacity-80" />
-                        </button>
-                        <div className="w-px h-5 bg-zinc-700/80 mx-0.5 rounded"></div>
-                        <button onClick={() => alert("Please import natively via ProStudio before running Simulation.")} className="p-1 hover:bg-emerald-900/40 rounded transition-colors flex items-center" title="Load Local File">
-                            <div className="relative p-1 flex items-center justify-center">
-                                <FolderOpen className="w-5 h-5 text-emerald-500 drop-shadow-md" />
-                            </div>
-                        </button>
-                        <button onClick={handleSaveToCloud} disabled={isCloudSaving} className="p-1.5 text-blue-400 hover:text-blue-300 hover:bg-blue-900/40 rounded transition-colors flex items-center gap-1.5 disabled:opacity-50" title="Commit to Remote Cloud">
-                            {isCloudSaving ? <RefreshCw className="w-5 h-5 animate-spin drop-shadow-md" /> : <UploadCloud className="w-5 h-5 drop-shadow-md fill-blue-500/20" />}
-                        </button>
-                        <div className="w-px h-5 bg-zinc-700/80 mx-0.5 rounded"></div>
-                        <button onClick={() => { setActiveProjectId(null); navigate('/fabflow'); }} className="p-1.5 text-zinc-300 hover:text-orange-400 hover:bg-orange-900/40 rounded transition-colors" title="Close Project">
-                            <XSquare className="w-5 h-5 drop-shadow-md" />
-                        </button>
-                    </div>
-
-                    {/* View / CAD Mode */}
-                    <div className="flex items-center gap-1 bg-black/60 p-1 rounded border border-blue-500/20 shadow-inner shrink-0">
-                        <button onClick={() => setCadMode('Assembly')} className={`px-3 py-1 rounded transition-colors text-[10px] font-bold uppercase tracking-widest ${cadMode === 'Assembly' ? 'bg-blue-900/40 text-blue-400 border border-blue-500/30' : 'text-zinc-500 hover:text-zinc-300'}`}>Assembly</button>
-                        <button onClick={() => setCadMode('Circuit')} className={`px-3 py-1 rounded transition-colors text-[10px] font-bold uppercase tracking-widest gap-1 flex items-center ${cadMode === 'Circuit' ? 'bg-emerald-900/40 text-emerald-400 border border-emerald-500/30' : 'text-zinc-500 hover:text-zinc-300'}`}><Cpu className="w-[18px] h-[18px]" /> Circuits</button>
-                    </div>
-                </div>
-
-                {/* SECOND ROW: App-Specific Workspace Menubars */}
-                <div className="flex justify-between items-center w-full gap-4 mt-2">
-                    <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pointer-events-auto">
-                        
-                        {/* Viewport Render Modes */}
-                        <div className="flex items-center gap-1 bg-black/60 p-1 rounded-lg border border-zinc-800/80 shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]">
-                            <button onClick={() => setRenderMode('wireframe')} className={`p-1.5 rounded transition-all duration-200 ${renderMode === 'wireframe' ? 'bg-[#00ffcc]/20 text-[#00ffcc] shadow-inner scale-95' : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50'}`} title="Wireframe View">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
-                            </button>
-                            <button onClick={() => setRenderMode('edges')} className={`p-1.5 rounded transition-all duration-200 ${renderMode === 'edges' ? 'bg-[#00ffcc]/20 text-[#00ffcc] shadow-inner scale-95' : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50'}`} title="Solid + Edge View">
-                                <svg viewBox="0 0 24 24" className="w-6 h-6">
-                                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" fill="currentColor" fillOpacity="0.15" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"></path>
-                                    <polyline points="3.27 6.96 12 12.01 20.73 6.96" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"></polyline>
-                                    <line x1="12" y1="22.08" x2="12" y2="12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"></line>
-                                </svg>
-                            </button>
-                            <button onClick={() => setRenderMode('solid')} className={`p-1.5 rounded transition-all duration-200 ${renderMode === 'solid' ? 'bg-[#00ffcc]/20 text-[#00ffcc] shadow-inner scale-95' : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50'}`} title="Solid View">
-                                <svg viewBox="0 0 24 24" className="w-6 h-6">
-                                    <polygon points="12 2 3 7 12 12 21 7 12 2" fill="currentColor" fillOpacity="0.4"></polygon>
-                                    <polygon points="3 16 3 7 12 12 12 22 3 16" fill="currentColor" fillOpacity="0.8"></polygon>
-                                    <polygon points="12 22 12 12 21 7 21 16 12 22" fill="currentColor"></polygon>
+                        <button onClick={() => setRenderMode('solid')} className={`relative flex items-center justify-center p-1.5 w-8 h-8 rounded-md transition-all duration-200 border ${renderMode === 'solid' ? 'bg-[#00ffcc]/20 text-[#00ffcc] border-[#00ffcc]/30 shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]' : 'text-zinc-500 border-transparent hover:text-zinc-300 hover:bg-zinc-800/70'}`} title="Solid Shaded View">
+                                <svg viewBox="0 0 24 24" className="w-full h-full">
+                                    <circle cx="12" cy="12" r="9" fill="url(#smooth-grad-sim)" />
+                                    <defs>
+                                        <radialGradient id="smooth-grad-sim" cx="35%" cy="35%" r="65%">
+                                            <stop offset="0%" stopColor="white" stopOpacity="0.4" />
+                                            <stop offset="100%" stopColor="currentColor" stopOpacity="0.9" />
+                                        </radialGradient>
+                                    </defs>
                                 </svg>
                             </button>
 

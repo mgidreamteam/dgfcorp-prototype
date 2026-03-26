@@ -647,3 +647,42 @@ export const rerunCircuitSimulation = async (skidlCode: string, specs: HardwareS
     
     return JSON.parse(extractedText);
 };
+
+export const analyzeCADPart = async (partData: { name: string, dimensions: number[], color: number[], isMerged: boolean }, projectName: string) => {
+    const model = "gemini-3-flash-preview";
+    const prompt = `
+    You are an expert Mechanical and Manufacturing Engineer. Evaluate this single geometric part extracted from a CAD assembly file.
+    
+    Part Name: "${partData.name}"
+    Bounding Box (X, Y, Z in mm): ${partData.dimensions.map(d=>d.toFixed(2)).join(' x ')}
+    Color (RGB): [${partData.color.map(c=>c.toFixed(2)).join(', ')}]
+    Forced Single Entity Subassembly: ${partData.isMerged}
+    Product Context: "${projectName}"
+
+    Based on these heuristics, infer the most likely material, manufacturing process, and a short description for this component to populate a Bill of Materials.
+    If it sounds like a generic standard component (e.g. screw, bearing, washer), mark it as "Mechanical". Otherwise, mark it as "Casing" or "Custom Component".
+    
+    Return ONLY a single JSON object matching this exact schema:
+    {
+      "component": "string (the part name or inferred standard name)",
+      "type": "string (e.g. Mechanical, Casing, Fastener)",
+      "material": "string (e.g. Steel, Aluminum 6061, ABS)",
+      "manufacturingProcess": "string",
+      "estimatedCost": "number (Numeric float value only, e.g. 1.50)",
+      "description": "string (Brief functional description)"
+    }
+    DO NOT include markdown block characters.
+    `;
+
+    const response = await ai.models.generateContent({
+        model,
+        contents: prompt,
+        config: {
+            responseMimeType: "application/json"
+        }
+    });
+
+    const text = extractText(response);
+    if (!text) throw new Error("LLM failed to analyze CAD part.");
+    return JSON.parse(text);
+};

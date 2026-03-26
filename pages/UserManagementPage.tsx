@@ -1,13 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { collection, getDocs, doc, setDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../services/firebase';
-import { ShieldCheck, Users, Mail, AlertTriangle, Check, X, ArrowLeft, Ban, Trash2, Cpu } from 'lucide-react';
+import { ShieldCheck, Users, Mail, AlertTriangle, Check, X, ArrowLeft, Ban, Trash2, Cpu, User, Save } from 'lucide-react';
 import ThemePanel from '../components/ThemePanel';
 import { useNavigate } from 'react-router-dom';
 
 interface ManagedUser {
     id: string;
     name: string;
+    username?: string;
+    companyName?: string;
+    workgroup?: string;
+    phone?: string;
+    address?: string;
     email: string;
     role: string;
     status: string;
@@ -25,6 +30,8 @@ const UserManagementPage: React.FC = () => {
     const [error, setError] = useState('');
     const [updatingId, setUpdatingId] = useState<string | null>(null);
     const [pendingRoles, setPendingRoles] = useState<Record<string, string>>({}); // Buffer uncommitted role edits
+    const [editingUserId, setEditingUserId] = useState<string | null>(null);
+    const [editFormData, setEditFormData] = useState<Partial<ManagedUser>>({});
 
     const loadUsers = async () => {
         try {
@@ -50,6 +57,11 @@ const UserManagementPage: React.FC = () => {
                 return {
                     id: u.id,
                     name: data.name || 'Unknown',
+                    username: data.username || '',
+                    companyName: data.companyName || '',
+                    workgroup: data.workgroup || '',
+                    phone: data.phone || '',
+                    address: data.address || '',
                     email: data.email || 'No email',
                     role: activeRole,
                     status: data.status || 'approved',
@@ -109,6 +121,44 @@ const UserManagementPage: React.FC = () => {
             delete updated[userId];
             return updated;
         });
+    };
+
+    const handleEditUser = (user: ManagedUser) => {
+        setEditingUserId(user.id);
+        setEditFormData({
+            name: user.name,
+            username: user.username,
+            companyName: user.companyName,
+            workgroup: user.workgroup,
+            phone: user.phone,
+            address: user.address,
+        });
+    };
+
+    const handleCancelUserEdit = () => {
+        setEditingUserId(null);
+        setEditFormData({});
+    };
+
+    const handleSaveUserEdit = async (userId: string) => {
+        try {
+            setUpdatingId(userId);
+            await updateDoc(doc(db, 'users', userId), {
+                name: editFormData.name || '',
+                username: editFormData.username || '',
+                companyName: editFormData.companyName || '',
+                workgroup: editFormData.workgroup || '',
+                phone: editFormData.phone || '',
+                address: editFormData.address || ''
+            });
+            setUsers(prev => prev.map(u => u.id === userId ? { ...u, ...editFormData } : u));
+            setEditingUserId(null);
+        } catch (err) {
+            console.error(err);
+            alert("Failed to update user physical properties limit bounds.");
+        } finally {
+            setUpdatingId(null);
+        }
     };
 
     const handleApprove = async (userId: string) => {
@@ -208,16 +258,38 @@ const UserManagementPage: React.FC = () => {
                                     return (
                                     <tr key={u.id} className={`hover:bg-zinc-800/30 transition-colors flex flex-col sm:table-row ${hasPendingEdit ? 'bg-blue-900/10' : ''}`}>
                                         <td className="px-6 py-4 overflow-hidden text-ellipsis">
-                                            <div className="flex items-center gap-3">
+                                            <div className="flex items-center gap-3 w-full">
                                                 <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center shrink-0">
                                                     <Users className="w-5 h-5 text-zinc-500" />
                                                 </div>
-                                                <div className="min-w-0">
-                                                    <div className="font-bold text-white text-panel-title truncate">{u.name}</div>
-                                                    <div className="flex items-center gap-1.5 text-zinc-500 text-detail mt-1 truncate">
-                                                        <Mail className="w-3 h-3 shrink-0" />
-                                                        <span className="truncate">{u.email}</span>
-                                                    </div>
+                                                <div className="min-w-0 flex-1">
+                                                    {editingUserId === u.id ? (
+                                                        <div className="space-y-2 pr-4 animate-fade-in-up">
+                                                            <input type="text" value={editFormData.name} onChange={e => setEditFormData({...editFormData, name: e.target.value})} placeholder="Full Name" className="w-full bg-black/60 border border-zinc-700 text-white text-xs px-2 py-1.5 rounded outline-none focus:border-white transition-colors" />
+                                                            <input type="text" value={editFormData.username} onChange={e => setEditFormData({...editFormData, username: e.target.value})} placeholder="Username" className="w-full bg-black/60 border border-zinc-700 text-white text-xs px-2 py-1.5 rounded outline-none focus:border-white transition-colors" />
+                                                            <input type="text" value={editFormData.companyName} onChange={e => setEditFormData({...editFormData, companyName: e.target.value})} placeholder="Company Name" className="w-full bg-black/60 border border-zinc-700 text-white text-xs px-2 py-1.5 rounded outline-none focus:border-white transition-colors" />
+                                                            <input type="text" value={editFormData.workgroup} onChange={e => setEditFormData({...editFormData, workgroup: e.target.value})} placeholder="DREAM Workgroup" className="w-full bg-black/60 border border-zinc-700 text-white text-xs px-2 py-1.5 rounded outline-none focus:border-white transition-colors" />
+                                                            <input type="tel" value={editFormData.phone} onChange={e => setEditFormData({...editFormData, phone: e.target.value})} placeholder="Phone" className="w-full bg-black/60 border border-zinc-700 text-white text-xs px-2 py-1.5 rounded outline-none focus:border-white transition-colors" />
+                                                            <textarea value={editFormData.address} onChange={e => setEditFormData({...editFormData, address: e.target.value})} placeholder="Physical Address" className="w-full bg-black/60 border border-zinc-700 text-white text-xs px-2 py-1.5 rounded outline-none focus:border-white transition-colors min-h-[50px] resize-none" />
+                                                        </div>
+                                                    ) : (
+                                                        <>
+                                                            <div className="font-bold text-white text-panel-title truncate">{u.name}</div>
+                                                            <div className="flex items-center gap-1.5 text-zinc-500 text-detail mt-1 truncate">
+                                                                <Mail className="w-3 h-3 shrink-0" />
+                                                                <span className="truncate">{u.email}</span>
+                                                            </div>
+                                                            {(u.username || u.phone || u.address || u.companyName || u.workgroup) && (
+                                                                <div className="mt-2 text-xs text-zinc-400 space-y-0.5 border-t border-zinc-800/80 pt-1.5 pr-4">
+                                                                    {u.username && <div className="truncate"><span className="text-zinc-500">User:</span> {u.username}</div>}
+                                                                    {u.companyName && <div className="truncate"><span className="text-zinc-500">Corp:</span> {u.companyName}</div>}
+                                                                    {u.workgroup && <div className="truncate"><span className="text-zinc-500">Group:</span> {u.workgroup}</div>}
+                                                                    {u.phone && <div className="truncate"><span className="text-zinc-500">Tel:</span> {u.phone}</div>}
+                                                                    {u.address && <div className="truncate line-clamp-2"><span className="text-zinc-500">Loc:</span> {u.address}</div>}
+                                                                </div>
+                                                            )}
+                                                        </>
+                                                    )}
                                                 </div>
                                             </div>
                                         </td>
@@ -302,6 +374,35 @@ const UserManagementPage: React.FC = () => {
                                                 )}
                                                 
                                                 <div className="flex items-center gap-1.5 shrink-0 ml-1">
+                                                    {editingUserId === u.id ? (
+                                                        <div className="flex items-center gap-1 mr-2 animate-fade-in-up">
+                                                            <button 
+                                                                onClick={() => handleSaveUserEdit(u.id)}
+                                                                disabled={updatingId === u.id}
+                                                                className="p-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white transition-colors h-[28px] w-[28px] flex justify-center items-center shrink-0"
+                                                                title="Save Profile Fields"
+                                                            >
+                                                                {updatingId === u.id ? <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+                                                            </button>
+                                                            <button 
+                                                                onClick={handleCancelUserEdit}
+                                                                disabled={updatingId === u.id}
+                                                                className="p-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-white transition-colors border border-zinc-700 h-[28px] w-[28px] flex justify-center items-center shrink-0"
+                                                                title="Cancel"
+                                                            >
+                                                                <X className="w-3.5 h-3.5" />
+                                                            </button>
+                                                        </div>
+                                                    ) : (
+                                                        <button 
+                                                            onClick={() => handleEditUser(u)}
+                                                            disabled={updatingId === u.id || (editingUserId !== null && editingUserId !== u.id)}
+                                                            title="Modify Metadata"
+                                                            className="p-1.5 mr-2 bg-blue-950/40 hover:bg-blue-900/60 text-blue-400 rounded-lg transition-colors border border-blue-900/50 flex justify-center items-center h-[28px] w-[28px] shrink-0"
+                                                        >
+                                                            <User className="w-3.5 h-3.5" />
+                                                        </button>
+                                                    )}
                                                     <select 
                                                         value={pendingRoles[u.id] || u.role}
                                                         onChange={(e) => setPendingRoles(prev => ({ ...prev, [u.id]: e.target.value }))}

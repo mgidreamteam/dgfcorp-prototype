@@ -15,7 +15,15 @@ import CloudLoadModal from '../components/CloudLoadModal';
 import LoadingModal from '../components/LoadingModal';
 import { ImportedCADGeometry } from '../components/ImportedCADGeometry';
 import { PlusCircle, Trash2, CloudDownload, XSquare, ZoomIn, ZoomOut } from 'lucide-react';
-import { Wrench, X, Box, Cylinder, Cpu, Layers, Maximize2, Move, RefreshCw, MousePointer2, Settings2, UploadCloud, Activity, FileCode2, ArrowDownRight, Expand, Cuboid, Settings, Scissors, Target, ArrowDownToLine, Database, CircleDot, ChevronRight, ChevronDown, Sliders, ArrowDown, Bot, MousePointerClick, AlertCircle, AlertTriangle, Save, FolderOpen, Component } from 'lucide-react';
+import { Wrench, X, Box, Cylinder, Cpu, Layers, Maximize2, Move, RefreshCw, MousePointer2, Settings2, UploadCloud, Activity, FileCode2, ArrowDownRight, Expand, Cuboid, Settings, Scissors, Target, ArrowDownToLine, Database, CircleDot, ChevronRight, ChevronDown, Sliders, ArrowDown, Bot, MousePointerClick, AlertCircle, AlertTriangle, Save, FolderOpen, Component, CheckCircle2, Aperture, Sparkles } from 'lucide-react';
+import { analyzeCADPart } from '../services/gemini';
+
+type BOMExtractionStatus = 'pending' | 'processing' | 'success' | 'error';
+export interface PartExtractionState {
+    name: string;
+    status: BOMExtractionStatus;
+    errorMsg?: string;
+}
 import { Canvas, useThree } from '@react-three/fiber';
 import { Geometry, Base, Addition, Subtraction } from '@react-three/csg';
 import { OrbitControls, Grid, Environment, ContactShadows, TransformControls, GizmoHelper, GizmoViewport, Edges, Bvh } from '@react-three/drei';
@@ -157,11 +165,15 @@ const MechatronicNodeMesh = React.memo(({
     setCsgPendingPlacement,
     setCsgDialogParams,
     setHoverFace,
-    setHoverFaceData
+    setHoverFaceData,
+    setCsgMode,
+    onPartsParsed,
+    selectedBomComponent,
+    onPartClick
 }: any) => {
     const dist = explodeDistance !== undefined ? explodeDistance : 60;
     const progress = dist / 100;
-    const offset = isExploded ? [(index - nodesLength / 2) * (progress * 60), Math.sin(index) * (progress * 40), (index % 3) * (progress * 60)] : [0, 0, 0];
+    const offset = isExploded ? [(index - nodesLength / 2) * (progress * 15), Math.sin(index) * (progress * 10), (index % 3) * (progress * 15)] : [0, 0, 0];
     const posX = node.position[0] + offset[0];
     const posY = node.position[1] + offset[1];
     const posZ = node.position[2] + offset[2];
@@ -185,17 +197,8 @@ const MechatronicNodeMesh = React.memo(({
                     const activeCsgType = csgPendingPlacement || (csgEditTarget ? node.csgStack?.find((c: any) => c.id === csgEditTarget.csgId)?.type : null);
                     
                     if (!activeCsgType && !csgEditTarget) {
-                        setCsgPendingPlacement('edit_base');
-                        setCsgDialogParams((prev: any) => ({
-                            ...prev, 
-                            size: node.dimensions?.[0] || 10, width: node.dimensions?.[0] || 10, height: node.dimensions?.[1] || 10, depth: node.dimensions?.[2] || 10, axis: 'Y',
-                            tx: node.position?.[0] || 0,
-                            ty: node.position?.[1] || 0,
-                            tz: node.position?.[2] || 0,
-                            rx: Math.round((node.rotation?.[0] || 0) * 180 / Math.PI),
-                            ry: Math.round((node.rotation?.[1] || 0) * 180 / Math.PI),
-                            rz: Math.round((node.rotation?.[2] || 0) * 180 / Math.PI)
-                        }));
+                        // The user deliberately clicked a node but didn't explicitly request to add a feature.
+                        // We will just return, as setSelectedNodeId is already called above.
                         return;
                     }
                     
@@ -239,13 +242,19 @@ const MechatronicNodeMesh = React.memo(({
                 },
                 onPointerOver: (e: any) => { e.stopPropagation(); setHoverFace(node.id); },
                 onPointerOut: (e: any) => { setHoverFace(null); setHoverFaceData(null); },
-                onDoubleClick: (e: any) => { e.stopPropagation(); setSelectedNodeId(node.id); }
+                onDoubleClick: (e: any) => { 
+                    e.stopPropagation(); 
+                    setSelectedNodeId(node.id);
+                    if (setCsgMode) {
+                        setCsgMode(node.type === 'imported_circuit' ? 'Circuit' : 'Part');
+                    }
+                }
             };
 
             if (isCAD) {
                 return (
                     <group {...handlers}>
-                        {node.fileData && <ImportedCADGeometry fileUrl={node.fileData} extension={node.extension || 'stl'} isExploded={isExploded} explodeDistance={explodeDistance} assemblyName={node.name} />}
+                        {node.fileData && <ImportedCADGeometry fileUrl={node.fileData} extension={node.extension || 'stl'} isExploded={isExploded} explodeDistance={explodeDistance} assemblyName={node.name} onPartsParsed={onPartsParsed} selectedBomComponent={csgMode === 'Part' ? selectedBomComponent : null} onPartClick={onPartClick} />}
                     </group>
                 );
             }
@@ -447,6 +456,8 @@ const MechatronicNodeMesh = React.memo(({
                     roughness={node.shape === 'screw_thread' ? 0.6 : 0.3}
                     metalness={node.shape === 'screw_thread' || node.type === 'imported_circuit' ? 0.9 : 0.8}
                     wireframe={renderMode === 'wireframe'}
+                    emissive={isSelected ? '#3b82f6' : '#000000'}
+                    emissiveIntensity={isSelected ? 0.4 : 0}
                 />
                 {renderMode === 'edges' && node.type !== 'imported_dxf' && <Edges threshold={15} color="#3b82f6" />}
                 {isSelected && renderMode !== 'edges' && node.type !== 'imported_dxf' && <Edges threshold={15} color="#3b82f6" />}
@@ -466,6 +477,7 @@ const MechatronicNodeMesh = React.memo(({
     if (prev.explodeDistance !== next.explodeDistance) return false;
     if (prev.isSelected !== next.isSelected) return false;
     if (prev.isHovered !== next.isHovered) return false;
+    if (prev.selectedBomComponent !== next.selectedBomComponent) return false;
     
     if (next.isSelected || next.csgEditTarget?.nodeId === next.node.id || prev.csgEditTarget?.nodeId === prev.node.id) {
         if (prev.csgPendingPlacement !== next.csgPendingPlacement) return false;
@@ -498,7 +510,7 @@ const ProStudioPage: React.FC = () => {
     const { projectId } = useParams<{ projectId: string }>();
     const navigate = useNavigate();
 
-    const { projects, setProjects, activeProjectId, setActiveProjectId, updateProjectField } = useProject();
+    const { projects, setProjects, activeProjectId, setActiveProjectId, updateProjectField, addLog } = useProject();
 
     const [cloudProjects, setCloudProjects] = useState<CloudProject[]>([]);
     const [isCloudSaving, setIsCloudSaving] = useState(false);
@@ -508,6 +520,8 @@ const ProStudioPage: React.FC = () => {
     // Mechatronics CAD Engine State
     const [nodes, setNodes] = useState<MechatronicNode[]>([]);
     const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+    const [selectedBomComponent, setSelectedBomComponent] = useState<string | null>(null);
+    const [isPending, startTransition] = React.useTransition();
     const [agentPanelWidth, setAgentPanelWidth] = useState(300);
     const [isAgentOpen, setIsAgentOpen] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -564,6 +578,61 @@ const ProStudioPage: React.FC = () => {
     const [editingNodeId, setEditingNodeId] = useState<string | null>(null);
     const [editingCsgId, setEditingCsgId] = useState<string | null>(null);
     const [editNameValue, setEditNameValue] = useState('');
+
+    const [bomExtractionState, setBomExtractionState] = useState<PartExtractionState[] | null>(null);
+    const [cadPartsCache, setCadPartsCache] = useState<Record<string, any[]>>({});
+
+    const handlePartsParsed = React.useCallback((nodeId: string, parts: any[]) => {
+        setCadPartsCache(prev => ({...prev, [nodeId]: parts}));
+    }, []);
+
+    const runBOMExtraction = async (nodeId: string) => {
+        const parts = cadPartsCache[nodeId];
+        if (!parts || parts.length === 0) return;
+        
+        const project = projects.find(p => p.id === activeProjectId);
+        if (!project) return;
+        
+        const initialState = parts.map(p => ({ name: p.name, status: 'pending' as BOMExtractionStatus }));
+        setBomExtractionState(initialState);
+        
+        const newBomItems = [...(project.specs?.bom || [])];
+        
+        for (let i = 0; i < parts.length; i++) {
+            const part = parts[i];
+            setBomExtractionState(prev => prev!.map((item, idx) => idx === i ? { ...item, status: 'processing' } : item));
+            
+            try {
+                if (!part.geometry.boundingBox) part.geometry.computeBoundingBox();
+                const bbox = part.geometry.boundingBox;
+                const size = bbox ? bbox.max.clone().sub(bbox.min) : new THREE.Vector3(0,0,0);
+                
+                const isMerged = part.name.toLowerCase().match(/(bearing|spring|coil|washer|screw|bolt|nut|pin|rivet|bushing)/) !== null;
+                const analysis = await analyzeCADPart({
+                    name: part.name,
+                    dimensions: [size.x, size.y, size.z],
+                    color: part.color || [0.5, 0.5, 0.5],
+                    isMerged
+                }, project.specs?.productName || "Unknown Component");
+                
+                newBomItems.push({
+                    component: analysis.component || part.name,
+                    type: analysis.type || 'Mechanical',
+                    quantity: 1,
+                    estimatedCost: analysis.estimatedCost ? String(analysis.estimatedCost) : "2.00",
+                    description: analysis.description || ""
+                } as any);
+                
+                setBomExtractionState(prev => prev!.map((item, idx) => idx === i ? { ...item, status: 'success' } : item));
+                updateProjectField(activeProjectId!, 'specs.bom', [...newBomItems]);
+            } catch (err: any) {
+                console.error("BOM Extraction Error:", err);
+                setBomExtractionState(prev => prev!.map((item, idx) => idx === i ? { ...item, status: 'error', errorMsg: err.message } : item));
+            }
+        }
+        
+        addLog({ type: 'system', content: `LLM successfully extracted semantic components from CAD assembly and updated the FabFlow BOM.` });
+    };
 
     const commitRename = () => {
         if (!editingNodeId) return;
@@ -1248,7 +1317,7 @@ const ProStudioPage: React.FC = () => {
                             <h2 className="text-[10px] font-bold text-blue-400 uppercase tracking-widest flex items-center gap-2"><Layers className="w-3 h-3" /> Assembly Hierarchy</h2>
                         </div>
                         <div className="flex-1 overflow-y-auto p-2 space-y-1">
-                            <div className="px-3 py-2 text-xs font-bold text-white uppercase tracking-wider border-b border-zinc-800/50 mb-1 flex items-center gap-2 group">
+                            <div className="px-3 py-2 text-xs font-bold text-white uppercase tracking-wider border-b border-zinc-800/50 mb-1 flex items-center gap-2 group cursor-pointer hover:bg-zinc-800/50 transition-colors" onClick={(e) => { e.stopPropagation(); startTransition(() => { setCsgMode('Assembly'); setSelectedNodeId(null); setSelectedBomComponent(null); }); }}>
                                 <Layers className="w-4 h-4 text-orange-500" />
                                 {isEditingRoot ? (
                                     <input
@@ -1258,11 +1327,15 @@ const ProStudioPage: React.FC = () => {
                                         onBlur={handleRenameRoot}
                                         onKeyDown={e => { if (e.key === 'Enter') handleRenameRoot(); }}
                                         autoFocus
-                                        className="bg-black/60 border border-blue-500 text-white font-bold text-[10px] px-1.5 py-0.5 rounded outline-none w-full uppercase tracking-wider h-6 font-mono"
+                                        className="bg-black/60 border border-blue-500 text-white text-[10px] px-1.5 py-0.5 rounded outline-none w-full uppercase tracking-wider h-6 font-mono"
                                     />
                                 ) : (
-                                    <span className="text-sm font-black text-white cursor-default select-none w-full px-1.5 py-0.5" title="Root Assembly">
-                                        \
+                                    <span 
+                                        className="text-xs font-normal text-zinc-300 cursor-pointer hover:text-blue-400 transition-colors select-none w-full px-1 py-0.5 truncate block" 
+                                        title="Return to Root Assembly View"
+                                        onClick={(e) => { e.stopPropagation(); startTransition(() => { setCsgMode('Assembly'); setSelectedNodeId(null); setSelectedBomComponent(null); }); }}
+                                    >
+                                        {assemblyName || 'Master Assembly'}
                                     </span>
                                 )}
                             </div>
@@ -1280,9 +1353,28 @@ const ProStudioPage: React.FC = () => {
                                                 {isExpanded ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
                                             </button>
                                             <button
-                                                onClick={() => setSelectedNodeId(node.id)}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    startTransition(() => { 
+                                                        setSelectedNodeId(node.id); 
+                                                        setSelectedBomComponent(null); 
+                                                        if (node.type === 'imported_circuit') setCsgMode('Circuit');
+                                                        else setCsgMode('Part');
+                                                    }); 
+                                                }}
+                                                onDoubleClick={(e) => {
+                                                    e.stopPropagation();
+                                                    startTransition(() => {
+                                                        setSelectedNodeId(node.id);
+                                                        setSelectedBomComponent(null);
+                                                        if (node.type === 'imported_circuit') setCsgMode('Circuit');
+                                                        else setCsgMode('Part');
+                                                    });
+                                                }}
                                                 onContextMenu={(e) => handleContextMenu(e, node.id)}
-                                                className={`flex-1 text-left px-2 py-1.5 rounded font-mono text-[10px] flex items-center justify-between transition-colors ${selectedNodeId === node.id ? 'bg-blue-900/40 border-l-[3px] border-blue-500 text-blue-300 shadow-inner' : 'text-zinc-500 hover:bg-zinc-800/70 hover:text-zinc-300 border-l-[3px] border-transparent'}`}
+                                                onMouseEnter={() => setHoverFace(node.id)}
+                                                onMouseLeave={() => setHoverFace(null)}
+                                                className={`flex-1 text-left px-2 py-1.5 rounded font-mono text-[10px] flex items-center justify-between transition-colors ${selectedNodeId === node.id ? 'bg-blue-900/40 border-l-[3px] border-blue-500 text-blue-300 shadow-inner' : hoverFace === node.id ? 'bg-zinc-800/80 border-l-[3px] border-zinc-500 text-white shadow-inner' : 'text-zinc-500 hover:bg-zinc-800/70 hover:text-zinc-300 border-l-[3px] border-transparent'}`}
                                             >
                                                 <div className="flex items-center gap-2 truncate w-full">
                                                     {node.type === 'primitive' && node.shape === 'box' && <Box className="w-3 h-3 shrink-0 text-blue-500" />}
@@ -1359,7 +1451,7 @@ const ProStudioPage: React.FC = () => {
                                                             const isJoint = bomItem.type.includes('joint');
                                                             const itemColor = bomItem.color || (isJoint ? (bomItem.type.includes('CIRCULAR') ? '#eab308' : bomItem.type.includes('LINEAR') ? '#3b82f6' : '#10b981') : '#7f7f7f');
                                                             return (
-                                                                <div key={bIdx} className="flex flex-col gap-0.5 pl-2 py-1 relative group/bom">
+                                                                <div key={bIdx} onClick={(e) => { e.stopPropagation(); startTransition(() => { setSelectedBomComponent(bomItem.component); setSelectedNodeId(node.id); }); }} onDoubleClick={(e) => { e.stopPropagation(); startTransition(() => { setSelectedBomComponent(bomItem.component); setSelectedNodeId(node.id); setCsgMode('Part'); }); }} className={`flex flex-col gap-0.5 pl-2 py-1 pr-1 cursor-pointer relative group/bom transition-colors ${selectedBomComponent === bomItem.component ? 'bg-blue-900/40 border-l-[3px] border-blue-500 shadow-inner' : 'hover:bg-zinc-800/70 border-l-[3px] border-transparent'}`}>
                                                                     <div className="absolute left-[-10px] top-[10px] w-2 h-px bg-zinc-700"></div>
                                                                     <div className="flex justify-between items-center pr-2">
                                                                         <span className="text-[10px] font-bold text-zinc-300 truncate tracking-wider" title={bomItem.component}>{bomItem.component}</span>
@@ -1519,7 +1611,7 @@ const ProStudioPage: React.FC = () => {
                                     <ArrowDownToLine className="w-3.5 h-3.5 opacity-80" />
                                 </button>
                                 <div className="w-px h-5 bg-zinc-700/80 mx-0.5 rounded"></div>
-                                <input type="file" ref={fileInputRef} className="hidden" accept=".stl,.obj,.step,.dxf,.skidl,.gbr,.gerber" onChange={handleFileUpload} />
+                                <input type="file" ref={fileInputRef} className="hidden" accept=".stl,.obj,.step,.stp,.iges,.igs,.dxf,.skidl,.gbr,.gerber" onChange={handleFileUpload} />
                                 <button onClick={() => fileInputRef.current?.click()} disabled={isUploading} className="p-1 hover:bg-emerald-900/40 rounded transition-colors flex items-center disabled:opacity-50" title="Load Local File">
                                     <div className="relative p-1 flex items-center justify-center">
                                         <FolderOpen className="w-5 h-5 text-emerald-500 drop-shadow-md" />
@@ -1559,13 +1651,6 @@ const ProStudioPage: React.FC = () => {
                                     <Database className="w-5 h-5 fill-orange-500/30 drop-shadow-md" />
                                 </button>
                             </div>
-
-                            {/* View / CAD Mode */}
-                            <div className="flex items-center gap-1 bg-black/60 p-1 rounded border border-blue-500/20 shadow-inner shrink-0">
-                                <button onClick={() => setCsgMode('Part')} className={`px-3 py-1 rounded transition-colors text-[10px] font-bold uppercase tracking-widest ${csgMode === 'Part' ? 'bg-blue-900/40 text-blue-400 border border-blue-500/30' : 'text-zinc-500 hover:text-zinc-300'}`}>Part</button>
-                                <button onClick={() => setCsgMode('Assembly')} className={`px-3 py-1 rounded transition-colors text-[10px] font-bold uppercase tracking-widest ${csgMode === 'Assembly' ? 'bg-blue-900/40 text-blue-400 border border-blue-500/30' : 'text-zinc-500 hover:text-zinc-300'}`}>Assembly</button>
-                                <button onClick={() => setCsgMode('Circuit')} className={`px-3 py-1 rounded transition-colors text-[10px] font-bold uppercase tracking-widest gap-1 flex items-center ${csgMode === 'Circuit' ? 'bg-emerald-900/40 text-emerald-400 border border-emerald-500/30' : 'text-zinc-500 hover:text-zinc-300'}`}><Cpu className="w-[18px] h-[18px]" /> Circuits</button>
-                            </div>
                         </div>
 
                         {/* SECOND ROW: App-Specific Workspace Menubars */}
@@ -1573,29 +1658,40 @@ const ProStudioPage: React.FC = () => {
                             <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
                                 {/* Viewport Render Modes */}
                                 <div className="flex items-center gap-1 bg-black/60 p-1 rounded-lg border border-zinc-800/80 shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]">
-                                    <button onClick={() => setRenderMode('wireframe')} className={`p-1.5 rounded transition-all duration-200 ${renderMode === 'wireframe' ? 'bg-blue-900/60 text-blue-400 shadow-inner scale-95' : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50'}`} title="Wireframe View">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
-                                    </button>
-                                    <button onClick={() => setRenderMode('edges')} className={`p-1.5 rounded transition-all duration-200 ${renderMode === 'edges' ? 'bg-blue-900/60 text-blue-400 shadow-inner scale-95' : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50'}`} title="Solid + Edge View">
-                                        <svg viewBox="0 0 24 24" className="w-6 h-6">
-                                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" fill="currentColor" fillOpacity="0.15" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"></path>
-                                            <polyline points="3.27 6.96 12 12.01 20.73 6.96" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"></polyline>
-                                            <line x1="12" y1="22.08" x2="12" y2="12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"></line>
+                                    <button onClick={() => setRenderMode('wireframe')} className={`relative flex items-center justify-center p-1.5 w-8 h-8 rounded-md transition-all duration-200 border ${renderMode === 'wireframe' ? 'bg-blue-900/60 text-blue-400 border-blue-500/30 shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]' : 'text-zinc-500 border-transparent hover:text-zinc-300 hover:bg-zinc-800/70'}`} title="Wireframe View">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" className="w-full h-full">
+                                           <circle cx="12" cy="12" r="9" />
+                                           <ellipse cx="12" cy="12" rx="9" ry="3.5" />
+                                           <ellipse cx="12" cy="12" rx="4" ry="9" />
                                         </svg>
                                     </button>
-                                    <button onClick={() => setRenderMode('solid')} className={`p-1.5 rounded transition-all duration-200 ${renderMode === 'solid' ? 'bg-blue-900/60 text-blue-400 shadow-inner scale-95' : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50'}`} title="Solid View">
-                                        <svg viewBox="0 0 24 24" className="w-6 h-6">
-                                            <polygon points="12 2 3 7 12 12 21 7 12 2" fill="currentColor" fillOpacity="0.4"></polygon>
-                                            <polygon points="3 16 3 7 12 12 12 22 3 16" fill="currentColor" fillOpacity="0.8"></polygon>
-                                            <polygon points="12 22 12 12 21 7 21 16 12 22" fill="currentColor"></polygon>
+                                    <button onClick={() => setRenderMode('edges')} className={`relative flex items-center justify-center p-1.5 w-8 h-8 rounded-md transition-all duration-200 border ${renderMode === 'edges' ? 'bg-blue-900/60 text-blue-400 border-blue-500/30 shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]' : 'text-zinc-500 border-transparent hover:text-zinc-300 hover:bg-zinc-800/70'}`} title="Solid + Edge View">
+                                        <svg viewBox="0 0 24 24" className="w-full h-full">
+                                            <polygon points="12 3 4 7.5 12 12 20 7.5" fill="currentColor" fillOpacity="0.8" />
+                                            <polygon points="4 16.5 4 7.5 12 12 12 21" fill="currentColor" fillOpacity="0.4" />
+                                            <polygon points="12 21 12 12 20 7.5 20 16.5" fill="currentColor" fillOpacity="0.6" />
+                                            <path d="M20 16.5V7.5L12 3 4 7.5v9l8 4.5z" fill="none" stroke={renderMode === 'edges' ? '#60a5fa' : '#18181b'} strokeWidth="1.5" strokeLinejoin="round" />
+                                            <polyline points="4 7.5 12 12 20 7.5" fill="none" stroke={renderMode === 'edges' ? '#60a5fa' : '#18181b'} strokeWidth="1.5" strokeLinejoin="round" />
+                                            <line x1="12" y1="21" x2="12" y2="12" stroke={renderMode === 'edges' ? '#60a5fa' : '#18181b'} strokeWidth="1.5" strokeLinecap="round" />
+                                        </svg>
+                                    </button>
+                                    <button onClick={() => setRenderMode('solid')} className={`relative flex items-center justify-center p-1.5 w-8 h-8 rounded-md transition-all duration-200 border ${renderMode === 'solid' ? 'bg-blue-900/60 text-blue-400 border-blue-500/30 shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]' : 'text-zinc-500 border-transparent hover:text-zinc-300 hover:bg-zinc-800/70'}`} title="Solid Shaded View">
+                                        <svg viewBox="0 0 24 24" className="w-full h-full">
+                                            <circle cx="12" cy="12" r="9" fill="url(#smooth-grad)" />
+                                            <defs>
+                                                <radialGradient id="smooth-grad" cx="35%" cy="35%" r="65%">
+                                                    <stop offset="0%" stopColor="white" stopOpacity="0.4" />
+                                                    <stop offset="100%" stopColor="currentColor" stopOpacity="0.9" />
+                                                </radialGradient>
+                                            </defs>
                                         </svg>
                                     </button>
 
                                     <div className="w-px h-4 bg-zinc-700/80 mx-1.5 rounded"></div>
 
-                                    <button onClick={() => setIsRenderModalOpen(true)} className="w-[39px] h-[39px] mx-0.5 rounded-sm border border-zinc-600/80 hover:border-orange-500 overflow-hidden relative shadow-md group outline-none transition-colors" title="Photorealistic GPU Render">
-                                        <img src="/crankshaft_render.png" alt="Render" className="w-full h-full object-cover group-hover:scale-125 transition-transform duration-700 ease-out" />
-                                        <div className="absolute inset-0 ring-1 ring-inset ring-black/40 group-hover:ring-orange-500/30 mix-blend-overlay pointer-events-none"></div>
+                                    <button onClick={() => setIsRenderModalOpen(true)} className="relative flex items-center justify-center p-1.5 w-[39px] h-[39px] mx-0.5 rounded border border-transparent hover:border-orange-500/50 hover:bg-orange-900/40 text-orange-500 group transition-all duration-300" title="Photorealistic GPU Render">
+                                        <Aperture className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" />
+                                        <Sparkles className="w-2.5 h-2.5 absolute top-[6px] right-[6px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-orange-300" />
                                     </button>
                                 </div>
                                 <div className="w-px h-4 bg-zinc-700 mx-1"></div>
@@ -1668,6 +1764,40 @@ const ProStudioPage: React.FC = () => {
                                 </div>
                             </div>
                         )}
+                        
+                        {csgMode === 'Part' && selectedNodeId && cadPartsCache[selectedNodeId] && (
+                            <div className="absolute top-24 left-6 z-40 animate-in fade-in duration-300">
+                                <button onClick={() => runBOMExtraction(selectedNodeId)} disabled={bomExtractionState !== null && bomExtractionState.some(s => s.status === 'processing')} className="bg-orange-600 hover:bg-orange-500 disabled:opacity-50 text-white font-bold py-2 px-4 rounded shadow-[0_0_15px_rgba(234,88,12,0.3)] tracking-widest uppercase text-xs flex items-center gap-2 transition-all">
+                                    <Bot className="w-4 h-4" /> Load to FabFlow
+                                </button>
+                            </div>
+                        )}
+                        
+                        {bomExtractionState && (
+                            <div className="absolute right-6 top-24 z-50 bg-[#09090b]/95 backdrop-blur-md border border-blue-500/30 rounded-lg shadow-[10px_10px_30px_rgba(0,0,0,0.5)] w-[320px] max-h-[60vh] flex flex-col overflow-hidden animate-in slide-in-from-right-4 fade-in duration-200">
+                                <div className="px-3 py-2 border-b border-zinc-800 bg-blue-900/10 flex justify-between items-center shrink-0">
+                                    <span className="text-[10px] font-bold text-blue-400 uppercase tracking-widest flex items-center gap-1.5"><Bot className="w-3 h-3" /> AI BOM Extraction</span>
+                                    <button onClick={() => setBomExtractionState(null)} className="text-zinc-500 hover:text-white"><X className="w-3 h-3" /></button>
+                                </div>
+                                <div className="p-3 overflow-y-auto space-y-2 flex-1 scrollbar-hide">
+                                    {bomExtractionState.map((state, i) => (
+                                        <div key={i} className={`flex flex-col bg-black/50 p-2 rounded border ${state.status === 'error' ? 'border-red-900/50' : state.status === 'success' ? 'border-emerald-900/30' : 'border-zinc-800/80'}`}>
+                                            <div className="flex justify-between items-center gap-2">
+                                                <span className="text-[10px] text-zinc-300 font-mono truncate flex-1" title={state.name}>{state.name}</span>
+                                                {state.status === 'pending' && <span className="text-[9px] text-zinc-500 uppercase tracking-widest shrink-0">Pending</span>}
+                                                {state.status === 'processing' && <RefreshCw className="w-3 h-3 text-blue-400 animate-spin shrink-0" />}
+                                                {state.status === 'success' && <CheckCircle2 className="w-3 h-3 text-emerald-500 shrink-0" />}
+                                                {state.status === 'error' && <AlertTriangle className="w-3 h-3 text-red-500 shrink-0" />}
+                                            </div>
+                                            {state.status === 'error' && state.errorMsg && (
+                                                <span className="text-[9px] text-red-400/80 mt-1 leading-tight break-words">{state.errorMsg}</span>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
                         {/* Side-Peeking Parameter Dialog */}
                         {(csgPendingPlacement || csgEditTarget) && (
                             <div className="absolute left-6 top-6 z-50 bg-[#09090b]/95 backdrop-blur-md border border-blue-500/30 rounded-lg shadow-[10px_10px_30px_rgba(0,0,0,0.5)] shadow-blue-900/10 w-[240px] flex flex-col overflow-hidden animate-in slide-in-from-left-4 fade-in duration-200">
@@ -1847,8 +1977,21 @@ const ProStudioPage: React.FC = () => {
                                 </button>
                             </div>
                         }>
-                        <Canvas dpr={[1, 2]} camera={{ position: [20, 20, 30], fov: 40 }} className="w-full h-full cursor-crosshair">
-                            <CameraController view={cameraView} />
+                        <div className="relative w-full h-full cursor-crosshair rounded-tl-xl overflow-hidden">
+                            {isPending && (
+                                <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm pointer-events-auto transition-opacity duration-200">
+                                    <div className="flex flex-col items-center gap-4 bg-zinc-900/60 p-6 rounded-2xl border border-blue-500/20 shadow-[0_0_40px_rgba(59,130,246,0.15)]">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-3.5 h-3.5 bg-blue-500 rounded-full animate-bounce shadow-[0_0_10px_rgba(59,130,246,0.8)]" style={{ animationDelay: '-0.3s' }}></div>
+                                            <div className="w-3.5 h-3.5 bg-blue-500 rounded-full animate-bounce shadow-[0_0_10px_rgba(59,130,246,0.8)]" style={{ animationDelay: '-0.15s' }}></div>
+                                            <div className="w-3.5 h-3.5 bg-blue-500 rounded-full animate-bounce shadow-[0_0_10px_rgba(59,130,246,0.8)]"></div>
+                                        </div>
+                                        <div className="text-blue-400 font-bold tracking-widest uppercase text-[10px] drop-shadow-md">Isolating Geometry</div>
+                                    </div>
+                                </div>
+                            )}
+                            <Canvas dpr={[1, 2]} camera={{ position: [20, 20, 30], fov: 40 }} className="w-full h-full">
+                                <CameraController view={cameraView} />
                             <color attach="background" args={['#09090b']} />
                             <fog attach="fog" args={['#09090b', 50, 400]} />
                             <ambientLight intensity={1.0} />
@@ -1883,6 +2026,15 @@ const ProStudioPage: React.FC = () => {
                                             setCsgDialogParams={setCsgDialogParams}
                                             setHoverFace={setHoverFace}
                                             setHoverFaceData={setHoverFaceData}
+                                            setCsgMode={setCsgMode}
+                                            selectedBomComponent={csgMode === 'Part' ? selectedBomComponent : null}
+                                            onPartClick={(partName: string) => {
+                                                startTransition(() => {
+                                                    setSelectedNodeId(node.id);
+                                                    setSelectedBomComponent(partName);
+                                                    setExpandedNodes(prev => ({ ...prev, [node.id]: true }));
+                                                });
+                                            }}
                                         />
                                     ))}
 
@@ -1918,6 +2070,7 @@ const ProStudioPage: React.FC = () => {
                             <OrbitControls makeDefault enablePan={!isOriginLocked} enableZoom={!isOriginLocked} enableRotate={!isOriginLocked} minDistance={10} maxDistance={400} />
                             <CameraManager />
                         </Canvas>
+                        </div>
                         </EngineErrorBoundary>
                     </div>
                 </ThemePanel>
@@ -2011,21 +2164,24 @@ const ProStudioPage: React.FC = () => {
                                         if (node) {
                                             setSelectedNodeId(node.id);
                                             setCsgPendingPlacement('edit_base');
-                                            setCsgDialogParams(prev => ({ 
+                                            setCsgDialogParams((prev: any) => ({
                                                 ...prev, 
-                                                editTab: 'size',
+                                                editTab: 'size', // Start in Add Mode fundamentally or 'size' mode
                                                 size: node.dimensions?.[0] || 10, width: node.dimensions?.[0] || 10, height: node.dimensions?.[1] || 10, depth: node.dimensions?.[2] || 10, axis: 'Y' as any,
-                                                tx: node.position?.[0] || 0, ty: node.position?.[1] || 0, tz: node.position?.[2] || 0,
-                                                rx: Math.round((node.rotation?.[0] || 0) * 180 / Math.PI), ry: Math.round((node.rotation?.[1] || 0) * 180 / Math.PI), rz: Math.round((node.rotation?.[2] || 0) * 180 / Math.PI),
-                                                mirrorPlane: undefined
+                                                tx: node.position?.[0] || 0,
+                                                ty: node.position?.[1] || 0,
+                                                tz: node.position?.[2] || 0,
+                                                rx: Math.round((node.rotation?.[0] || 0) * 180 / Math.PI),
+                                                ry: Math.round((node.rotation?.[1] || 0) * 180 / Math.PI),
+                                                rz: Math.round((node.rotation?.[2] || 0) * 180 / Math.PI)
                                             }));
                                             setContextMenuTarget(null);
                                         }
                                     }}
                                     className="w-full text-left px-3 py-1.5 text-[11px] font-bold text-blue-400 hover:bg-blue-900/40 hover:text-blue-300 rounded flex items-center gap-2 mb-2 transition-colors uppercase tracking-widest"
                                 >
-                                    <Settings className="w-3.5 h-3.5" />
-                                    Edit Shape
+                                    <Sliders className="w-3.5 h-3.5" />
+                                    Add Feature / Edit Base
                                 </button>
                             )}
 

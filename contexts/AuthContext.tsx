@@ -8,6 +8,8 @@ export interface UserProfile {
   address: string;
   phone: string;
   username: string;
+  companyName?: string;
+  workgroup?: string;
   email: string;
   role: 'admin' | 'user' | 'serviceProvider';
   status: string;

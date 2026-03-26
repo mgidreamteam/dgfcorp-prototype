@@ -24,101 +24,7 @@ interface ProjectSidebarProps {
   hideNewProjectButton?: boolean;
 }
 
-const classifyComponent = (item: BillOfMaterialItem): 'Structure' | 'Circuits' | 'Motion' | 'Other' => {
-    const name = item.component.toLowerCase();
-    const type = item.type.toLowerCase();
 
-    if (type.includes('electronic') || ['pcb', 'sensor', 'battery', 'led', 'chip', 'resistor', 'capacitor'].some(term => name.includes(term))) {
-        return 'Circuits';
-    }
-    if (type.includes('mechanical') && ['motor', 'servo', 'actuator', 'gear', 'bearing', 'rotor'].some(term => name.includes(term))) {
-        return 'Motion';
-    }
-    if (type.includes('casing') || type.includes('enclosure') || ['frame', 'body', 'chassis', 'screw', 'bracket', 'housing'].some(term => name.includes(term))) {
-        return 'Structure';
-    }
-    if (type.includes('mechanical')) {
-        return 'Structure';
-    }
-    return 'Other';
-};
-
-const HierarchyView: React.FC<{ project: DesignProject, onBack: () => void, onPrepareForSim?: (project: DesignProject, target: 'studiosim' | 'fabflow' | 'prostudio') => void }> = ({ project, onBack, onPrepareForSim }) => {
-    const hierarchy = useMemo(() => {
-        if (!project.specs?.bom) return null;
-        
-        const categorized = project.specs.bom.reduce((acc, item) => {
-            const category = classifyComponent(item);
-            if (!acc[category]) {
-                acc[category] = [];
-            }
-            acc[category].push(item);
-            return acc;
-        }, {} as Record<ReturnType<typeof classifyComponent>, BillOfMaterialItem[]>);
-
-        return categorized;
-    }, [project.specs?.bom]);
-
-    const categoryIcons = {
-        'Structure': <Wrench className="w-4 h-4 text-blue-400" />,
-        'Circuits': <CircuitBoard className="w-4 h-4 text-emerald-400" />,
-        'Motion': <Cog className="w-4 h-4 text-orange-400" />,
-        'Other': <Package className="w-4 h-4 text-zinc-400" />
-    };
-
-    return (
-        <div className="flex flex-col h-full bg-transparent">
-            <div className="px-4 py-2 border-b border-zinc-800 shrink-0 bg-transparent flex items-center justify-between">
-                <h2 className="text-subheading font-normal text-white uppercase tracking-tighter">WORKSPACE</h2>
-                <button onClick={onBack} className="flex items-center text-zinc-400 hover:text-white transition-colors" title="Back to Projects">
-                    <ArrowLeft className="w-4 h-4" />
-                </button>
-            </div>
-            <div className="px-4 py-4 shrink-0 border-b border-zinc-800/30">
-                <h3 className="text-panel-title font-normal text-white uppercase tracking-tighter truncate" title={project.name}>{project.name}</h3>
-                <p className="text-micro text-zinc-500 mt-1 text-zinc-400">Component Hierarchy</p>
-            </div>
-            <div className="overflow-y-auto space-y-4 pt-4 px-2 pb-4 flex-1">
-                {hierarchy && Object.entries(hierarchy).map(([category, items]) => (
-                    <div key={category}>
-                        <h4 className="flex items-center gap-2 text-detail font-semibold text-zinc-300 px-2 mb-2">
-                            {categoryIcons[category as keyof typeof categoryIcons]}
-                            {category}
-                        </h4>
-                        <ul className="space-y-1">
-                            {(items as BillOfMaterialItem[]).map(item => (
-                                <li key={item.component} className="text-zinc-400 text-detail px-3 py-1.5 rounded-md hover:bg-zinc-800/50 flex justify-between items-center">
-                                    <span className="truncate">{item.component}</span>
-                                    <span className="text-micro bg-zinc-700/80 text-zinc-300 px-1.5 py-0.5 rounded-full">{item.quantity}x</span>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-                ))}
-            </div>
-            <div className="p-4 border-t border-zinc-800 shrink-0 space-y-2">
-                <button
-                    onClick={() => onPrepareForSim?.(project, 'prostudio')}
-                    className="w-full py-2 bg-blue-600/10 text-blue-400 hover:bg-blue-600/30 rounded transition-colors text-sm font-medium border border-blue-500/20 flex items-center justify-center gap-2"
-                >
-                    <Wrench className="w-4 h-4" /> Load in ProStudio
-                </button>
-                <button
-                    onClick={() => onPrepareForSim?.(project, 'studiosim')}
-                    className="w-full py-2 bg-emerald-600/10 text-emerald-400 hover:bg-emerald-600/30 rounded transition-colors text-sm font-medium border border-emerald-500/20 flex items-center justify-center gap-2"
-                >
-                    <Box className="w-4 h-4" /> Load in StudioSim
-                </button>
-                <button
-                    onClick={() => onPrepareForSim?.(project, 'fabflow')}
-                    className="w-full py-2 bg-yellow-600/10 text-yellow-400 hover:bg-yellow-600/30 rounded transition-colors text-sm font-medium border border-yellow-500/20 flex items-center justify-center gap-2"
-                >
-                    <Factory className="w-4 h-4" /> Load in FabFlow
-                </button>
-            </div>
-        </div>
-    );
-};
 
 
 const ProjectSidebar: React.FC<ProjectSidebarProps> = ({ 
@@ -139,22 +45,9 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
 }) => {
   const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState('');
-  const [isHierarchyVisible, setHierarchyVisible] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<{ id: string, name: string, isCloud: boolean } | null>(null);
 
   const activeProject = projects.find(p => p.id === activeProjectId);
-
-  useEffect(() => {
-    if (triggerHierarchyView && triggerHierarchyView === activeProjectId) {
-      setHierarchyVisible(true);
-    }
-  }, [triggerHierarchyView, activeProjectId]);
-
-  useEffect(() => {
-    if (!activeProject || !activeProject.specs) {
-        setHierarchyVisible(false);
-    }
-  }, [activeProjectId, activeProject]);
 
   const handleRename = (project: DesignProject) => {
     setEditingProjectId(project.id);
@@ -170,17 +63,13 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
     setEditingName('');
   };
 
-  const handleHierarchyBack = () => {
-    setHierarchyVisible(false);
-    onHierarchyViewClosed();
-  }
+
 
   return (
     <ThemePanel translucent className="h-full flex flex-col shrink-0 overflow-hidden w-full relative z-10">
-      <div className="flex-1 slide-container">
-        <div className="slide-panel flex flex-col" style={{ transform: isHierarchyVisible ? 'translateX(-100%)' : 'translateX(0)' }}>
+        <div className="flex-1 flex flex-col pt-2">
             <div className="px-4 py-2 border-b border-zinc-800 shrink-0 bg-transparent flex items-center justify-between">
-                <h2 className="text-subheading font-normal text-white uppercase tracking-tighter">WORKSPACE</h2>
+                <h2 className="text-subheading font-normal text-white uppercase tracking-tighter truncate pr-4" title={activeProject ? activeProject.name : 'D.R.E.A.M. WORKSPACE'}>{activeProject ? activeProject.name : 'D.R.E.A.M. WORKSPACE'}</h2>
                 {!hideNewProjectButton && (
                     <button onClick={onNewProject} className="w-5 h-5 flex items-center justify-center -mr-1 rounded hover:bg-zinc-800 text-zinc-400 hover:text-white transition-colors" title="New Project">
                         <Plus className="w-4 h-4" />
@@ -239,11 +128,6 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
                             {onDeleteLocalProject && (
                                 <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); setProjectToDelete({ id: project.id, name: project.name, isCloud: false }); }} className="p-1.5 rounded text-red-500/40 hover:text-red-400 hover:bg-red-500/10 opacity-0 group-hover:opacity-100 transition-all shrink-0" title="Delete Local Project">
                                     <Trash2 className="w-3.5 h-3.5" />
-                                </button>
-                            )}
-                            {activeProjectId === project.id && project.specs && (
-                                <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); setHierarchyVisible(true); }} className="p-1 rounded text-zinc-500 hover:text-white hover:bg-zinc-700 transition-colors shrink-0">
-                                     <ChevronRight className="w-4 h-4" />
                                 </button>
                             )}
                             </NavLink>
@@ -308,41 +192,8 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
                 )}
             </div>
         </div>
-
-        <div className="slide-panel" style={{ transform: isHierarchyVisible ? 'translateX(0)' : 'translateX(100%)' }}>
-            {activeProject && activeProject.specs && <HierarchyView project={activeProject} onBack={handleHierarchyBack} onPrepareForSim={onPrepareForSim} />}
-        </div>
-      </div>
       
       <div className="pt-2 pb-3 shrink-0 flex flex-col items-center justify-center gap-4 bg-[#09090b]/90 border-t border-zinc-800/80 relative z-10 shadow-[0_-4px_20px_rgba(0,0,0,0.5)]">
-        {onPrepareForSim && (
-          <div className="flex items-center gap-4 px-2 w-full justify-center">
-            <button 
-                onClick={() => activeProject && onPrepareForSim?.(activeProject, 'prostudio')}
-                disabled={!activeProject}
-                className="p-2 rounded-xl border border-blue-500/20 bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 shadow-[0_0_10px_rgba(59,130,246,0.15)] transition-all disabled:opacity-30 disabled:cursor-not-allowed group relative"
-            >
-                <Cpu className="w-5 h-5 fill-blue-500/20 drop-shadow" />
-                <span className="absolute -top-7 left-1/2 -translate-x-1/2 bg-blue-900/90 border border-blue-500/30 text-blue-300 text-[10px] font-bold tracking-wider uppercase px-2 py-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap shadow-xl">ProStudio</span>
-            </button>
-            <button 
-                onClick={() => activeProject && onPrepareForSim?.(activeProject, 'studiosim')}
-                disabled={!activeProject}
-                className="p-2 rounded-xl border border-emerald-500/20 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.15)] transition-all disabled:opacity-30 disabled:cursor-not-allowed group relative"
-            >
-                <Box className="w-5 h-5 fill-emerald-500/20 drop-shadow" />
-                <span className="absolute -top-7 left-1/2 -translate-x-1/2 bg-emerald-900/90 border border-emerald-500/30 text-emerald-300 text-[10px] font-bold tracking-wider uppercase px-2 py-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap shadow-xl">StudioSim</span>
-            </button>
-            <button 
-                onClick={() => activeProject && onPrepareForSim?.(activeProject, 'fabflow')}
-                disabled={!activeProject}
-                className="p-2 rounded-xl border border-yellow-500/20 bg-yellow-500/10 text-yellow-400 hover:bg-yellow-500/20 shadow-[0_0_10px_rgba(234,179,8,0.15)] transition-all disabled:opacity-30 disabled:cursor-not-allowed group relative"
-            >
-                <Factory className="w-5 h-5 fill-yellow-500/20 drop-shadow" />
-                <span className="absolute -top-7 left-1/2 -translate-x-1/2 bg-yellow-900/90 border border-yellow-500/30 text-yellow-300 text-[10px] font-bold tracking-wider uppercase px-2 py-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap shadow-xl">FabFlow</span>
-            </button>
-          </div>
-        )}
         <div className="flex flex-col items-center w-full px-4 text-center pb-2">
             <span className="text-[9px] font-mono text-zinc-500 uppercase tracking-[0.2em]">A DREAM Gigafactories Corp. Product</span>
             <span className="text-[8px] font-mono text-blue-500/70 uppercase tracking-widest mt-0.5">Limited trial alpha</span>

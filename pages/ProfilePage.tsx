@@ -4,7 +4,7 @@ import { db, auth } from '../services/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 import { updatePassword } from 'firebase/auth';
 import ThemePanel from '../components/ThemePanel';
-import { User, Lock, Save, AlertTriangle, CheckCircle, ArrowLeft } from 'lucide-react';
+import { User, Lock, Save, AlertTriangle, CheckCircle, ArrowLeft, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const ProfilePage: React.FC = () => {
@@ -13,6 +13,9 @@ const ProfilePage: React.FC = () => {
     
     const [formData, setFormData] = useState({
         name: '',
+        username: '',
+        companyName: '',
+        workgroup: '',
         phone: '',
         address: ''
     });
@@ -30,6 +33,9 @@ const ProfilePage: React.FC = () => {
         if (profile) {
             setFormData({
                 name: profile.name || '',
+                username: profile.username || '',
+                companyName: profile.companyName || '',
+                workgroup: profile.workgroup || '',
                 phone: profile.phone || '',
                 address: profile.address || ''
             });
@@ -45,6 +51,9 @@ const ProfilePage: React.FC = () => {
             if (auth.currentUser) {
                 await updateDoc(doc(db, 'users', auth.currentUser.uid), {
                     name: formData.name,
+                    username: formData.username,
+                    companyName: formData.companyName,
+                    workgroup: formData.workgroup,
                     phone: formData.phone,
                     address: formData.address
                 });
@@ -135,6 +144,18 @@ const ProfilePage: React.FC = () => {
                                  <input type="text" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} className="w-full bg-black/50 border border-zinc-700 text-white placeholder-zinc-500 rounded-lg px-4 py-3 outline-none focus:border-white transition-colors" />
                              </div>
                              <div>
+                                 <label className="block text-zinc-500 text-detail font-bold uppercase tracking-wider mb-1">Unique Username</label>
+                                 <input type="text" value={formData.username} onChange={e => setFormData({ ...formData, username: e.target.value })} className="w-full bg-black/50 border border-zinc-700 text-white placeholder-zinc-500 rounded-lg px-4 py-3 outline-none focus:border-white transition-colors" />
+                             </div>
+                             <div>
+                                 <label className="block text-zinc-500 text-detail font-bold uppercase tracking-wider mb-1">Company Name</label>
+                                 <input type="text" value={formData.companyName} onChange={e => setFormData({ ...formData, companyName: e.target.value })} className="w-full bg-black/50 border border-zinc-700 text-white placeholder-zinc-500 rounded-lg px-4 py-3 outline-none focus:border-white transition-colors" />
+                             </div>
+                             <div>
+                                 <label className="block text-zinc-500 text-detail font-bold uppercase tracking-wider mb-1">DREAM Workgroup</label>
+                                 <input type="text" value={formData.workgroup} onChange={e => setFormData({ ...formData, workgroup: e.target.value })} className="w-full bg-black/50 border border-zinc-700 text-white placeholder-zinc-500 rounded-lg px-4 py-3 outline-none focus:border-white transition-colors" />
+                             </div>
+                             <div>
                                  <label className="block text-zinc-500 text-detail font-bold uppercase tracking-wider mb-1">Phone Number</label>
                                  <input type="tel" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} className="w-full bg-black/50 border border-zinc-700 text-white placeholder-zinc-500 rounded-lg px-4 py-3 outline-none focus:border-white transition-colors" />
                              </div>
@@ -142,7 +163,10 @@ const ProfilePage: React.FC = () => {
                                  <label className="block text-zinc-500 text-detail font-bold uppercase tracking-wider mb-1">Physical Address</label>
                                  <textarea value={formData.address} onChange={e => setFormData({ ...formData, address: e.target.value })} className="w-full bg-black/50 border border-zinc-700 text-white placeholder-zinc-500 rounded-lg px-4 py-3 outline-none focus:border-white transition-colors min-h-[80px]" />
                              </div>
-                             <div className="flex justify-end pt-2">
+                             <div className="flex justify-end pt-2 gap-3">
+                                <button type="button" onClick={() => navigate('/dashboard')} disabled={loading} className="w-12 h-12 bg-zinc-800 text-zinc-400 rounded-full hover:bg-zinc-700 hover:text-white transition-transform hover:scale-105 disabled:opacity-50 disabled:hover:scale-100 flex items-center justify-center shadow-lg" title="Discard Changes">
+                                    <X className="w-5 h-5" />
+                                </button>
                                 <button type="submit" disabled={loading} className="w-12 h-12 bg-white text-black rounded-full hover:bg-zinc-200 transition-transform hover:scale-105 disabled:bg-zinc-800 disabled:text-zinc-600 disabled:hover:scale-100 flex items-center justify-center shadow-lg shadow-white/10" title="Commit Metadata">
                                     {loading ? <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" /> : <Save className="w-5 h-5" />}
                                 </button>

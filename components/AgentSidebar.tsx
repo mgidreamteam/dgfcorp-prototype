@@ -6,9 +6,10 @@ interface AgentSidebarProps {
     onSubmit: (prompt: string) => void;
     isThinking: boolean;
     onClose?: () => void;
+    headerText?: string;
 }
 
-const AgentSidebar: React.FC<AgentSidebarProps> = ({ onSubmit, isThinking, onClose }) => {
+const AgentSidebar: React.FC<AgentSidebarProps> = ({ onSubmit, isThinking, onClose, headerText }) => {
     const { agentLogs } = useProject();
     const [prompt, setPrompt] = React.useState('');
 
@@ -25,7 +26,7 @@ const AgentSidebar: React.FC<AgentSidebarProps> = ({ onSubmit, isThinking, onClo
                 <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
                         <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(59,130,246,0.8)]"></div>
-                        <span className="text-[10px] text-blue-400 font-bold uppercase tracking-widest leading-none">HELO (AI Agent) is Active</span>
+                        <span className="text-[10px] text-blue-400 font-bold tracking-widest leading-none">{headerText || 'HELO (AI Agent) is Active'}</span>
                     </div>
                     {onClose && (
                         <button onClick={onClose} className="text-zinc-500 hover:text-white transition-colors">

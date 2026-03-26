@@ -11,6 +11,9 @@ interface CADGeometryProps {
     isExploded?: boolean;
     explodeDistance?: number;
     assemblyName?: string;
+    onPartsParsed?: (parts: any[]) => void;
+    selectedBomComponent?: string | null;
+    onPartClick?: (partName: string) => void;
 }
 
 const useOCCTWorker = (fileUrl: string, extension: string, assemblyName?: string) => {
@@ -217,10 +220,16 @@ const STLViewer = ({ fileUrl, rawPayload }: { fileUrl: string, rawPayload?: stri
     );
 };
 
-const OCCTViewer = ({ fileUrl, extension, isExploded, explodeDistance, assemblyName }: { fileUrl: string, extension: string, isExploded?: boolean, explodeDistance?: number, assemblyName?: string }) => {
+const OCCTViewer = ({ fileUrl, extension, isExploded, explodeDistance, assemblyName, onPartsParsed, selectedBomComponent, onPartClick }: { fileUrl: string, extension: string, isExploded?: boolean, explodeDistance?: number, assemblyName?: string, onPartsParsed?: (parts: any[]) => void, selectedBomComponent?: string | null, onPartClick?: (partName: string) => void }) => {
     const { parts, error } = useOCCTWorker(fileUrl, extension, assemblyName);
     const { updateProjectField, activeProjectId, projects } = useProject();
     const activeProject = projects.find(p => p.id === activeProjectId);
+
+    React.useEffect(() => {
+        if (parts && onPartsParsed) {
+            onPartsParsed(parts);
+        }
+    }, [parts, onPartsParsed]);
 
     const [userMode, setUserMode] = useState<string | null>(null);
 
@@ -325,7 +334,7 @@ const OCCTViewer = ({ fileUrl, extension, isExploded, explodeDistance, assemblyN
              // explodeProgress goes from 0 to 1. 0 = assembled. 1 = max exploded.
              // maxSpread is a multiple of the assembly's bounding box to ensure clear separation.
              const explodeProgress = (explodeDistance !== undefined ? explodeDistance : 60) / 100;
-             const maxSpread = Math.max(10, (1.5 / scaleFactor)); // proportional max reach
+             const maxSpread = Math.max(2.5, (0.375 / scaleFactor)); // proportional max reach reduced by 75%
              
              // Explosion amount is proportional to the part's original distance from the center
              const targetPos = dirVector.clone().multiplyScalar(targetMultiplier * explodeProgress * maxSpread);
@@ -370,7 +379,7 @@ const OCCTViewer = ({ fileUrl, extension, isExploded, explodeDistance, assemblyN
             )}
             <group position={centerOffset} ref={groupRef}>
                 {parts.map((p, i) => (
-                    <mesh key={i} geometry={p.geometry}>
+                    <mesh key={i} geometry={p.geometry} visible={!selectedBomComponent || p.name === selectedBomComponent} onClick={(e) => { e.stopPropagation(); if (onPartClick) onPartClick(p.name); }}>
                         <meshStandardMaterial color={getPartColor(p)} roughness={0.4} metalness={0.6} />
                     </mesh>
                 ))}
@@ -380,7 +389,7 @@ const OCCTViewer = ({ fileUrl, extension, isExploded, explodeDistance, assemblyN
 };
 
 
-export const ImportedCADGeometry: React.FC<CADGeometryProps> = ({ fileUrl, extension, isExploded, explodeDistance, assemblyName }) => {
+export const ImportedCADGeometry: React.FC<CADGeometryProps> = ({ fileUrl, extension, isExploded, explodeDistance, assemblyName, onPartsParsed, selectedBomComponent, onPartClick }) => {
     let effectiveExtension = extension.toLowerCase();
     if (effectiveExtension === 'stl' && fileUrl && fileUrl.includes('firebasestorage')) {
         const urlLower = fileUrl.toLowerCase();
@@ -418,6 +427,6 @@ export const ImportedCADGeometry: React.FC<CADGeometryProps> = ({ fileUrl, exten
     if (isSTL) {
         return <STLViewer fileUrl={safeUrl} rawPayload={isLegacyString ? fileUrl : undefined} />;
     } else {
-        return <OCCTViewer fileUrl={safeUrl} extension={effectiveExtension} isExploded={isExploded} explodeDistance={explodeDistance} assemblyName={assemblyName} />;
+        return <OCCTViewer fileUrl={safeUrl} extension={effectiveExtension} isExploded={isExploded} explodeDistance={explodeDistance} assemblyName={assemblyName} onPartsParsed={onPartsParsed} selectedBomComponent={selectedBomComponent} onPartClick={onPartClick} />;
     }
 };
