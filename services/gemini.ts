@@ -447,10 +447,10 @@ export const generateOpenScadCode = async (specs: HardwareSpec): Promise<string>
   Your task:
   1. Create a highly detailed OpenSCAD script using Constructive Solid Geometry (CSG).
   2. The object must be built upright with Z as the vertical (up) axis, sitting on the XY plane.
-  3. Implement advanced realism using standard primitives. For example, a coffee mug SHOULD be a \`cylinder()\` for the main body, hollowed out using \`difference()\` with a slightly smaller \`cylinder()\`, and a \`rotate()\` \`translate()\` \`torus()\` (or similar) attached to the side for the handle. Do not create complex abstract extrusions for everyday objects; rely on precise, recognizable standard geometries.
-  4. Feel free to use \`difference()\` to create hollow interiors, cavities, and holes where appropriate to make the model visually accurate and authentic.
-  5. Use \`minkowski()\` or \`hull()\` to create sleek, rounded edges where appropriate.
-  6. The model MUST be strictly mathematically bounded by the listed dimensions and Architecture.
+  3. CRITICAL: Take maximum advantage of all available open-source OpenSCAD libraries to produce a realistic, high-fidelity mechanical solid. You MUST utilize libraries like BOSL, BOSL2, dotSCAD, NopSCADLib, UB.SCAD, Functional OPENSCAD, BOLTS, funcutils, threads.scad, smooth primitives, pathbuilder, scon, and catch n hole where applicable. DO NOT build complex geometry manually if a library provides it. Include the \`#include <BOSL2/std.scad>\` or relevant imports at the top.
+  4. Ensure precise tolerances for fastener interfaces, screw threads, cavities, and mating faces.
+  5. Use \`difference()\`, \`minkowski()\`, and library-specific rounding methods to create sleek, authentic enclosures/chassis.
+  6. The model MUST be strictly mathematically bounded by the listed dimensions.
   7. The output must be ONLY the raw OpenSCAD code. Do not include markdown formatting like \`\`\`scad.
   `;
   const response = await ai.models.generateContent({
@@ -507,11 +507,14 @@ export const generateSkidlCode = async (specs: HardwareSpec): Promise<string> =>
     Electronic Components from BOM: ${electronicComponents}
 
     Your task:
-    1.  Create a complete, runnable SKiDL script.
-    2.  Define parts, nets, and connections based on a logical interpretation of how these components would work together in the described product.
-    3.  Make reasonable assumptions for component values (e.g., resistor resistance, capacitor capacitance) if not specified.
-    4.  Add comments to explain key parts of the circuit definition.
-    5.  The output should be ONLY the raw Python code. Do not include markdown formatting like \`\`\`python.
+    1. Create a complete, runnable script defining this circuit logic.
+    2. Define parts, nets, and connections based on a logical interpretation of how these components work together in the described product.
+    3. Make reasonable assumptions for component values (e.g., resistor resistance, capacitor capacitance).
+    4. CRITICAL: Provide the output in TWO SECTIONS within the response.
+       First, provide the raw Python code using the SKiDL library for ngspice circuit simulation mathematically.
+       Then, write \`===TSCIRCUIT_BOUNDARY===\` exactly on a new line.
+       Finally, below the boundary, provide bare Typescript TSX code using the \`@tscircuit/core\` and React paradigms to define the schematic and PCB layout for rendering.
+    5. Do not include markdown formatting like \`\`\`python or \`\`\`tsx. Just the raw code divided by the boundary.
     `;
 
     const response = await ai.models.generateContent({

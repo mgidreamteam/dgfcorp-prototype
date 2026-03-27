@@ -60,7 +60,7 @@ const SpecsTab = React.memo(({ specs }: { specs: HardwareSpec }) => (
             </div>
             <div className="mt-6">
                 <h4 className="text-detail font-semibold text-zinc-500 mb-2">Connectivity</h4>
-                <div className="flex flex-wrap gap-2">{specs.connectivity.map((c, i) => <span key={i} className="bg-zinc-700 text-zinc-300 text-detail px-2 py-1 rounded">{c}</span>)}</div>
+                <div className="flex flex-wrap gap-2">{(specs.connectivity || []).map((c, i) => <span key={i} className="bg-zinc-700 text-zinc-300 text-detail px-2 py-1 rounded">{c}</span>)}</div>
             </div>
         </div>
     </div>
@@ -75,7 +75,7 @@ const MaterialsTab = React.memo(({ specs }: { specs: HardwareSpec }) => (
                     <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
                             <Pie data={specs.materials} cx="50%" cy="50%" innerRadius={60} outerRadius={80} fill="#8884d8" paddingAngle={5} dataKey="percentage" nameKey="material">
-                                {specs.materials.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
+                                {(specs.materials || []).map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
                             </Pie>
                             <Tooltip contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', borderRadius: '8px' }} itemStyle={{ color: '#f1f5f9' }} />
                             <Legend formatter={(value) => <span className="text-zinc-300">{value}</span>} />
@@ -83,7 +83,7 @@ const MaterialsTab = React.memo(({ specs }: { specs: HardwareSpec }) => (
                     </ResponsiveContainer>
                 </div>
                 <div className="bg-zinc-900/50 border border-zinc-800 rounded-lg p-4">
-                    <table className="w-full text-body text-left text-zinc-400"><thead className="text-detail text-zinc-500 uppercase"><tr><th className="px-4 py-2">Material</th><th className="px-4 py-2 text-right">Percentage</th></tr></thead><tbody className="divide-y divide-zinc-800">{specs.materials.map((item, idx) => <tr key={idx}><td className="px-4 py-2 font-medium text-zinc-200">{item.material}</td><td className="px-4 py-2 text-right text-white/90">{item.percentage}%</td></tr>)}</tbody></table>
+                    <table className="w-full text-body text-left text-zinc-400"><thead className="text-detail text-zinc-500 uppercase"><tr><th className="px-4 py-2">Material</th><th className="px-4 py-2 text-right">Percentage</th></tr></thead><tbody className="divide-y divide-zinc-800">{(specs.materials || []).map((item, idx) => <tr key={idx}><td className="px-4 py-2 font-medium text-zinc-200">{item.material}</td><td className="px-4 py-2 text-right text-white/90">{item.percentage}%</td></tr>)}</tbody></table>
                 </div>
             </div>
         ) : <p className="text-zinc-500 text-body">No material data available.</p>}
@@ -95,17 +95,17 @@ const DetailsTab = React.memo(({ specs, suggestedVendors }: { specs: HardwareSpe
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-1 bg-zinc-900/50 border border-zinc-800 rounded-xl p-6">
                 <h3 className="text-body font-bold text-zinc-400 uppercase tracking-wider mb-4 flex items-center gap-2"><CheckCircle2 className="w-4 h-4" /> Key Features</h3>
-                <ul className="space-y-3">{specs.keyFeatures.map((feature, idx) => <li key={idx} className="flex items-start gap-3 text-body text-zinc-300"><span className="mt-1 w-1.5 h-1.5 rounded-full bg-white shrink-0" />{feature}</li>)}</ul>
+                <ul className="space-y-3">{(specs.keyFeatures || []).map((feature, idx) => <li key={idx} className="flex items-start gap-3 text-body text-zinc-300"><span className="mt-1 w-1.5 h-1.5 rounded-full bg-white shrink-0" />{feature}</li>)}</ul>
             </div>
             <div className="lg:col-span-2 bg-zinc-900/50 border border-zinc-800 rounded-xl p-6">
                 <h3 className="text-body font-bold text-zinc-400 uppercase tracking-wider mb-4 flex items-center gap-2"><Cpu className="w-4 h-4" /> Bill of Materials (Estimate)</h3>
-                <div className="overflow-x-auto"><table className="w-full text-body text-left text-zinc-400"><thead className="text-detail text-zinc-500 uppercase bg-zinc-900/50"><tr><th className="px-4 py-3 rounded-l-lg">Component</th><th className="px-4 py-3">Type</th><th className="px-4 py-3 text-center">Qty</th><th className="px-4 py-3 rounded-r-lg text-right">Est. Cost</th></tr></thead><tbody className="divide-y divide-zinc-800">{specs.bom.map((item, idx) => <tr key={idx} className="hover:bg-zinc-800/30"><td className="px-4 py-3 font-medium text-zinc-200">{item.component}</td><td className="px-4 py-3">{item.type}</td><td className="px-4 py-3 text-center">{item.quantity}</td><td className="px-4 py-3 text-right text-white/90">{item.estimatedCost}</td></tr>)}</tbody></table></div>
+                <div className="overflow-x-auto"><table className="w-full text-body text-left text-zinc-400"><thead className="text-detail text-zinc-500 uppercase bg-zinc-900/50"><tr><th className="px-4 py-3 rounded-l-lg">Component</th><th className="px-4 py-3">Type</th><th className="px-4 py-3 text-center">Qty</th><th className="px-4 py-3 rounded-r-lg text-right">Est. Cost</th></tr></thead><tbody className="divide-y divide-zinc-800">{(specs.bom || []).map((item, idx) => <tr key={idx} className="hover:bg-zinc-800/30"><td className="px-4 py-3 font-medium text-zinc-200">{item.component}</td><td className="px-4 py-3">{item.type}</td><td className="px-4 py-3 text-center">{item.quantity}</td><td className="px-4 py-3 text-right text-white/90">{item.estimatedCost}</td></tr>)}</tbody></table></div>
             </div>
         </div>
         <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-6"><h3 className="text-body font-bold text-zinc-400 uppercase tracking-wider mb-4 flex items-center gap-2"><Brain className="w-4 h-4" /> Sourcing Analysis</h3><p className="text-body text-zinc-300 leading-relaxed whitespace-pre-wrap">{specs.sourcingNotes}</p></div>
         <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-6">
             <h3 className="text-body font-bold text-zinc-400 uppercase tracking-wider mb-4">Suggested Vendors</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">{suggestedVendors.map(vendor => <div key={vendor.id} className="bg-zinc-900/80 border border-zinc-800 p-4 rounded-lg flex flex-col"><div className="flex-1"><p className="font-bold text-white">{vendor.name}</p><p className="text-detail text-zinc-400 flex items-center gap-1 mt-1"><MapPin className="w-3 h-3"/>{vendor.location}</p><p className="text-detail bg-zinc-700/80 text-zinc-300 px-2 py-0.5 rounded-full inline-block mt-2 border border-zinc-700">{vendor.category}</p></div><button className="mt-4 w-full text-center bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white text-detail font-bold py-2 rounded-md transition-colors flex items-center justify-center gap-1.5">View Profile <LinkIcon className="w-3 h-3"/></button></div>)}</div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">{(suggestedVendors || []).map(vendor => <div key={vendor.id} className="bg-zinc-900/80 border border-zinc-800 p-4 rounded-lg flex flex-col"><div className="flex-1"><p className="font-bold text-white">{vendor.name}</p><p className="text-detail text-zinc-400 flex items-center gap-1 mt-1"><MapPin className="w-3 h-3"/>{vendor.location}</p><p className="text-detail bg-zinc-700/80 text-zinc-300 px-2 py-0.5 rounded-full inline-block mt-2 border border-zinc-700">{vendor.category}</p></div><button className="mt-4 w-full text-center bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white text-detail font-bold py-2 rounded-md transition-colors flex items-center justify-center gap-1.5">View Profile <LinkIcon className="w-3 h-3"/></button></div>)}</div>
         </div>
     </div>
 ));
@@ -114,7 +114,7 @@ const NetworkTab = React.memo(({ bomVendorMatches }: { bomVendorMatches: { bomIt
     <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-6">
         <h3 className="text-body font-bold text-zinc-400 uppercase tracking-wider mb-4 flex items-center gap-2"><LinkIcon className="w-4 h-4" /> Component-Vendor Matching</h3>
         <p className="text-zinc-400 text-body mb-6">Each component from your Bill of Materials is automatically matched with a top-rated, verified vendor from the D.R.E.A.M. Network.</p>
-        <div className="overflow-x-auto"><table className="w-full text-body text-left text-zinc-400"><thead className="text-detail text-zinc-500 uppercase bg-zinc-900/50"><tr><th className="px-4 py-3 rounded-l-lg">Component</th><th className="px-4 py-3">Matched Vendor</th><th className="px-4 py-3">Location</th><th className="px-4 py-3">Lead Time</th><th className="px-4 py-3 rounded-r-lg text-center">Action</th></tr></thead><tbody className="divide-y divide-zinc-800">{bomVendorMatches.map(({ bomItem, bestMatch }, idx) => <tr key={idx} className="hover:bg-zinc-800/30"><td className="px-4 py-3 font-medium text-zinc-200"><div className="flex flex-col"><span>{bomItem.component}</span><span className="text-detail text-zinc-500"><span>{bomItem.quantity}</span>x - {bomItem.type}</span></div></td>{bestMatch ? <> <td className="px-4 py-3 font-semibold text-white">{bestMatch.name}</td> <td className="px-4 py-3">{bestMatch.location}</td> <td className="px-4 py-3">{bestMatch.leadTime}</td> <td className="px-4 py-3 text-center"><button className="bg-white/90 text-black px-3 py-1.5 rounded-md font-bold text-detail hover:bg-white flex items-center gap-1.5 mx-auto transition-colors"><Zap className="w-3 h-3" />Place Order</button></td> </> : <td colSpan={4} className="px-4 py-3 text-center text-zinc-500 italic">No suitable vendor found in network.</td>}</tr>)}</tbody></table></div>
+        <div className="overflow-x-auto"><table className="w-full text-body text-left text-zinc-400"><thead className="text-detail text-zinc-500 uppercase bg-zinc-900/50"><tr><th className="px-4 py-3 rounded-l-lg">Component</th><th className="px-4 py-3">Matched Vendor</th><th className="px-4 py-3">Location</th><th className="px-4 py-3">Lead Time</th><th className="px-4 py-3 rounded-r-lg text-center">Action</th></tr></thead><tbody className="divide-y divide-zinc-800">{(bomVendorMatches || []).map(({ bomItem, bestMatch }, idx) => <tr key={idx} className="hover:bg-zinc-800/30"><td className="px-4 py-3 font-medium text-zinc-200"><div className="flex flex-col"><span>{bomItem.component}</span><span className="text-detail text-zinc-500"><span>{bomItem.quantity}</span>x - {bomItem.type}</span></div></td>{bestMatch ? <> <td className="px-4 py-3 font-semibold text-white">{bestMatch.name}</td> <td className="px-4 py-3">{bestMatch.location}</td> <td className="px-4 py-3">{bestMatch.leadTime}</td> <td className="px-4 py-3 text-center"><button className="bg-white/90 text-black px-3 py-1.5 rounded-md font-bold text-detail hover:bg-white flex items-center gap-1.5 mx-auto transition-colors"><Zap className="w-3 h-3" />Place Order</button></td> </> : <td colSpan={4} className="px-4 py-3 text-center text-zinc-500 italic">No suitable vendor found in network.</td>}</tr>)}</tbody></table></div>
     </div>
 ));
 
@@ -245,7 +245,7 @@ const SpecViewer: React.FC<SpecViewerProps> = ({ specs, vendors, simulationData,
   const suggestedVendors = useMemo(() => getVendorsForBom(specs.bom, vendors), [specs.bom, vendors]);
 
   const bomVendorMatches = useMemo(() => {
-    return specs.bom.map(item => {
+    return (specs.bom || []).map(item => {
         const targetCategory = BOM_TYPE_TO_VENDOR_CATEGORY[item.type];
         
         let potentialVendors = vendors.filter(vendor => {

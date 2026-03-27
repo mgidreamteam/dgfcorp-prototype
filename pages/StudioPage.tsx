@@ -10,7 +10,7 @@ import DeleteConfirmationDialog from '../components/DeleteConfirmationDialog';
 import ProjectView from '../components/ProjectView';
 import { CloudProject, DesignProject, DesignStatus, HardwareSpec, AgentLog } from '../types';
 import { analyzeUserIntent, getAnswerFromSpec, generateHardwareSpecs, generateProductRenderImage, generateProductExplodedViewImage, generateCircuitDiagramImage, generatePcbLayoutImage, generateOpenScadCode, generateStlFile, generateSkidlCode, runCircuitSimulation, rerunCircuitSimulation } from '../services/gemini';
-import { AlertCircle, Cloud, X, CloudDownload, Trash2, Loader2, PlusCircle, Save, ArrowDownToLine, FolderOpen, RefreshCw, UploadCloud, XSquare, Network, FileText, Box, Activity, Sliders, Layers } from 'lucide-react';
+import { Settings, Maximize, ZoomIn, ZoomOut, Check, Square, UploadCloud, DownloadCloud, FileText, Code2, Database, Play, Pause, X, ChevronRight, Activity, Terminal, AlertCircle, RefreshCw, Layers, Cpu, Box, Workflow, Menu, Copy, Search, Lock, Unlock, Zap, Wrench, Hexagon, Save, User, LogOut, ArrowDownToLine, Trash2, FolderOpen, PlayCircle, StopCircle, FileDown, PlusCircle, Server, FolderUp, ImageDown, ArrowRight, FolderClosed, ArrowLeft, MoreVertical, CheckCircle2, ChevronLeft, Sliders, Network, XSquare } from 'lucide-react';
 import { useProject } from '../contexts/ProjectContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -56,7 +56,9 @@ const StudioPage: React.FC = () => {
   const [isCloudModalOpen, setIsCloudModalOpen] = useState(false);
   const [cloudLoadingAction, setCloudLoadingAction] = useState<string | null>(null);
   const [isExportStlModalOpen, setIsExportStlModalOpen] = useState(false);
-
+  const [isExportImagesModalOpen, setIsExportImagesModalOpen] = useState(false);
+  const [isWorkspaceDrawerOpen, setIsWorkspaceDrawerOpen] = useState(false);
+  
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [hiloPanelWidth, setHiloPanelWidth] = useState(400);
@@ -613,7 +615,9 @@ const StudioPage: React.FC = () => {
     addLog({ content: `Exported all generated images for "${activeProject.name}".`, type: 'output', projectId: activeProject.id });
   };
 
-  const gridTemplateColumns = isAgentOpen ? `256px 200px minmax(500px, 1fr) 6px ${hiloPanelWidth}px` : `256px 200px minmax(500px, 1fr)`;
+  const gridTemplateColumns = isAgentOpen 
+      ? `auto minmax(500px, 1fr) 6px ${hiloPanelWidth}px` 
+      : `auto minmax(500px, 1fr)`;
   
   return (
     <>
@@ -640,50 +644,109 @@ const StudioPage: React.FC = () => {
         <FileMenuBar projectName={activeProject?.name} appType="studio" onToggleAgent={() => setIsAgentOpen(!isAgentOpen)} isAgentOpen={isAgentOpen} />
         </ThemePanel>
         <div className="flex-1 grid overflow-hidden gap-2" style={{ gridTemplateColumns }}>
-          <ProjectSidebar 
-            projects={projects} 
-            activeProjectId={activeProjectId} 
-            onNewProject={handleNewProject} 
-            onRenameProject={handleRenameProject} 
-            triggerHierarchyView={triggerHierarchyView} 
-            onHierarchyViewClosed={() => setTriggerHierarchyView(null)} 
-            cloudProjects={cloudProjects}
-            onLoadCloudProject={handleDownloadFromCloud}
-            onDeleteCloudProject={handleDeleteFromCloud}
-            cloudLoadingAction={cloudLoadingAction}
-            onPrepareForSim={(project, target) => {
-                if (target === 'studiosim') navigate(`/studiosim/${project.id}`);
-                else if (target === 'fabflow') navigate(`/fabflow/${project.id}`);
-                else if (target === 'prostudio') navigate(`/prostudio/${project.id}`);
-            }}
-          />
-          {/* Design Hierarchy Panel */}
-          <ThemePanel translucent className="flex flex-col h-full overflow-hidden relative z-10 p-0 border-r border-zinc-800/80">
-             <div className="px-4 py-3 border-b border-zinc-800/80 shrink-0 bg-transparent flex items-center justify-between">
-                 <h2 className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest flex items-center gap-2">Design Hierarchy</h2>
-             </div>
-             <div className="flex-1 overflow-y-auto p-2">
-                 <div className="flex flex-col gap-1">
-                    {[
-                        { name: 'Specs', icon: FileText, id: 'specs-section' }, 
-                        { name: '3D Model', icon: Box, id: '3d-model-section' }, 
-                        { name: 'Simulation', icon: Activity, id: 'simulation-section' }, 
-                        { name: 'Details', icon: Sliders, id: 'details-section' }, 
-                        { name: 'Materials', icon: Layers, id: 'materials-section' }, 
-                        { name: 'Network', icon: Network, id: 'network-section' }
-                    ].map(item => {
-                        const Icon = item.icon;
-                        return (
-                        <button key={item.name} className="flex items-center gap-2 text-left px-3 py-2 text-xs font-medium text-zinc-400 hover:text-white hover:bg-zinc-800/50 rounded transition-colors group" onClick={() => {
-                            const el = document.getElementById(item.id);
-                            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                        }}>
-                            <Icon className="w-3.5 h-3.5 group-hover:text-blue-400 transition-colors" /> {item.name}
-                        </button>
-                    )})}
-                 </div>
-             </div>
-          </ThemePanel>
+          {/* Collapsible Workspace Drawer Engine */}
+          {!activeProject ? (
+              // State 1: No active project -> Show Global Workspace Project List normally (256px Width)
+              <div className="w-[256px] h-full flex flex-col shrink-0">
+                  <ProjectSidebar 
+                    projects={projects} 
+                    activeProjectId={activeProjectId} 
+                    onNewProject={handleNewProject} 
+                    onRenameProject={handleRenameProject} 
+                    triggerHierarchyView={triggerHierarchyView} 
+                    onHierarchyViewClosed={() => setTriggerHierarchyView(null)} 
+                    cloudProjects={cloudProjects}
+                    onLoadCloudProject={handleDownloadFromCloud}
+                    onDeleteCloudProject={handleDeleteFromCloud}
+                    cloudLoadingAction={cloudLoadingAction}
+                    onPrepareForSim={(project, target) => {
+                        if (target === 'studiosim') navigate(`/studiosim/${project.id}`);
+                        else if (target === 'fabflow') navigate(`/fabflow/${project.id}`);
+                        else if (target === 'prostudio') navigate(`/prostudio/${project.id}`);
+                    }}
+                  />
+              </div>
+          ) : (
+              // State 2: Active Project -> Show Design Hierarchy as primary sidebar (256px Width)
+              // with Workspace Peek tab overlapping via relative positioning
+              <div className="w-[256px] h-full relative shrink-0 flex">
+                  
+                  {/* Left-edge Peek Strip */}
+                  <div 
+                      className="w-8 shrink-0 bg-zinc-900 border-r border-zinc-800 flex items-center justify-center cursor-pointer hover:bg-zinc-800 transition-colors group z-20"
+                      onClick={() => setIsWorkspaceDrawerOpen(true)}
+                  >
+                      <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-[0.2em] transform -rotate-90 whitespace-nowrap group-hover:text-emerald-400 block pointer-events-none">
+                          Workspace 
+                      </span>
+                  </div>
+
+                  {/* Absolute Sliding Overlay Drawer for Workspace List */}
+                  {isWorkspaceDrawerOpen && (
+                      <div className="absolute top-0 left-0 bottom-0 w-[256px] bg-zinc-950 shadow-[4px_0_24px_rgba(0,0,0,0.8)] z-50 flex flex-col border-r border-zinc-800">
+                          <button 
+                             className="absolute top-3 right-3 p-1 text-zinc-500 hover:text-white bg-black/50 hover:bg-red-500/20 rounded z-50 backdrop-blur"
+                             onClick={() => setIsWorkspaceDrawerOpen(false)}
+                          >
+                             <X className="w-4 h-4" />
+                          </button>
+                          <ProjectSidebar 
+                            projects={projects} 
+                            activeProjectId={activeProjectId} 
+                            onNewProject={handleNewProject} 
+                            onRenameProject={handleRenameProject} 
+                            triggerHierarchyView={triggerHierarchyView} 
+                            onHierarchyViewClosed={() => setTriggerHierarchyView(null)} 
+                            cloudProjects={cloudProjects}
+                            onLoadCloudProject={handleDownloadFromCloud}
+                            onDeleteCloudProject={handleDeleteFromCloud}
+                            cloudLoadingAction={cloudLoadingAction}
+                            onPrepareForSim={(project, target) => {
+                                setIsWorkspaceDrawerOpen(false);
+                                if (target === 'studiosim') navigate(`/studiosim/${project.id}`);
+                                else if (target === 'fabflow') navigate(`/fabflow/${project.id}`);
+                                else if (target === 'prostudio') navigate(`/prostudio/${project.id}`);
+                            }}
+                          />
+                      </div>
+                  )}
+
+                  {/* Design Hierarchy Panel (Fills remainder of 256px - 32px peek = 224px) */}
+                  <ThemePanel translucent className="flex-1 flex flex-col h-full overflow-hidden p-0 border-r border-zinc-800/80 rounded-none rounded-r-xl border-l-0">
+                     <div className="px-3 py-3 border-b border-zinc-800/80 shrink-0 bg-black/40 flex items-center gap-2">
+                         <button 
+                             onClick={handleCloseProject}
+                             className="p-1.5 text-zinc-400 hover:text-white hover:bg-red-500/20 border border-transparent hover:border-red-500/30 rounded transition-colors"
+                             title="Close Project & Return to Workspace"
+                         >
+                             <ChevronLeft className="w-4 h-4" />
+                         </button>
+                         <h2 className="text-[10px] font-bold text-zinc-300 uppercase tracking-widest flex items-center gap-2">Design Hierarchy</h2>
+                     </div>
+                     <div className="flex-1 overflow-y-auto p-2">
+                         <div className="flex flex-col gap-1">
+                            {[
+                                { name: 'Specs', icon: FileText, id: 'specs-section' }, 
+                                { name: '3D Model', icon: Box, id: '3d-model-section' }, 
+                                { name: 'Simulation', icon: Activity, id: 'simulation-section' }, 
+                                { name: 'Details', icon: Sliders, id: 'details-section' }, 
+                                { name: 'Materials', icon: Layers, id: 'materials-section' }, 
+                                { name: 'Network', icon: Network, id: 'network-section' }
+                            ].map(item => {
+                                const Icon = item.icon;
+                                return (
+                                <button key={item.name} className="flex items-center gap-2 text-left px-3 py-2 text-xs font-medium text-zinc-400 hover:text-white hover:bg-zinc-800/50 rounded transition-colors group" onClick={() => {
+                                    const el = document.getElementById(item.id);
+                                    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                }}>
+                                    <Icon className="w-3.5 h-3.5 group-hover:text-blue-400 transition-colors" /> {item.name}
+                                </button>
+                            )})}
+                         </div>
+                     </div>
+                  </ThemePanel>
+              </div>
+          )}
 
           {/* Canvas Panel */}
           <ThemePanel translucent className="flex flex-col h-full overflow-hidden relative z-10 p-0">
@@ -719,7 +782,7 @@ const StudioPage: React.FC = () => {
                 <p className="text-sm">Generated on: {new Date().toLocaleString()}</p>
               </div>
               <input type="file" ref={fileInputRef} onChange={handleFileSelected} accept=".dream" className="hidden" />
-              <div className="max-w-7xl mx-auto px-8 py-6">
+              <div className="w-full px-8 py-6">
                 {error && !isGenerating && <div className="mb-6 bg-red-500/10 border border-red-500/20 p-4 rounded-lg flex items-start gap-3 text-red-400"><AlertCircle className="w-5 h-5 shrink-0 mt-0.5" /><div><p className="font-bold">An Error Occurred</p><p>{error}</p></div></div>}
                 {!activeProject ? <LandingPage onNewProject={handleNewProject} /> : (
                   <ProjectView 

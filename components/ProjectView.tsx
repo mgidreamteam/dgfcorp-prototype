@@ -1,11 +1,12 @@
 import React from 'react';
 import { DesignProject, DesignStatus } from '../types';
-import AssetViewer from './AssetViewer';
 import SpecViewer from './SpecViewer';
 import { vendors } from '../data/vendors';
 import { useProject } from '../contexts/ProjectContext';
-import { Loader2, RefreshCw, Eye, EyeOff, XCircle } from 'lucide-react';
+import { Loader2, RefreshCw, Layers, Cpu } from 'lucide-react';
 import { Factory } from 'lucide-react';
+import MechanicalViewport from './MechanicalViewport';
+import ElectronicsViewport from './ElectronicsViewport';
 
 const EditableText = ({ value, onSave, className }: { value: string, onSave: (v: string) => void, className?: string }) => {
     const [isEditing, setIsEditing] = React.useState(false);
@@ -50,81 +51,51 @@ interface ProjectViewProps {
 
 const ProjectView: React.FC<ProjectViewProps> = ({ project, isGenerating, onRetry, onStartOver, onRerunSimulation }) => {
   const { updateProjectField } = useProject();
-  const hasSpecs = !!project.specs && Array.isArray(project.specs.bom);
-  const hasElectronics = hasSpecs ? project.specs!.bom.some(i => i.type.toLowerCase().includes('electronic')) : true;
-  const hasMechanical = hasSpecs ? project.specs!.bom.some(i => !i.type.toLowerCase().includes('electronic')) : true;
+  const hasSpecs = !!project.specs && Array.isArray(project.specs?.bom);
+  const hasElectronics = hasSpecs ? (project.specs!.bom || []).some(i => i.type.toLowerCase().includes('electronic')) : true;
+  const hasMechanical = hasSpecs ? (project.specs!.bom || []).some(i => !i.type.toLowerCase().includes('electronic')) : true;
+  
+  // We will force both views to render side-by-side unconditionally
+  // so the user always has the dual-viewport experience in Studio.
 
-  const [toggles, setToggles] = React.useState({
-    rendered: true,
-    exploded: true,
-    circuit: true,
-    pcb: true
-  });
-
-  React.useEffect(() => {
-    if (hasSpecs) {
-      setToggles({
-        rendered: hasMechanical,
-        exploded: hasMechanical,
-        circuit: hasElectronics,
-        pcb: hasElectronics
-      });
-    }
-  }, [hasSpecs, hasElectronics, hasMechanical]);
-
-  const toggleView = (key: keyof typeof toggles, isApplicable: boolean) => {
-    if (!isApplicable) return;
-    setToggles(prev => ({ ...prev, [key]: !prev[key] }));
-  };
-
-  const ToggleButton = ({ label, visibilityKey, isApplicable }: { label: string, visibilityKey: keyof typeof toggles, isApplicable: boolean }) => (
-    <button 
-        onClick={() => toggleView(visibilityKey, isApplicable)}
-        disabled={!isApplicable}
-        className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-detail font-medium transition-all border ${
-            !isApplicable 
-            ? 'opacity-50 cursor-not-allowed border-zinc-800 bg-zinc-900/50 text-zinc-500' 
-            : toggles[visibilityKey] 
-                ? 'border-white/20 bg-white/10 text-white' 
-                : 'border-zinc-700 bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white'
-        }`}
-    >
-        {!isApplicable ? <XCircle className="w-3.5 h-3.5" /> : toggles[visibilityKey] ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-        {label} {!isApplicable && '(N/A)'}
-    </button>
-  );
+  // Extract TS/SKiDL code boundaries from simulation payload
+  const rawCodes = project.simulationData?.skidlCode || '';
+  const codeParts = rawCodes.split('===TSCIRCUIT_BOUNDARY===');
+  const skidlCode = codeParts[0]?.trim() || null;
+  const tscircuitCode = codeParts[1]?.trim() || null;
 
   return (
     <div className="flex flex-col gap-8 pb-24">
-      <div className="flex flex-wrap items-center gap-3 mb-[-1rem] bg-zinc-900/40 p-3 rounded-xl border border-zinc-800/60 no-print">
-         <span className="text-detail font-bold text-zinc-500 uppercase tracking-wider mr-2">Viewport Toggles:</span>
-         <ToggleButton label="Rendered CAD" visibilityKey="rendered" isApplicable={hasMechanical} />
-         <ToggleButton label="Exploded CAD" visibilityKey="exploded" isApplicable={hasMechanical} />
-         <ToggleButton label="Circuit Diagram" visibilityKey="circuit" isApplicable={hasElectronics} />
-         <ToggleButton label="PCB Layout" visibilityKey="pcb" isApplicable={hasElectronics} />
-      </div>
+      {/* Viewport Grid (Mechanical/Electronics) */}
+      <div id="3d-model-section" className="w-full min-h-[500px] h-[65vh] flex flex-row gap-4 no-print scroll-mt-6">
+        
+        {/* Mechanical Workspace (Left, 50%) */}
+        <div className="flex-1 min-w-0 flex flex-col h-full bg-zinc-900/40 rounded-xl">
+           <MechanicalViewport 
+              project={project} 
+              onCompileError={(err) => {
+                  updateProjectField(project.id, 'status', DesignStatus.ERROR);
+                  updateProjectField(project.id, 'failedStep', `OpenSCAD Editor Error: ${err.message || err}`);
+              }}
+           />
+        </div>
 
-      <div id="3d-model-section" className="asset-viewer-grid no-print scroll-mt-6">
-        <AssetViewer 
-          assetUrls={project.assetUrls} 
-          status={project.status} 
-          productName={project.specs?.productName || "Product"} 
-          hasElectronics={hasElectronics}
-          hasMechanical={hasMechanical}
-          visibleToggles={toggles}
-          circuitComponents={project.circuitComponents}
-        />
+        {/* Electronics Workspace (Right, 50%) */}
+        <div className="flex-1 min-w-0 flex flex-col h-full bg-zinc-900/40 rounded-xl">
+           <ElectronicsViewport skidlCode={skidlCode} tscircuitCode={tscircuitCode} status={project.status} />
+        </div>
+        
       </div>
 
       {isGenerating && (
-        <div className="mt-8 bg-zinc-900 border border-white/20 rounded-xl p-4 flex items-center gap-3 animate-pulse no-print">
+        <div className="bg-zinc-900 border border-white/20 rounded-xl p-4 flex items-center gap-3 animate-pulse no-print">
           <Loader2 className="w-5 h-5 animate-spin text-white" />
           <span className="text-sm text-zinc-300">{project.status.replace(/_/g, ' ')}...</span>
         </div>
       )}
 
       {project.status === DesignStatus.ERROR && (
-        <div className="mt-8 bg-red-900/20 border border-red-500/30 rounded-xl p-4 flex items-center justify-between no-print">
+        <div className="bg-red-900/20 border border-red-500/30 rounded-xl p-4 flex items-center justify-between no-print">
           <div className="text-red-300">
             <p className="font-bold">Generation Failed</p>
             <p className="text-detail">Step: <span>{project.failedStep}</span></p>
@@ -155,7 +126,7 @@ const ProjectView: React.FC<ProjectViewProps> = ({ project, isGenerating, onRetr
                 <h2 className="text-heading font-normal text-white uppercase tracking-tighter mb-1">{project.specs.productName}</h2>
                 <p className="text-zinc-500 font-normal uppercase tracking-widest text-subheading mt-1">{project.specs.tagline}</p>
               </div>
-              <div className="bg-white/10 text-zinc-300 px-3 py-1 rounded-full text-micro border border-white/20">v1.0-draft</div>
+              <div className="bg-white/10 text-zinc-300 px-3 py-1 rounded-full text-micro border border-white/20">v1.2-wasm</div>
             </div>
             <EditableText 
                 value={project.specs.description} 
@@ -179,6 +150,30 @@ const ProjectView: React.FC<ProjectViewProps> = ({ project, isGenerating, onRetr
             hasElectronics={hasElectronics}
             onUpdateProjectField={(field, val) => updateProjectField(project.id, field, val)}
           />
+
+           {/* Design Panel Embedded Code Viewers */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+             {hasMechanical && (
+                 <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 h-96 flex flex-col">
+                     <div className="flex items-center justify-between mb-2">
+                         <h3 className="text-xs font-bold text-zinc-500 uppercase flex items-center gap-2"><Layers className="w-4 h-4"/> OpenSCAD Mechanical Architecture</h3>
+                     </div>
+                     <pre className="text-[11px] text-blue-300 font-mono overflow-auto flex-1 bg-black/50 p-3 rounded border border-zinc-800">
+                         {project.openScadCode || "Geometry is compiling..."}
+                     </pre>
+                 </div>
+             )}
+             {hasElectronics && (
+                  <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 h-96 flex flex-col">
+                     <div className="flex items-center justify-between mb-2">
+                         <h3 className="text-xs font-bold text-zinc-500 uppercase flex items-center gap-2"><Cpu className="w-4 h-4"/> SKiDL / TSCircuit Executable</h3>
+                     </div>
+                     <pre className="text-[11px] text-emerald-300 font-mono overflow-auto flex-1 bg-black/50 p-3 rounded border border-zinc-800">
+                         {rawCodes || "Awaiting topology resolution..."}
+                     </pre>
+                 </div>
+             )}
+          </div>
         </>
       ) : (!isGenerating && project.status !== DesignStatus.ERROR && (
         <div className="h-full flex items-center justify-center p-12 text-zinc-600 border border-dashed border-zinc-800 rounded-xl">
