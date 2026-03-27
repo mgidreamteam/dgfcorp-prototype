@@ -200,7 +200,12 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
         </div>
       </div>
 
-      <LoadingModal isOpen={!!cloudLoadingAction} message="Downloading Project from Cloud..." />
+      {(() => {
+          const targetProj = cloudProjects?.find(p => p.id === cloudLoadingAction);
+          const ext = targetProj?.appExtension || '.dream';
+          const targetTheme = ext === '.dreampro' ? 'prostudio' : ext === '.fabflow' ? 'fabflow' : ext === '.studiosim' ? 'studiosim' : ext === '.tsim' ? 'tacticalsim' : ext === '.wsim' ? 'worldsim' : 'studio';
+          return <LoadingModal isOpen={!!cloudLoadingAction} message="Downloading Project from Cloud..." appTheme={targetTheme as any} />;
+      })()}
       
       {projectToDelete && projectToDelete.id === activeProjectId && (
           <WarningModal 

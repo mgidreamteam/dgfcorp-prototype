@@ -1,4 +1,5 @@
 import React from 'react';
+import { Activity } from 'lucide-react';
 
 export const SimHUD = ({ colorClass = 'blue' }: { colorClass?: 'blue' | 'emerald' | 'yellow' | 'red' | 'cyan' }) => {
     const themeColors = {
@@ -13,8 +14,8 @@ export const SimHUD = ({ colorClass = 'blue' }: { colorClass?: 'blue' | 'emerald
     return (
         <div className="absolute bottom-4 inset-x-0 w-full flex justify-center pointer-events-none z-20">
              <div className={`px-6 py-2 bg-black/60 backdrop-blur-md rounded-full border ${t.border} flex items-center gap-6 ${t.shadow}`}>
-                 <span className={`text-[10px] font-bold uppercase tracking-widest ${t.text} flex items-center gap-2`}>
-                     <span className={`w-2 h-2 rounded-full ${t.dot} animate-pulse`}></span> Kinematics: Active
+                 <span className={`flex items-center gap-2 px-3 py-1 rounded bg-black/40 ${t.text}`} title="Kinematics Hardware Acceleration Active">
+                     <Activity className={`w-4 h-4 animate-pulse drop-shadow-[0_0_8px_currentColor]`} strokeWidth={2.5} />
                  </span>
                  <div className="w-px h-4 bg-zinc-800"></div>
                  <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-widest flex items-center gap-1.5">

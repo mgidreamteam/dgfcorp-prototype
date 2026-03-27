@@ -688,7 +688,7 @@ const StudioPage: React.FC = () => {
           {/* Canvas Panel */}
           <ThemePanel translucent className="flex flex-col h-full overflow-hidden relative z-10 p-0">
             <div className="px-4 py-2 border-b border-zinc-800/80 shrink-0 bg-transparent flex flex-col items-center bg-black/60 z-20 relative">
-                <div className="flex justify-between items-center w-full gap-4">
+                <div className="flex justify-start items-center w-full gap-1">
                     <div className="flex items-center gap-2 bg-black/60 p-1.5 rounded-lg border border-zinc-800/80 shadow-[0_4px_30px_rgba(0,0,0,0.5)] backdrop-blur-sm overflow-x-auto no-scrollbar shrink-0">
                         <button onClick={handleNewProject} className="p-1.5 text-zinc-300 hover:text-emerald-400 hover:bg-emerald-900/40 rounded transition-colors" title="New Project">
                             <PlusCircle className="w-5 h-5 drop-shadow-md" />

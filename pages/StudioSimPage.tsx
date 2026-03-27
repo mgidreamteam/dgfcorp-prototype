@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Loader2, Box, Move, RefreshCw, Maximize, Play, Pause, SkipBack, SkipForward, MousePointer2, Save, Settings2, CloudUpload, Binary, Hammer, PlusCircle, Trash2, CloudDownload, XSquare, ArrowDownToLine, UploadCloud, Cuboid, Database, Cpu, FolderOpen } from 'lucide-react';
+import { Loader2, Box, BoxIcon, Move, RefreshCw, Maximize, Play, Pause, SkipBack, SkipForward, MousePointer2, Save, Settings2, CloudUpload, Binary, PlusCircle, Trash2, CloudDownload, XSquare, ArrowDownToLine, UploadCloud, ZoomIn, ZoomOut, Hammer, AlertCircle, Activity, ShieldCheck, Layers, Minimize2, Battery, BatteryCharging, Zap, Cpu, MemoryStick, ChevronDown, Check, FolderOpen, Focus, Sun, Moon, Grid3X3, Eye, EyeOff, Lightbulb, LightbulbOff, Sparkles, Droplet, Aperture } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import AgentSidebar from '../components/AgentSidebar';
 import ProjectSidebar from '../components/ProjectSidebar';
@@ -10,6 +10,7 @@ import { auth, db, storage } from '../services/firebase';
 import { collection, getDocs, doc, deleteDoc, setDoc } from 'firebase/firestore';
 import { ref, getDownloadURL, deleteObject, uploadString } from 'firebase/storage';
 import ThemePanel from '../components/ThemePanel';
+import { useLocalStorageState } from '../hooks/useLocalStorageState';
 
 import { extractSimulationConstraints } from '../services/gemini';
 import CloudLoadModal from '../components/CloudLoadModal';
@@ -23,7 +24,6 @@ import { RoomWalls } from '../components/RoomWalls';
 import { SimHUD } from '../components/SimHUD';
 import { generateOpenScadCode, generateStlFile } from '../services/gemini';
 import { StudioLighting } from '../components/StudioLighting';
-import { Lightbulb, LightbulbOff, Box as BoxIcon, Droplet, Sparkles, Sun, Moon, Eye, EyeOff, Grid3X3, Aperture } from 'lucide-react';
 
 const ViewCubeIcon = ({ face }: { face: string }) => {
     const f = face.toLowerCase();
@@ -142,22 +142,27 @@ const StudioSimPage: React.FC = () => {
       localStorage.setItem('dream_agent_open', JSON.stringify(isAgentOpen));
   }, [isAgentOpen]);
   const [cadMode, setCadMode] = useState<'Assembly' | 'Circuit'>('Assembly');
-  const [renderMode, setRenderMode] = useState<'wireframe'|'edges'|'solid'>('solid');
+  const [renderMode, setRenderMode] = useLocalStorageState<'wireframe'|'edges'|'solid'>('dream_ui_renderMode', 'solid');
   const [openScadRes, setOpenScadRes] = useState(50);
-  const [globalLightIntensitySlider, setGlobalLightIntensitySlider] = useState(0);
-  const [globalLightsOn, setGlobalLightsOn] = useState(true);
-  const [showLightMeshes, setShowLightMeshes] = useState(true);
-  const [showGrid, setShowGrid] = useState(true);
+  const [globalLightIntensitySlider, setGlobalLightIntensitySlider] = useLocalStorageState('dream_ui_luxBase', 0);
+  const [globalLightsOn, setGlobalLightsOn] = useLocalStorageState('dream_ui_globalLightsOn', true);
+  const [showLightMeshes, setShowLightMeshes] = useLocalStorageState('dream_ui_showLightMeshes', true);
+  const [showGrid, setShowGrid] = useLocalStorageState('dream_ui_showGrid', true);
   const [modelSize, setModelSize] = useState({x:20, y:20, z:20});
   const [isResizingMesh, setIsResizingMesh] = useState(false);
   const [materialType, setMaterialType] = useState<'plastic' | 'matte' | 'metallic'>('metallic');
-  const [roomTheme, setRoomTheme] = useState<'dark' | 'light'>('dark');
+  const [roomTheme, setRoomTheme] = useLocalStorageState<'dark' | 'light'>('dream_ui_roomTheme', 'dark');
   const [isOriginLocked, setIsOriginLocked] = useState(false);
-  const [cameraView, setCameraView] = useState<ViewMode>('3D');
+  const [cameraView, setCameraView] = useLocalStorageState<ViewMode>('dream_ui_cameraView', '3D');
 
+  const isInitialMountUI = React.useRef(true);
   useEffect(() => {
+      if (isInitialMountUI.current) {
+          isInitialMountUI.current = false;
+          return;
+      }
       setGlobalLightIntensitySlider(roomTheme === 'light' ? 500 : 0);
-  }, [roomTheme]);
+  }, [roomTheme, setGlobalLightIntensitySlider]);
   const gridTemplateColumns = isAgentOpen ? `256px minmax(500px, 1fr) 60px 6px ${agentPanelWidth}px` : `256px minmax(500px, 1fr) 60px`;
 
   const { projects, setProjects, agentLogs, addLog, activeProjectId, setActiveProjectId } = useProject();
@@ -487,10 +492,70 @@ const StudioSimPage: React.FC = () => {
             <div className="px-4 py-2 border-b border-zinc-800/80 shrink-0 bg-transparent flex flex-col items-center bg-black/60 z-20 relative">
                 
                 {/* FIRST ROW: File Menu & Main Views */}
-                <div className="flex justify-between items-center w-full gap-4">
+                <div className="flex justify-start items-center w-full gap-1">
                     {/* File Main Actions */}
                     <div className="flex items-center gap-2 bg-black/60 p-1.5 rounded-lg border border-zinc-800/80 shadow-[0_4px_30px_rgba(0,0,0,0.5)] backdrop-blur-sm overflow-x-auto no-scrollbar shrink-0">
-                        <button onClick={() => setRenderMode('solid')} className={`relative flex items-center justify-center p-1.5 w-8 h-8 rounded-md transition-all duration-200 border ${renderMode === 'solid' ? 'bg-[#00ffcc]/20 text-[#00ffcc] border-[#00ffcc]/30 shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]' : 'text-zinc-500 border-transparent hover:text-zinc-300 hover:bg-zinc-800/70'}`} title="Solid Shaded View">
+                        <button onClick={() => navigate('/studio')} className="p-1.5 text-zinc-300 hover:text-emerald-400 hover:bg-emerald-900/40 rounded transition-colors" title="New Project">
+                            <PlusCircle className="w-5 h-5 drop-shadow-md" />
+                        </button>
+                        <button onClick={() => handleDownloadProject()} className="p-1.5 px-2 text-blue-400 hover:text-blue-300 hover:bg-blue-900/40 rounded transition-colors flex items-center justify-center gap-1.5" title="Save File Locally">
+                            <Save className="w-5 h-5 drop-shadow-md fill-blue-500/10" />
+                            <ArrowDownToLine className="w-3.5 h-3.5 opacity-80" />
+                        </button>
+                        <div className="w-px h-5 bg-zinc-700/80 mx-0.5 rounded"></div>
+                        <button onClick={handleGenerateModel} disabled={isGeneratingModel} className={`p-1 hover:bg-emerald-900/40 rounded transition-colors flex items-center ${isGeneratingModel ? 'opacity-50 cursor-not-allowed' : ''}`} title="Import & Convert Topology">
+                            <div className="relative p-1 flex items-center justify-center">
+                                {isGeneratingModel ? <RefreshCw className="w-5 h-5 text-emerald-500 drop-shadow-md animate-spin" /> : <Hammer className="w-5 h-5 text-emerald-500 drop-shadow-md" />}
+                            </div>
+                        </button>
+                        <button onClick={handleSaveToCloud} disabled={isCloudSaving} className="p-1.5 text-blue-400 hover:text-blue-300 hover:bg-blue-900/40 rounded transition-colors flex items-center gap-1.5 disabled:opacity-50" title="Commit to Remote Cloud">
+                            {isCloudSaving ? <RefreshCw className="w-5 h-5 animate-spin drop-shadow-md" /> : <UploadCloud className="w-5 h-5 drop-shadow-md fill-blue-500/20" />}
+                        </button>
+                        <div className="w-px h-5 bg-zinc-700/80 mx-0.5 rounded"></div>
+                        <button onClick={() => { setActiveProjectId(null); navigate('/studiosim'); }} className="p-1.5 text-zinc-300 hover:text-orange-400 hover:bg-orange-900/40 rounded transition-colors" title="Close Project">
+                            <XSquare className="w-5 h-5 drop-shadow-md" />
+                        </button>
+                    </div>
+
+                    {/* Zoom Controls */}
+                    <div className="flex items-center gap-1 bg-black/60 p-1.5 rounded-lg border border-zinc-800/80 shadow-[0_4px_30px_rgba(0,0,0,0.5)] backdrop-blur-sm shrink-0">
+                        <button onClick={() => window.dispatchEvent(new CustomEvent('viewport-zoom', { detail: 'in' }))} className="p-1.5 text-blue-400 hover:text-white hover:bg-blue-900/40 rounded transition-colors" title="Zoom In">
+                            <ZoomIn className="w-5 h-5 drop-shadow-md" />
+                        </button>
+                        <button onClick={() => window.dispatchEvent(new CustomEvent('viewport-zoom', { detail: 'out' }))} className="p-1.5 text-blue-400 hover:text-white hover:bg-blue-900/40 rounded transition-colors" title="Zoom Out">
+                            <ZoomOut className="w-5 h-5 drop-shadow-md" />
+                        </button>
+                        <div className="w-px h-4 bg-zinc-700/80 mx-1 rounded"></div>
+                        <button onClick={() => window.dispatchEvent(new CustomEvent('viewport-zoom', { detail: 'fit' }))} className="p-1.5 text-indigo-400 hover:text-white hover:bg-indigo-900/40 rounded transition-colors" title="Zoom to Fit All">
+                            <Maximize className="w-5 h-5 drop-shadow-md" />
+                        </button>
+                    </div>
+                </div>
+
+                {/* SECOND ROW: App-Specific Workspace Menubars */}
+                <div className="flex justify-start items-center w-full gap-1 mt-1">
+                    <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pointer-events-auto">
+                        
+                        {/* Viewport Render Modes */}
+                        <div className="flex items-center gap-1 bg-black/60 p-1 rounded-lg border border-zinc-800/80 shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]">
+                            <button onClick={() => setRenderMode('wireframe')} className={`relative flex items-center justify-center p-1.5 w-8 h-8 rounded-md transition-all duration-200 border ${renderMode === 'wireframe' ? 'bg-[#00ffcc]/20 text-[#00ffcc] border-[#00ffcc]/30 shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]' : 'text-zinc-500 border-transparent hover:text-zinc-300 hover:bg-zinc-800/70'}`} title="Wireframe View">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" className="w-full h-full">
+                                   <circle cx="12" cy="12" r="9" />
+                                   <ellipse cx="12" cy="12" rx="9" ry="3.5" />
+                                   <ellipse cx="12" cy="12" rx="4" ry="9" />
+                                </svg>
+                            </button>
+                            <button onClick={() => setRenderMode('edges')} className={`relative flex items-center justify-center p-1.5 w-8 h-8 rounded-md transition-all duration-200 border ${renderMode === 'edges' ? 'bg-[#00ffcc]/20 text-[#00ffcc] border-[#00ffcc]/30 shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]' : 'text-zinc-500 border-transparent hover:text-zinc-300 hover:bg-zinc-800/70'}`} title="Solid + Edge View">
+                                <svg viewBox="0 0 24 24" className="w-full h-full">
+                                    <polygon points="12 3 4 7.5 12 12 20 7.5" fill="currentColor" fillOpacity="0.8" />
+                                    <polygon points="4 16.5 4 7.5 12 12 12 21" fill="currentColor" fillOpacity="0.4" />
+                                    <polygon points="12 21 12 12 20 7.5 20 16.5" fill="currentColor" fillOpacity="0.6" />
+                                    <path d="M20 16.5V7.5L12 3 4 7.5v9l8 4.5z" fill="none" stroke={renderMode === 'edges' ? '#00ffcc' : '#18181b'} strokeWidth="1.5" strokeLinejoin="round" />
+                                    <polyline points="4 7.5 12 12 20 7.5" fill="none" stroke={renderMode === 'edges' ? '#00ffcc' : '#18181b'} strokeWidth="1.5" strokeLinejoin="round" />
+                                    <line x1="12" y1="21" x2="12" y2="12" stroke={renderMode === 'edges' ? '#00ffcc' : '#18181b'} strokeWidth="1.5" strokeLinecap="round" />
+                                </svg>
+                            </button>
+                            <button onClick={() => setRenderMode('solid')} className={`relative flex items-center justify-center p-1.5 w-8 h-8 rounded-md transition-all duration-200 border ${renderMode === 'solid' ? 'bg-[#00ffcc]/20 text-[#00ffcc] border-[#00ffcc]/30 shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]' : 'text-zinc-500 border-transparent hover:text-zinc-300 hover:bg-zinc-800/70'}`} title="Solid Shaded View">
                                 <svg viewBox="0 0 24 24" className="w-full h-full">
                                     <circle cx="12" cy="12" r="9" fill="url(#smooth-grad-sim)" />
                                     <defs>
@@ -504,88 +569,49 @@ const StudioSimPage: React.FC = () => {
 
                             <div className="w-px h-4 bg-zinc-700/80 mx-1.5 rounded"></div>
 
-                            <button onClick={() => alert('V-Ray Plugin Not Licensed')} className="w-[39px] h-[39px] mx-0.5 rounded-sm border border-zinc-600/80 hover:border-orange-500 overflow-hidden relative shadow-md group outline-none transition-colors" title="Photorealistic GPU Render">
-                                <img src="/crankshaft_render.png" alt="Render" className="w-full h-full object-cover group-hover:scale-125 transition-transform duration-700 ease-out" />
-                                <div className="absolute inset-0 ring-1 ring-inset ring-black/40 group-hover:ring-orange-500/30 mix-blend-overlay pointer-events-none"></div>
+                            <button onClick={() => alert('V-Ray Plugin Not Licensed')} className="relative flex items-center justify-center p-1.5 w-[39px] h-[39px] mx-0.5 rounded border border-transparent hover:border-orange-500/50 hover:bg-orange-900/40 text-orange-500 group transition-all duration-300" title="Photorealistic GPU Render">
+                                <Aperture className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" />
+                                <Sparkles className="w-2.5 h-2.5 absolute top-[6px] right-[6px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-orange-300" />
                             </button>
                         </div>
                         <div className="w-px h-5 bg-zinc-700/80 mx-0.5 rounded"></div>
 
-                        {/* Mesh Resolution */}
-                        <div className="flex items-center gap-3 bg-black/60 px-3 py-1.5 rounded-lg border border-zinc-800/80 shadow-inner opacity-40 hover:opacity-100 transition-opacity">
-                            <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest flex items-center gap-1"><Maximize className="w-3 h-3 text-zinc-400" /> Mesh Res</span>
-                            <input 
-                               type="range" min="10" max="150" step="5" 
-                               value={openScadRes} 
-                               onChange={e => setOpenScadRes(Number(e.target.value))} 
-                               onMouseUp={handleResApply} 
-                               onTouchEnd={handleResApply} 
-                               className="w-24 md:w-32 accent-[#00ffcc] outline-none cursor-pointer" 
-                               disabled={isResizingMesh} 
-                            />
-                            <div className="w-10 text-right font-mono text-xs text-[#00ffcc]">
-                                {isResizingMesh ? <RefreshCw className="w-3 h-3 animate-spin inline-block text-[#00ffcc]" /> : openScadRes}
-                            </div>
-                        </div>
-
                         {/* Environment & Materials */}
-                        <div className="flex items-center gap-1 bg-black/60 p-1.5 rounded-lg border border-zinc-800/80 shadow-[0_4px_30px_rgba(0,0,0,0.5)] backdrop-blur-sm shrink-0">
+                        {/* Lighting Toolbar */}
+                        <div className="flex items-center gap-2 bg-black/60 p-1.5 rounded-lg border border-zinc-800/80 shadow-[0_4px_30px_rgba(0,0,0,0.5)] backdrop-blur-sm shrink-0">
                             <button onClick={() => setRoomTheme(roomTheme === 'dark' ? 'light' : 'dark')} className="p-1.5 rounded transition-colors text-zinc-500 hover:text-zinc-300" title="Toggle Environment">
-                               {roomTheme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                               {roomTheme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
                             </button>
-                        </div>
-
-                        <div className="flex items-center gap-1 bg-black/60 p-1.5 rounded-lg border border-zinc-800/80 shadow-[0_4px_30px_rgba(0,0,0,0.5)] backdrop-blur-sm shrink-0">
-                            <button onClick={() => setMaterialType('matte')} className={`p-1.5 rounded transition-colors ${materialType === 'matte' ? 'bg-[#00ffcc]/20 text-[#00ffcc]' : 'text-zinc-500 hover:text-zinc-300'}`} title="Matte Finish"><BoxIcon className="w-4 h-4" /></button>
-                            <button onClick={() => setMaterialType('plastic')} className={`p-1.5 rounded transition-colors ${materialType === 'plastic' ? 'bg-[#00ffcc]/20 text-[#00ffcc]' : 'text-zinc-500 hover:text-zinc-300'}`} title="Glossy Plastic"><Droplet className="w-4 h-4" /></button>
-                            <button onClick={() => setMaterialType('metallic')} className={`p-1.5 rounded transition-colors ${materialType === 'metallic' ? 'bg-[#00ffcc]/20 text-[#00ffcc]' : 'text-zinc-500 hover:text-zinc-300'}`} title="Metallic Finish"><Sparkles className="w-4 h-4" /></button>
-                        </div>
-
-                        {/* Lux Controls */}
-                        <div className="flex items-center gap-3 bg-black/60 px-3 py-1.5 rounded-lg border border-zinc-800/80 shadow-inner">
+                            <div className="w-px h-5 bg-zinc-700/80 mx-1 rounded"></div>
                             <div className="flex items-center gap-2">
-                                <button onClick={() => setShowGrid(!showGrid)} className="outline-none transition-colors border-r border-zinc-700 pr-2 mr-1" title="Toggle Grid">
-                                   <Grid3X3 className={`w-4 h-4 ${showGrid ? 'text-[#00ffcc] hover:text-[#00ffcc]/80' : 'text-zinc-600 hover:text-zinc-500'}`} />
+                                <button onClick={() => setShowGrid(!showGrid)} className="p-1.5 outline-none transition-colors border-r border-zinc-700/80 pr-2 mr-1 block" title="Toggle Grid">
+                                   <Grid3X3 className={`w-5 h-5 ${showGrid ? 'text-emerald-400 hover:text-emerald-300' : 'text-zinc-600 hover:text-zinc-500'}`} />
                                 </button>
-                                <button onClick={() => setShowLightMeshes(!showLightMeshes)} className="outline-none transition-colors border-r border-zinc-700 pr-2 mr-1" title="Show/Hide Physical Light Frames">
-                                   {showLightMeshes ? <Eye className="w-4 h-4 text-zinc-300 hover:text-white" /> : <EyeOff className="w-4 h-4 text-zinc-600 hover:text-zinc-500" />}
+                                <button onClick={() => setShowLightMeshes(!showLightMeshes)} className="p-1.5 outline-none transition-colors border-r border-zinc-700/80 pr-2 mr-1 block" title="Show/Hide Physical Light Frames">
+                                   {showLightMeshes ? <Eye className="w-5 h-5 text-zinc-300 hover:text-white" /> : <EyeOff className="w-5 h-5 text-zinc-600 hover:text-zinc-500" />}
                                 </button>
-                                <button onClick={() => setGlobalLightsOn(!globalLightsOn)} className="outline-none transition-colors" title="Toggle All Lights">
-                                   {globalLightsOn ? <Lightbulb className="w-4 h-4 text-yellow-500 hover:text-yellow-400" /> : <LightbulbOff className="w-4 h-4 text-zinc-600 hover:text-zinc-500" />}
+                                <button onClick={() => setGlobalLightsOn(!globalLightsOn)} className="p-1.5 outline-none transition-colors block" title="Toggle All Lights">
+                                   {globalLightsOn ? <Lightbulb className="w-5 h-5 text-emerald-400 hover:text-emerald-300" /> : <LightbulbOff className="w-5 h-5 text-zinc-600 hover:text-zinc-500" />}
                                 </button>
-                                <span className="text-xs text-zinc-400 font-bold tracking-wider">LUX BASE</span>
                                 <input 
                                   type="range" min="-1000" max="1000" step="1" 
                                   value={globalLightIntensitySlider} 
                                   onChange={e => setGlobalLightIntensitySlider(Number(e.target.value))} 
-                                  className="w-24 accent-yellow-500 outline-none cursor-pointer" 
+                                  className="w-24 accent-emerald-500 outline-none cursor-pointer" 
                                 />
-                                <span className="text-xs font-mono w-8 text-zinc-300">{globalLightIntensitySlider > 0 ? `+${globalLightIntensitySlider}` : globalLightIntensitySlider}</span>
+                                <span className="text-xs font-mono w-8 text-zinc-300 flex items-center ml-1">{globalLightIntensitySlider > 0 ? `+${globalLightIntensitySlider}` : globalLightIntensitySlider}</span>
                             </div>
                         </div>
                     </div>
 
                     {/* Transform Tools & Timing */}
                     <div className="flex items-center gap-4 shrink-0">
-                        <div className="text-xs font-mono text-zinc-500 bg-black/50 px-3 py-1.5 rounded border border-zinc-800 tracking-widest hidden lg:block">
-                            FRAME: <span className="text-emerald-400">0000</span> / 1200
+                        <div className="text-xs font-mono text-zinc-500 bg-black/50 px-3 h-[44px] flex items-center rounded-lg border border-zinc-800 tracking-widest hidden lg:flex">
+                            FRAME: <span className="text-emerald-400 ml-2">0000</span> / 1200
                         </div>
-                        <div className="flex items-center gap-1 bg-black/60 p-1 rounded-lg border border-zinc-800/80 shadow-inner">
-                            <button className="p-2 bg-emerald-600/20 text-emerald-400 rounded cursor-pointer shadow-[0_0_15px_rgba(16,185,129,0.2)]" title="Select (Active)">
-                                <MousePointer2 className="w-4 h-4" />
-                            </button>
-                            <button className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded transition-colors" title="Pan (G)">
-                                <Move className="w-4 h-4" />
-                            </button>
-                            <button className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded transition-colors" title="Rotate (R)">
-                                <RefreshCw className="w-4 h-4" />
-                            </button>
-                            <button className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded transition-colors" title="Scale (S)">
-                                <Maximize className="w-4 h-4" />
-                            </button>
-                            <div className="w-px h-4 bg-zinc-700 mx-1"></div>
-                            <button className="p-2 text-zinc-400 hover:text-emerald-400 hover:bg-emerald-900/30 rounded transition-colors" title="Play Simulation">
-                                <Play className="w-4 h-4 fill-current" />
+                        <div className="flex items-center gap-1 bg-black/60 p-1.5 rounded-lg border border-zinc-800/80 shadow-inner h-[44px]">
+                            <button className="p-1.5 text-zinc-400 hover:text-emerald-400 hover:bg-emerald-900/30 rounded transition-colors" title="Play Simulation">
+                                <Play className="w-5 h-5 fill-current" />
                             </button>
                         </div>
                     </div>
@@ -607,8 +633,8 @@ const StudioSimPage: React.FC = () => {
                            cellThickness={0.5} 
                            sectionSize={50} 
                            sectionThickness={1} 
-                           cellColor={roomTheme === 'dark' ? '#27272a' : '#d4d4d8'} 
-                           sectionColor={roomTheme === 'dark' ? '#3f3f46' : '#a1a1aa'} 
+                           cellColor={roomTheme === 'dark' ? '#064e3b' : '#a7f3d0'} 
+                           sectionColor={roomTheme === 'dark' ? '#047857' : '#6ee7b7'} 
                            fadeDistance={200} 
                         />
                     )}
@@ -632,28 +658,6 @@ const StudioSimPage: React.FC = () => {
 
                     <OrbitControls makeDefault autoRotate={false} minDistance={10} maxDistance={400} />
                 </Canvas>
-                
-                {!activeProject?.assetUrls?.stl && (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-30">
-                        <div className="max-w-md text-center bg-black/60 backdrop-blur-md p-6 rounded-2xl border border-zinc-800 pointer-events-auto shadow-2xl">
-                            <Binary className="w-12 h-12 text-zinc-600 mx-auto mb-4" />
-                            <h3 className="text-xl font-black text-zinc-400 tracking-widest uppercase mb-3">StudioSim Sandbox</h3>
-                            <p className="text-zinc-500 leading-relaxed text-sm mb-6">A solid geometric payload is required for structural simulation traces across the active ecosystem.</p>
-                            
-                            <button 
-                                onClick={handleGenerateModel}
-                                disabled={isGeneratingModel}
-                                className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold tracking-widest uppercase rounded-lg shadow-[0_0_20px_rgba(16,185,129,0.4)] transition-all flex justify-center items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                {isGeneratingModel ? (
-                                    <><RefreshCw className="w-5 h-5 animate-spin" /> Synthesizing Solid STL Core...</>
-                                ) : (
-                                    <><Hammer className="w-5 h-5" /> Import & Convert Topology</>
-                                )}
-                            </button>
-                        </div>
-                    </div>
-                )}
                 
                 <SimHUD colorClass="emerald" />
             </div>
@@ -754,6 +758,7 @@ const StudioSimPage: React.FC = () => {
           onLoad={handleDownloadFromCloud}
           onDelete={handleDeleteCloudProject}
           loadingAction={cloudLoadingAction}
+          appTheme="studiosim"
       />
     </div>
   );

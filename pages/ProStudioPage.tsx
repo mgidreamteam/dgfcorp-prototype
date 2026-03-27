@@ -14,9 +14,10 @@ import { ref, getDownloadURL, deleteObject, uploadString } from 'firebase/storag
 import CloudLoadModal from '../components/CloudLoadModal';
 import LoadingModal from '../components/LoadingModal';
 import { ImportedCADGeometry } from '../components/ImportedCADGeometry';
-import { PlusCircle, Trash2, CloudDownload, XSquare, ZoomIn, ZoomOut } from 'lucide-react';
-import { Wrench, X, Box, Cylinder, Cpu, Layers, Maximize2, Move, RefreshCw, MousePointer2, Settings2, UploadCloud, Activity, FileCode2, ArrowDownRight, Expand, Cuboid, Settings, Scissors, Target, ArrowDownToLine, Database, CircleDot, ChevronRight, ChevronDown, Sliders, ArrowDown, Bot, MousePointerClick, AlertCircle, AlertTriangle, Save, FolderOpen, Component, CheckCircle2, Aperture, Sparkles } from 'lucide-react';
+import { PlusCircle, Trash2, CloudDownload, XSquare, ZoomIn, ZoomOut, Wrench, X, Box, Cylinder, Cpu, Layers, Maximize, Move, RefreshCw, MousePointer2, Settings2, UploadCloud, Activity, FileCode2, ArrowDownRight, Expand, Cuboid, Settings, Scissors, Target, ArrowDownToLine, Database, CircleDot, ChevronRight, ChevronDown, Sliders, ArrowDown, Bot, MousePointerClick, AlertCircle, AlertTriangle, Save, FolderOpen, Component, CheckCircle2, Aperture, Sparkles, Factory, ArrowRight, Sun, Moon, Grid3X3, Eye, EyeOff, Lightbulb, LightbulbOff } from 'lucide-react';
+import { StudioLighting } from '../components/StudioLighting';
 import { analyzeCADPart } from '../services/gemini';
+import { useLocalStorageState } from '../hooks/useLocalStorageState';
 
 type BOMExtractionStatus = 'pending' | 'processing' | 'success' | 'error';
 export interface PartExtractionState {
@@ -254,7 +255,7 @@ const MechatronicNodeMesh = React.memo(({
             if (isCAD) {
                 return (
                     <group {...handlers}>
-                        {node.fileData && <ImportedCADGeometry fileUrl={node.fileData} extension={node.extension || 'stl'} isExploded={isExploded} explodeDistance={explodeDistance} assemblyName={node.name} onPartsParsed={onPartsParsed} selectedBomComponent={csgMode === 'Part' ? selectedBomComponent : null} onPartClick={onPartClick} />}
+                        {node.fileData && <ImportedCADGeometry fileUrl={node.fileData} extension={node.extension || 'stl'} isExploded={isExploded} explodeDistance={explodeDistance} assemblyName={node.name} onPartsParsed={(parts) => onPartsParsed(node.id, parts)} selectedBomComponent={csgMode === 'Part' ? selectedBomComponent : null} onPartClick={onPartClick} renderMode={renderMode} nodeColor={node.color} />}
                     </group>
                 );
             }
@@ -536,11 +537,11 @@ const ProStudioPage: React.FC = () => {
   React.useEffect(() => {
       localStorage.setItem('dream_agent_open', JSON.stringify(isAgentOpen));
   }, [isAgentOpen]);
-    const [renderMode, setRenderMode] = useState<'solid' | 'wireframe' | 'edges'>('solid');
+    const [renderMode, setRenderMode] = useLocalStorageState<'solid' | 'wireframe' | 'edges'>('dream_ui_renderMode', 'solid');
     const [isRenderModalOpen, setIsRenderModalOpen] = useState(false);
     const [hoverFace, setHoverFace] = useState<string | null>(null);
     const [csgMode, setCsgMode] = useState<'Assembly' | 'Part' | 'Circuit'>('Assembly');
-    const [cameraView, setCameraView] = useState<'3d' | 'top' | 'bottom' | 'front' | 'rear' | 'left' | 'right'>('3d');
+    const [cameraView, setCameraView] = useLocalStorageState<'3d' | 'top' | 'bottom' | 'front' | 'rear' | 'left' | 'right'>('dream_ui_cameraView', '3d');
     const [transformMode, setTransformMode] = useState<'translate' | 'rotate' | 'scale'>('translate');
     const [isUploading, setIsUploading] = useState(false);
     const [agentPrompt, setAgentPrompt] = useState('');
@@ -562,6 +563,22 @@ const ProStudioPage: React.FC = () => {
     const [globalUnits, setGlobalUnits] = useState('mm');
 
     const [isOriginLocked, setIsOriginLocked] = useState(false);
+
+    const [roomTheme, setRoomTheme] = useLocalStorageState<'dark' | 'light'>('dream_ui_roomTheme', 'dark');
+    const [showGrid, setShowGrid] = useLocalStorageState('dream_ui_showGrid', true);
+    const [showLightMeshes, setShowLightMeshes] = useLocalStorageState('dream_ui_showLightMeshes', true);
+    const [globalLightsOn, setGlobalLightsOn] = useLocalStorageState('dream_ui_globalLightsOn', true);
+    const [globalLightIntensitySlider, setGlobalLightIntensitySlider] = useLocalStorageState('dream_ui_luxBase', 0);
+    const [modelSize, setModelSize] = useState({x:20, y:20, z:20});
+
+    const isInitialMountUI = React.useRef(true);
+    useEffect(() => {
+        if (isInitialMountUI.current) {
+            isInitialMountUI.current = false;
+            return;
+        }
+        setGlobalLightIntensitySlider(roomTheme === 'light' ? 500 : 0);
+    }, [roomTheme, setGlobalLightIntensitySlider]);
     const [pendingMaterialChange, setPendingMaterialChange] = useState<{nodeId: string, color: string, type: string} | null>(null);
 
     const isClearingRef = React.useRef(false);
@@ -1571,7 +1588,11 @@ const ProStudioPage: React.FC = () => {
 
                     <div className="w-8 h-px bg-zinc-800 my-1"></div>
                     <button onClick={() => initiateCSG('hole')} className="p-2 text-red-400 hover:text-red-300 hover:bg-red-900/40 rounded transition-colors" title="Drill Hole">
-                        <svg viewBox="0 0 24 24" className="w-6 h-6 fill-red-500/30 stroke-red-500 stroke-[1.5]" strokeLinecap="round" strokeLinejoin="round"><path d="M9 2v4l-2 2v9a3 3 0 0 0 6 0V8l-2-2V2H9z" /><path d="M7 10l6 3" /><path d="M7 13l6 3" /></svg>
+                        <svg viewBox="0 0 24 24" className="w-6 h-6 fill-red-500/30 stroke-red-500 stroke-[1.5]" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M10 2h4v6l-2 3l-2 -3z" fill="currentColor" stroke="none" opacity="0.8" />
+                            <path d="M3 12h6v10H3z" />
+                            <path d="M15 12h6v10h-6z" />
+                        </svg>
                     </button>
                     <button onClick={() => initiateCSG('chamfer')} className="p-2 text-orange-400 hover:text-orange-300 hover:bg-orange-900/40 rounded transition-colors" title="Chamfer Edge">
                         <svg viewBox="0 0 24 24" className="w-6 h-6 fill-orange-500/30 stroke-orange-500 stroke-[1.5]" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16v16H4V4z" fill="none" strokeWidth="1" strokeOpacity="0.2"/><path d="M4 14l10-10h6v16H4V14z" /></svg>
@@ -1600,7 +1621,7 @@ const ProStudioPage: React.FC = () => {
                     <div className="px-4 py-2 border-b border-zinc-800/80 shrink-0 bg-transparent flex flex-col items-center bg-black/60 z-20">
                         
                         {/* FIRST ROW: File Menu & Main Views */}
-                        <div className="flex justify-between items-center w-full gap-4">
+                        <div className="flex justify-start items-center w-full gap-1">
                             {/* File Main Actions */}
                             <div className="flex items-center gap-2 bg-black/60 p-1.5 rounded-lg border border-zinc-800/80 shadow-[0_4px_30px_rgba(0,0,0,0.5)] backdrop-blur-sm overflow-x-auto no-scrollbar shrink-0">
                                 <button onClick={handleNewProject} className="p-1.5 text-zinc-300 hover:text-emerald-400 hover:bg-emerald-900/40 rounded transition-colors" title="New Project">
@@ -1621,9 +1642,22 @@ const ProStudioPage: React.FC = () => {
                                     {isCloudSaving ? <RefreshCw className="w-5 h-5 animate-spin drop-shadow-md" /> : <UploadCloud className="w-5 h-5 drop-shadow-md fill-blue-500/20" />}
                                 </button>
                                 <div className="w-px h-5 bg-zinc-700/80 mx-0.5 rounded"></div>
+                                <div className="w-px h-5 bg-zinc-700/80 mx-0.5 rounded"></div>
                                 <button onClick={() => { setActiveProjectId(null); setNodes([]); navigate('/prostudio'); }} className="p-1.5 text-zinc-300 hover:text-orange-400 hover:bg-orange-900/40 rounded transition-colors" title="Close Project">
                                     <XSquare className="w-5 h-5 drop-shadow-md" />
                                 </button>
+
+                                {/* AI Extraction Button (Sunset per user request - logic preserved in runBOMExtraction hook)
+                                <div className="w-px h-5 bg-zinc-700/80 mx-0.5 rounded"></div>
+                                <button 
+                                    disabled={!selectedNodeId || !nodes.find(n => n.id === selectedNodeId) || !cadPartsCache[selectedNodeId]}
+                                    onClick={() => runBOMExtraction(selectedNodeId!)} 
+                                    className={`p-1.5 px-3 rounded font-bold text-[10px] uppercase tracking-wider flex items-center gap-1.5 transition-all border ${(selectedNodeId && nodes.find(n => n.id === selectedNodeId) && cadPartsCache[selectedNodeId]) ? 'bg-[#e85d04] hover:bg-[#ff8fa3] text-white shadow-[0_0_15px_rgba(232,93,4,0.3)] border-[#e85d04]/50' : 'bg-zinc-800 text-zinc-500 border-zinc-700 opacity-50 cursor-not-allowed'}`} 
+                                    title={(selectedNodeId && nodes.find(n => n.id === selectedNodeId) && cadPartsCache[selectedNodeId]) ? "Extract BOM & Load in FabFlow" : "Select an imported 3D Component to analyze"}
+                                >
+                                    <Factory className="w-4 h-4" /> Load in FabFlow <ArrowRight className="w-4 h-4" />
+                                </button>
+                                */}
                             </div>
 
                             {/* Zoom Controls */}
@@ -1636,7 +1670,7 @@ const ProStudioPage: React.FC = () => {
                                 </button>
                                 <div className="w-px h-4 bg-zinc-700/80 mx-1 rounded"></div>
                                 <button onClick={() => window.dispatchEvent(new CustomEvent('viewport-zoom', { detail: 'fit' }))} className="p-1.5 text-indigo-400 hover:text-white hover:bg-indigo-900/40 rounded transition-colors" title="Zoom to Fit All">
-                                    <Maximize2 className="w-5 h-5 drop-shadow-md" />
+                                    <Maximize className="w-5 h-5 drop-shadow-md" />
                                 </button>
                             </div>
 
@@ -1654,10 +1688,10 @@ const ProStudioPage: React.FC = () => {
                         </div>
 
                         {/* SECOND ROW: App-Specific Workspace Menubars */}
-                        <div className="flex justify-between items-center w-full gap-4 mt-2">
+                        <div className="flex justify-start items-center w-full gap-1 mt-1">
                             <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
                                 {/* Viewport Render Modes */}
-                                <div className="flex items-center gap-1 bg-black/60 p-1 rounded-lg border border-zinc-800/80 shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]">
+                                <div className="flex items-center gap-1 bg-black/60 p-1.5 rounded-lg border border-zinc-800/80 shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]">
                                     <button onClick={() => setRenderMode('wireframe')} className={`relative flex items-center justify-center p-1.5 w-8 h-8 rounded-md transition-all duration-200 border ${renderMode === 'wireframe' ? 'bg-blue-900/60 text-blue-400 border-blue-500/30 shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]' : 'text-zinc-500 border-transparent hover:text-zinc-300 hover:bg-zinc-800/70'}`} title="Wireframe View">
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" className="w-full h-full">
                                            <circle cx="12" cy="12" r="9" />
@@ -1687,26 +1721,44 @@ const ProStudioPage: React.FC = () => {
                                         </svg>
                                     </button>
 
-                                    <div className="w-px h-4 bg-zinc-700/80 mx-1.5 rounded"></div>
+                                    <div className="w-px h-5 bg-zinc-700/80 mx-1.5 rounded"></div>
 
-                                    <button onClick={() => setIsRenderModalOpen(true)} className="relative flex items-center justify-center p-1.5 w-[39px] h-[39px] mx-0.5 rounded border border-transparent hover:border-orange-500/50 hover:bg-orange-900/40 text-orange-500 group transition-all duration-300" title="Photorealistic GPU Render">
+                                    <button onClick={() => setIsRenderModalOpen(true)} className="relative flex items-center justify-center p-1.5 w-8 h-8 mx-0.5 rounded border border-transparent hover:border-orange-500/50 hover:bg-orange-900/40 text-orange-500 group transition-all duration-300" title="Photorealistic GPU Render">
                                         <Aperture className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" />
-                                        <Sparkles className="w-2.5 h-2.5 absolute top-[6px] right-[6px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-orange-300" />
+                                        <Sparkles className="w-2.5 h-2.5 absolute top-[4px] right-[4px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-orange-300" />
                                     </button>
                                 </div>
-                                <div className="w-px h-4 bg-zinc-700 mx-1"></div>
-                                {/* Motion Constraints */}
-                                <div className="flex items-center gap-1 bg-zinc-900/50 px-2 py-0.5 rounded border border-zinc-800">
-                                    <span className="text-[8px] text-zinc-500 uppercase font-black mr-1 tracking-widest leading-none">Constraints</span>
-                                    <button className="px-2 py-1 text-[9px] text-zinc-400 hover:text-blue-400 font-bold uppercase tracking-widest rounded hover:bg-blue-900/30">Frame</button>
-                                    <button className="px-2 py-1 text-[9px] text-zinc-400 hover:text-blue-400 font-bold uppercase tracking-widest rounded hover:bg-blue-900/30">Linear</button>
-                                    <button className="px-2 py-1 text-[9px] text-zinc-400 hover:text-blue-400 font-bold uppercase tracking-widest rounded hover:bg-blue-900/30">Rotary</button>
+                                <div className="w-px h-5 bg-zinc-700 mx-1"></div>
+                                {/* Lighting Toolbar */}
+                                <div className="flex items-center gap-2 bg-black/60 p-1.5 rounded-lg border border-zinc-800/80 shadow-[0_4px_30px_rgba(0,0,0,0.5)] backdrop-blur-sm shrink-0">
+                                    <button onClick={() => setRoomTheme(roomTheme === 'dark' ? 'light' : 'dark')} className="p-1.5 rounded transition-colors text-zinc-500 hover:text-zinc-300" title="Toggle Environment">
+                                       {roomTheme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                                    </button>
+                                    <div className="w-px h-5 bg-zinc-700/80 mx-1 rounded"></div>
+                                    <div className="flex items-center gap-2">
+                                        <button onClick={() => setShowGrid(!showGrid)} className="p-1.5 outline-none transition-colors border-r border-zinc-700/80 pr-2 mr-1 block" title="Toggle Grid">
+                                           <Grid3X3 className={`w-5 h-5 ${showGrid ? 'text-blue-500 hover:text-blue-400' : 'text-zinc-600 hover:text-zinc-500'}`} />
+                                        </button>
+                                        <button onClick={() => setShowLightMeshes(!showLightMeshes)} className="p-1.5 outline-none transition-colors border-r border-zinc-700/80 pr-2 mr-1 block" title="Show/Hide Physical Light Frames">
+                                           {showLightMeshes ? <Eye className="w-5 h-5 text-zinc-300 hover:text-white" /> : <EyeOff className="w-5 h-5 text-zinc-600 hover:text-zinc-500" />}
+                                        </button>
+                                        <button onClick={() => setGlobalLightsOn(!globalLightsOn)} className="p-1.5 outline-none transition-colors block" title="Toggle All Lights">
+                                           {globalLightsOn ? <Lightbulb className="w-5 h-5 text-blue-500 hover:text-blue-400" /> : <LightbulbOff className="w-5 h-5 text-zinc-600 hover:text-zinc-500" />}
+                                        </button>
+                                        <input 
+                                          type="range" min="-1000" max="1000" step="1" 
+                                          value={globalLightIntensitySlider} 
+                                          onChange={e => setGlobalLightIntensitySlider(Number(e.target.value))} 
+                                          className="w-24 accent-blue-500 outline-none cursor-pointer" 
+                                        />
+                                        <span className="text-xs font-mono w-8 text-zinc-300 flex items-center ml-1">{globalLightIntensitySlider > 0 ? `+${globalLightIntensitySlider}` : globalLightIntensitySlider}</span>
+                                    </div>
                                 </div>
                             </div>
                             
                              {/* Transform Tools */}
-                            <div className="flex items-center gap-1 bg-black/60 p-1 rounded-lg border border-zinc-800/80 shadow-inner shrink-0">
-                                <button onClick={() => setIsExploded(!isExploded)} className={`mr-2 p-1.5 rounded transition-colors border ${isExploded ? 'bg-orange-900/40 text-orange-400 border-orange-500/50' : 'text-zinc-500 border-transparent hover:text-zinc-300 hover:bg-zinc-800'}`} title="Exploded View (Right-Click Canvas to Cycle Modes)"><Component className="w-6 h-6" /></button>
+                             <div className="flex items-center gap-1 bg-black/60 p-1.5 rounded-lg border border-zinc-800/80 shadow-inner shrink-0 h-[44px]">
+                                <button onClick={() => setIsExploded(!isExploded)} className={`mr-2 p-1.5 rounded transition-colors border ${isExploded ? 'bg-orange-900/40 text-orange-400 border-orange-500/50' : 'text-zinc-500 border-transparent hover:text-zinc-300 hover:bg-zinc-800/70'}`} title="Exploded View (Right-Click Canvas to Cycle Modes)"><Component className="w-5 h-5" /></button>
                                 {isExploded && (
                                     <input 
                                         type="range" 
@@ -1719,9 +1771,6 @@ const ProStudioPage: React.FC = () => {
                                         title={`Explosion Distance: ${explodeDistance}%`} 
                                     />
                                 )}
-                                <button onClick={() => setTransformMode('translate')} className={`p-1.5 rounded transition-colors ${transformMode === 'translate' ? 'bg-blue-900/40 text-blue-400' : 'text-zinc-500 hover:text-zinc-300'}`} title="Translate"><Move className="w-6 h-6" /></button>
-                                <button onClick={() => setTransformMode('rotate')} className={`p-1.5 rounded transition-colors ${transformMode === 'rotate' ? 'bg-blue-900/40 text-blue-400' : 'text-zinc-500 hover:text-zinc-300'}`} title="Rotate"><RefreshCw className="w-6 h-6" /></button>
-                                <button onClick={() => setTransformMode('scale')} className={`p-1.5 rounded transition-colors ${transformMode === 'scale' ? 'bg-blue-900/40 text-blue-400' : 'text-zinc-500 hover:text-zinc-300'}`} title="Scale"><Maximize2 className="w-6 h-6" /></button>
                             </div>
                         </div>
                     </div>
@@ -1735,25 +1784,7 @@ const ProStudioPage: React.FC = () => {
                         }
                     }}>
 
-                        {/* Camera Corner Watermarks */}
-                        <div className="absolute inset-4 pointer-events-none select-none z-10 flex flex-col justify-between">
-                            <div className="flex justify-between items-start">
-                                <div className="border-t-2 border-l-2 border-red-500/50 p-2 w-32 h-16 flex items-start justify-start">
-                                    <span className="text-[10px] text-red-500/70 font-bold tracking-widest leading-relaxed">DREAM Giga<br />ProStudio</span>
-                                </div>
-                                <div className="border-t-2 border-r-2 border-red-500/50 p-2 w-32 h-16 flex items-start justify-end text-right">
-                                    <span className="text-[10px] text-red-500/70 font-bold tracking-widest leading-relaxed">DREAM Giga<br />ProStudio</span>
-                                </div>
-                            </div>
-                            <div className="flex justify-between items-end">
-                                <div className="border-b-2 border-l-2 border-red-500/50 p-2 w-32 h-16 flex items-end justify-start">
-                                    <span className="text-[10px] text-red-500/70 font-bold tracking-widest leading-relaxed">DREAM Giga<br />ProStudio</span>
-                                </div>
-                                <div className="border-b-2 border-r-2 border-red-500/50 p-2 w-32 h-16 flex items-end justify-end text-right">
-                                    <span className="text-[10px] text-red-500/70 font-bold tracking-widest leading-relaxed">DREAM Giga<br />ProStudio</span>
-                                </div>
-                            </div>
-                        </div>
+
 
                         {csgMode === 'Part' && !selectedNodeId && (
                             <div className="absolute inset-0 z-10 flex flex-col items-center justify-center pointer-events-none">
@@ -1765,13 +1796,20 @@ const ProStudioPage: React.FC = () => {
                             </div>
                         )}
                         
-                        {csgMode === 'Part' && selectedNodeId && cadPartsCache[selectedNodeId] && (
+                        {/* AI Extraction Button (Sunset per user request - logic preserved in runBOMExtraction hook)
+                        {csgMode === 'Part' && (
                             <div className="absolute top-24 left-6 z-40 animate-in fade-in duration-300">
-                                <button onClick={() => runBOMExtraction(selectedNodeId)} disabled={bomExtractionState !== null && bomExtractionState.some(s => s.status === 'processing')} className="bg-orange-600 hover:bg-orange-500 disabled:opacity-50 text-white font-bold py-2 px-4 rounded shadow-[0_0_15px_rgba(234,88,12,0.3)] tracking-widest uppercase text-xs flex items-center gap-2 transition-all">
-                                    <Bot className="w-4 h-4" /> Load to FabFlow
+                                <button 
+                                    onClick={() => runBOMExtraction(selectedNodeId!)} 
+                                    disabled={!selectedNodeId || !nodes.find(n => n.id === selectedNodeId) || !cadPartsCache[selectedNodeId] || (bomExtractionState !== null && bomExtractionState.some(s => s.status === 'processing'))} 
+                                    className={`font-bold py-2 px-4 rounded uppercase tracking-widest text-[10px] flex items-center gap-2 transition-all border ${(selectedNodeId && nodes.find(n => n.id === selectedNodeId) && cadPartsCache[selectedNodeId]) ? 'bg-orange-600 hover:bg-orange-500 text-white shadow-[0_0_15px_rgba(234,88,12,0.3)] border-orange-500/50' : 'bg-zinc-800 text-zinc-600 border-zinc-700 opacity-50 cursor-not-allowed'}`}
+                                    title={(selectedNodeId && nodes.find(n => n.id === selectedNodeId) && cadPartsCache[selectedNodeId]) ? "Extract BOM & Load in FabFlow" : "Select an imported 3D Component to analyze"}
+                                >
+                                    <Bot className="w-4 h-4" /> Load in FabFlow
                                 </button>
                             </div>
                         )}
+                        */}
                         
                         {bomExtractionState && (
                             <div className="absolute right-6 top-24 z-50 bg-[#09090b]/95 backdrop-blur-md border border-blue-500/30 rounded-lg shadow-[10px_10px_30px_rgba(0,0,0,0.5)] w-[320px] max-h-[60vh] flex flex-col overflow-hidden animate-in slide-in-from-right-4 fade-in duration-200">
@@ -1992,13 +2030,25 @@ const ProStudioPage: React.FC = () => {
                             )}
                             <Canvas dpr={[1, 2]} camera={{ position: [20, 20, 30], fov: 40 }} className="w-full h-full">
                                 <CameraController view={cameraView} />
-                            <color attach="background" args={['#09090b']} />
-                            <fog attach="fog" args={['#09090b', 50, 400]} />
-                            <ambientLight intensity={1.0} />
-                            <directionalLight position={[100, 100, 50]} intensity={1.5} castShadow />
-                            <directionalLight position={[-100, -100, -50]} intensity={0.5} />
+                            <color attach="background" args={[roomTheme === 'dark' ? '#09090b' : '#808080']} />
+                            <fog attach="fog" args={[roomTheme === 'dark' ? '#09090b' : '#808080', 50, 400]} />
+                            
+                            <StudioLighting modelSize={modelSize} showLightMeshes={showLightMeshes} globalIntensitySlider={globalLightIntensitySlider} globalLightsOn={globalLightsOn} roomTheme={roomTheme} />
 
-                            <Grid renderOrder={-1} position={[0, -0.01, 0]} infiniteGrid cellSize={10} cellThickness={0.5} sectionSize={50} sectionThickness={1} cellColor={'#27272a'} sectionColor={'#3f3f46'} fadeDistance={200} />
+                            {showGrid && (
+                                <Grid 
+                                   renderOrder={-1} 
+                                   position={[0, -0.01, 0]} 
+                                   infiniteGrid 
+                                   cellSize={10} 
+                                   cellThickness={0.5} 
+                                   sectionSize={50} 
+                                   sectionThickness={1} 
+                                   cellColor={roomTheme === 'dark' ? '#1e3a8a' : '#bfdbfe'} 
+                                   sectionColor={roomTheme === 'dark' ? '#1d4ed8' : '#93c5fd'} 
+                                   fadeDistance={200} 
+                                />
+                            )}
 
                             <React.Suspense fallback={null}>
                                 <Environment preset="city" />
@@ -2035,6 +2085,7 @@ const ProStudioPage: React.FC = () => {
                                                     setExpandedNodes(prev => ({ ...prev, [node.id]: true }));
                                                 });
                                             }}
+                                            onPartsParsed={handlePartsParsed}
                                         />
                                     ))}
 
@@ -2311,7 +2362,7 @@ const ProStudioPage: React.FC = () => {
                     projectName={activeProject?.name || ''}
                 />
             )}
-            <LoadingModal isOpen={isUploading} message="Loading & Initializing Model..." />
+            <LoadingModal isOpen={isUploading} message="Loading & Initializing Model..." appTheme="prostudio" />
         </div>
     );
 };

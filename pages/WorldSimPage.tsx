@@ -7,7 +7,7 @@ import FileMenuBar from '../components/MenuBar';
 import DeleteConfirmationDialog from '../components/DeleteConfirmationDialog';
 import { CloudProject, DesignProject, DesignStatus, AgentLog } from '../types';
 import { generateHardwareSpecs } from '../services/gemini';
-import { AlertCircle, Loader2, Map as MapIcon, Globe, Navigation, ZoomIn, ZoomOut, Compass, Wind, Plane, Eye, PlusCircle, Trash2, CloudDownload, XSquare, ArrowDownToLine, Save, UploadCloud, Cuboid, Database, Box as BoxIcon, RefreshCw, ArrowDown, ArrowDownRight, Box, Move, Maximize, Play, Pause, SkipBack, SkipForward, Settings2, CloudUpload, RadioTower, Wifi, Zap, Activity, Signal, LayoutTemplate, Layers, ChevronRight, Share2, FolderOpen } , Aperture, Sparkles } from 'lucide-react';
+import { AlertCircle, Loader2, Map as MapIcon, Globe, Navigation, ZoomIn, ZoomOut, Compass, Wind, Plane, Eye, PlusCircle, Trash2, CloudDownload, XSquare, ArrowDownToLine, Save, UploadCloud, Cuboid, Database, Box as BoxIcon, RefreshCw, ArrowDown, ArrowDownRight, Box, Move, Maximize, Play, Pause, SkipBack, SkipForward, Settings2, CloudUpload, RadioTower, Wifi, Zap, Activity, Signal, LayoutTemplate, Layers, ChevronRight, Share2, FolderOpen , Aperture, Sparkles } from 'lucide-react';
 import { useProject } from '../contexts/ProjectContext';
 import { useAuth } from '../contexts/AuthContext';
 import { auth, db, storage } from '../services/firebase';
@@ -408,9 +408,62 @@ const WorldSimPage: React.FC = () => {
             <div className="px-4 py-2 border-b border-zinc-800/80 shrink-0 bg-transparent flex flex-col items-center bg-black/60 z-30 relative pointer-events-auto shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
                 
                 {/* FIRST ROW: File Menu & Main Views */}
-                <div className="flex justify-between items-center w-full gap-4">
+                <div className="flex justify-start items-center w-full gap-1">
                     {/* File Main Actions */}
                     <div className="flex items-center gap-2 bg-black/60 p-1.5 rounded-lg border border-zinc-800/80 shadow-[0_4px_30px_rgba(0,0,0,0.5)] backdrop-blur-sm overflow-x-auto no-scrollbar shrink-0">
+                        <button onClick={() => navigate('/studio')} className="p-1.5 text-zinc-300 hover:text-emerald-400 hover:bg-emerald-900/40 rounded transition-colors" title="New Project">
+                            <PlusCircle className="w-5 h-5 drop-shadow-md" />
+                        </button>
+                        <button onClick={handleDownloadProject} className="p-1.5 px-2 text-blue-400 hover:text-blue-300 hover:bg-blue-900/40 rounded transition-colors flex items-center justify-center gap-1.5" title="Save File Locally">
+                            <Save className="w-5 h-5 drop-shadow-md fill-blue-500/10" />
+                            <ArrowDownToLine className="w-3.5 h-3.5 opacity-80" />
+                        </button>
+                        <div className="w-px h-5 bg-zinc-700/80 mx-0.5 rounded"></div>
+                        <button onClick={() => alert("Please load local file natively via ProStudio before running Simulation.")} className="p-1 hover:bg-emerald-900/40 rounded transition-colors flex items-center" title="Load Local File">
+                            <div className="relative p-1 flex items-center justify-center">
+                                <FolderOpen className="w-5 h-5 text-emerald-500 drop-shadow-md" />
+                            </div>
+                        </button>
+                        <button onClick={handleSaveToCloud} disabled={isCloudSaving} className="p-1.5 text-blue-400 hover:text-blue-300 hover:bg-blue-900/40 rounded transition-colors flex items-center gap-1.5 disabled:opacity-50" title="Commit to Remote Cloud">
+                            {isCloudSaving ? <RefreshCw className="w-5 h-5 animate-spin drop-shadow-md" /> : <UploadCloud className="w-5 h-5 drop-shadow-md fill-blue-500/20" />}
+                        </button>
+                        <div className="w-px h-5 bg-zinc-700/80 mx-0.5 rounded"></div>
+                        <button onClick={() => { setActiveProjectId(null); navigate('/worldsim'); }} className="p-1.5 text-zinc-300 hover:text-orange-400 hover:bg-orange-900/40 rounded transition-colors" title="Close Project">
+                            <XSquare className="w-5 h-5 drop-shadow-md" />
+                        </button>
+                    </div>
+
+                    {/* App-Specific Tools (FEA, Vendor) */}
+                    <div className="flex items-center gap-1 bg-black/60 p-1.5 rounded-lg border border-indigo-500/20 shadow-[0_4px_30px_rgba(0,0,0,0.5)] backdrop-blur-sm overflow-x-auto no-scrollbar shrink-0">
+                        <button onClick={() => alert("FEA Solvers paused. Switching engines...")} className="relative p-1.5 text-indigo-400 hover:text-indigo-300 hover:bg-indigo-900/40 rounded transition-colors" title="Run FEA">
+                            <Cuboid className="w-5 h-5 opacity-80 fill-indigo-500/30 drop-shadow-md" />
+                            <ArrowDownRight className="w-[16px] h-[16px] absolute bottom-1 right-0 text-emerald-400 drop-shadow shadow-black stroke-[3]" />
+                        </button>
+                        <div className="w-px h-4 bg-zinc-700/80 mx-1 rounded"></div>
+                        <button onClick={() => alert("Vendor catalog locked during cartographic traversal.")} className="p-1.5 text-orange-400 hover:text-orange-300 hover:bg-orange-900/40 rounded transition-colors flex items-center gap-1" title="Search Parts Catalog">
+                            <Database className="w-5 h-5 fill-orange-500/30 drop-shadow-md" />
+                        </button>
+                    </div>
+
+                    {/* Viewport Render Modes */}
+                    <div className="flex items-center gap-1 bg-black/60 p-1.5 rounded-lg border border-zinc-800/80 shadow-[0_4px_30px_rgba(0,0,0,0.5)] backdrop-blur-sm shrink-0">
+                        <button onClick={() => setRenderMode('wireframe')} className={`relative flex items-center justify-center p-1.5 w-8 h-8 rounded-md transition-all duration-200 border ${renderMode === 'wireframe' ? 'bg-[#00ffcc]/20 text-[#00ffcc] border-[#00ffcc]/30 shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]' : 'text-zinc-500 border-transparent hover:text-zinc-300 hover:bg-zinc-800/70'}`} title="Wireframe View">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" className="w-full h-full">
+                                   <circle cx="12" cy="12" r="9" />
+                                   <ellipse cx="12" cy="12" rx="9" ry="3.5" />
+                                   <ellipse cx="12" cy="12" rx="4" ry="9" />
+                                </svg>
+                            </button>
+                        <button onClick={() => setRenderMode('edges')} className={`relative flex items-center justify-center p-1.5 w-8 h-8 rounded-md transition-all duration-200 border ${renderMode === 'edges' ? 'bg-[#00ffcc]/20 text-[#00ffcc] border-[#00ffcc]/30 shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]' : 'text-zinc-500 border-transparent hover:text-zinc-300 hover:bg-zinc-800/70'}`} title="Solid + Edge View">
+                                <svg viewBox="0 0 24 24" className="w-full h-full">
+                                    <polygon points="12 3 4 7.5 12 12 20 7.5" fill="currentColor" fillOpacity="0.8" />
+                                    <polygon points="4 16.5 4 7.5 12 12 12 21" fill="currentColor" fillOpacity="0.4" />
+                                    <polygon points="12 21 12 12 20 7.5 20 16.5" fill="currentColor" fillOpacity="0.6" />
+                                    <path d="M20 16.5V7.5L12 3 4 7.5v9l8 4.5z" fill="none" stroke={renderMode === 'edges' ? '#00ffcc' : '#18181b'} strokeWidth="1.5" strokeLinejoin="round" />
+                                    <polyline points="4 7.5 12 12 20 7.5" fill="none" stroke={renderMode === 'edges' ? '#00ffcc' : '#18181b'} strokeWidth="1.5" strokeLinejoin="round" />
+                                    <line x1="12" y1="21" x2="12" y2="12" stroke={renderMode === 'edges' ? '#00ffcc' : '#18181b'} strokeWidth="1.5" strokeLinecap="round" />
+                                </svg>
+                            </button>
                         <button onClick={() => setRenderMode('solid')} className={`relative flex items-center justify-center p-1.5 w-8 h-8 rounded-md transition-all duration-200 border ${renderMode === 'solid' ? 'bg-[#00ffcc]/20 text-[#00ffcc] border-[#00ffcc]/30 shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]' : 'text-zinc-500 border-transparent hover:text-zinc-300 hover:bg-zinc-800/70'}`} title="Solid Shaded View">
                                 <svg viewBox="0 0 24 24" className="w-full h-full">
                                     <circle cx="12" cy="12" r="9" fill="url(#smooth-grad-sim)" />
@@ -433,7 +486,7 @@ const WorldSimPage: React.FC = () => {
                 </div>
 
                 {/* SECOND ROW: App-Specific Controls (Map Navigation) */}
-                <div className="flex justify-between items-center w-full gap-4 mt-2">
+                <div className="flex justify-start items-center w-full gap-1 mt-1">
                     <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pointer-events-auto">
                         <button onClick={handleHomeLocation} className="px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 rounded-lg transition-all shadow-inner bg-black/60 text-zinc-300 border border-zinc-700 hover:bg-zinc-800">
                             <Navigation className="w-3 h-3" /> Home (Geolocate)

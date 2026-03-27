@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { Loader2, PlusCircle, Trash2, CloudDownload, XSquare, ArrowDownToLine, Save, UploadCloud, Box, Cuboid, Database, Maximize2, RefreshCw, Sun, Moon, Droplet, Box as BoxIcon, Search, Wrench, Package, ListTree, ArrowRight, Activity, Zap, Server, ChevronRight, Eye, Layers, Settings2, Share2, Printer, CheckCircle2, AlertCircle, FileText, Download, Upload, Cpu, Factory, ShieldCheck, Globe2, ArrowDownToLine as ArrowDownToLineIcon, UploadCloud as UploadCloudIcon, Minimize2, Lightbulb, LightbulbOff, Sparkles, Grid3X3, FolderOpen } , Aperture, Sparkles } from 'lucide-react';
+import { Loader2, PlusCircle, Trash2, CloudDownload, XSquare, ArrowDownToLine, Save, UploadCloud, Box, Cuboid, Database, Maximize, RefreshCw, Sun, Moon, Droplet, Box as BoxIcon, Search, Wrench, Package, ListTree, ArrowRight, Activity, Zap, Server, ChevronRight, Eye, Layers, Settings2, Share2, Printer, CheckCircle2, AlertCircle, FileText, Download, Upload, Cpu, Factory, ShieldCheck, Globe2, ArrowDownToLine as ArrowDownToLineIcon, UploadCloud as UploadCloudIcon, Minimize2, Lightbulb, LightbulbOff, Sparkles, Grid3X3, FolderOpen , Aperture, Bot, Clock, X, AlertTriangle, CheckCircle, ZoomIn, ZoomOut } from 'lucide-react';
 import { useParams, useNavigate } from 'react-router-dom';
 import ThemePanel from '../components/ThemePanel';
 import AgentSidebar from '../components/AgentSidebar';
@@ -9,9 +9,12 @@ import { useProject } from '../contexts/ProjectContext';
 import { DesignProject, CloudProject } from '../types';
 import { auth, db, storage } from '../services/firebase';
 import { collection, doc, setDoc, getDocs, deleteDoc } from 'firebase/firestore';
+import { useLocalStorageState } from '../hooks/useLocalStorageState';
 import { ref, uploadString, getDownloadURL, deleteObject } from 'firebase/storage';
 import CloudLoadModal from '../components/CloudLoadModal';
-import { Canvas, useFrame } from '@react-three/fiber';
+import ProjectSelectionModal from '../components/ProjectSelectionModal';
+import { ImportedCADGeometry } from '../components/ImportedCADGeometry';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, Grid, Environment, ContactShadows, Line, Center, GizmoHelper, GizmoViewport, Edges } from '@react-three/drei';
 import * as THREE from 'three';
 // @ts-ignore
@@ -20,29 +23,64 @@ import { CameraPresets, ViewMode } from '../components/CameraPresets';
 import { RoomWalls } from '../components/RoomWalls';
 import { SimHUD } from '../components/SimHUD';
 import { runCompetencyMatch } from '../services/vendorDb';
-import { Binary, Hammer, EyeOff } , Aperture, Sparkles } from 'lucide-react';
-import { generateStlFile } from '../services/gemini';
+import { Binary, Hammer, EyeOff, Component, ChevronDown } from 'lucide-react';
+import { generateStlFile, analyzeCADPart } from '../services/gemini';
 import { StudioLighting } from '../components/StudioLighting';
+
+type BOMExtractionStatus = 'pending' | 'processing' | 'success' | 'error';
+export interface PartExtractionState {
+  name: string;
+  status: BOMExtractionStatus;
+  errorMsg?: string;
+}
 
 const ViewCubeIcon = ({ face }: { face: string }) => {
     const f = face.toLowerCase();
     return (
         <svg viewBox="0 0 100 100" className="w-[30px] h-[30px] transform transition-transform group-hover:scale-[1.15]">
             <g strokeLinejoin="round" strokeLinecap="round" className="stroke-zinc-600 stroke-[4] fill-transparent transition-colors">
-                <path d="M50 20 L80 35 L50 50 L20 35 Z" className={f === 'top' ? 'fill-orange-500/60 stroke-orange-400' : f === 'bottom' ? 'fill-blue-500/30 stroke-blue-400 stroke-dasharray-[4_4]' : ''} />
-                <path d="M20 35 L50 50 L50 80 L20 65 Z" className={f === 'front' ? 'fill-orange-500/60 stroke-orange-400' : f === 'rear' ? 'fill-blue-500/30 stroke-blue-400 stroke-dasharray-[4_4]' : ''} />
-                <path d="M50 50 L80 35 L80 65 L50 80 Z" className={f === 'right' ? 'fill-orange-500/60 stroke-orange-400' : f === 'left' ? 'fill-blue-500/30 stroke-blue-400 stroke-dasharray-[4_4]' : ''} />
+                <path d="M50 20 L80 35 L50 50 L20 35 Z" className={f === 'top' ? 'fill-yellow-500/60 stroke-yellow-400' : f === 'bottom' ? 'fill-blue-500/30 stroke-blue-400 stroke-dasharray-[4_4]' : ''} />
+                <path d="M20 35 L50 50 L50 80 L20 65 Z" className={f === 'front' ? 'fill-yellow-500/60 stroke-yellow-400' : f === 'rear' ? 'fill-blue-500/30 stroke-blue-400 stroke-dasharray-[4_4]' : ''} />
+                <path d="M50 50 L80 35 L80 65 L50 80 Z" className={f === 'right' ? 'fill-yellow-500/60 stroke-yellow-400' : f === 'left' ? 'fill-blue-500/30 stroke-blue-400 stroke-dasharray-[4_4]' : ''} />
                 {f === '3d' && (
                     <>
-                        <path d="M50 20 L80 35 L50 50 L20 35 Z" className="fill-orange-500/20 stroke-orange-400/50" />
-                        <path d="M20 35 L50 50 L50 80 L20 65 Z" className="fill-orange-500/20 stroke-orange-400/50" />
-                        <path d="M50 50 L80 35 L80 65 L50 80 Z" className="fill-orange-500/20 stroke-orange-400/50" />
-                        <circle cx="50" cy="50" r="12" className="fill-orange-500 stroke-orange-400" />
+                        <path d="M50 20 L80 35 L50 50 L20 35 Z" className="fill-yellow-500/20 stroke-yellow-400/50" />
+                        <path d="M20 35 L50 50 L50 80 L20 65 Z" className="fill-yellow-500/20 stroke-yellow-400/50" />
+                        <path d="M50 50 L80 35 L80 65 L50 80 Z" className="fill-yellow-500/20 stroke-yellow-400/50" />
+                        <circle cx="50" cy="50" r="12" className="fill-yellow-500 stroke-yellow-400" />
                     </>
                 )}
             </g>
         </svg>
     );
+};
+
+const CameraManager = () => {
+    const { camera, controls } = useThree();
+    useEffect(() => {
+        const handleZoom = (e: any) => {
+            if (!controls) return;
+            const ctrl = controls as any;
+            if (e.detail === 'in') {
+                camera.position.multiplyScalar(0.8);
+            } else if (e.detail === 'out') {
+                camera.position.multiplyScalar(1.2);
+            } else if (e.detail === 'fit') {
+                const dir = camera.position.clone().normalize();
+                if (dir.lengthSq() === 0) {
+                    camera.position.set(100, 80, 100);
+                } else {
+                    camera.position.copy(dir.multiplyScalar(180));
+                }
+                camera.lookAt(0,0,0);
+                if (ctrl.target) ctrl.target.set(0,0,0);
+            }
+            ctrl.update();
+        };
+        window.addEventListener('viewport-zoom', handleZoom);
+        return () => window.removeEventListener('viewport-zoom', handleZoom);
+    }, [camera, controls]);
+    return null;
 };
 
 const StlModel: React.FC<{ 
@@ -246,30 +284,41 @@ const FabFlowPage: React.FC = () => {
       localStorage.setItem('dream_agent_open', JSON.stringify(isAgentOpen));
   }, [isAgentOpen]);
   const [cadMode, setCadMode] = useState<'Assembly' | 'Circuit'>('Assembly');
-  const [renderMode, setRenderMode] = useState<'wireframe' | 'edges' | 'solid'>('solid');
+  const [renderMode, setRenderMode] = useLocalStorageState<'wireframe' | 'edges' | 'solid'>('dream_ui_renderMode', 'solid');
   const [triggerHierarchyView, setTriggerHierarchyView] = useState<string | null>(null);
 
   
   const { projects, setProjects, activeProjectId, setActiveProjectId } = useProject();
   const activeProject = React.useMemo(() => projects.find(p => p.id === activeProjectId) || null, [projects, activeProjectId]);
   const [isGeneratingModel, setIsGeneratingModel] = useState(false);
+  const [bomExtractionState, setBomExtractionState] = useState<PartExtractionState[] | null>(null);
+  const [cloudModalMode, setCloudModalMode] = useState<'open' | 'analyze'>('open');
+  const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [hoveredComponentId, setHoveredComponentId] = useState<string | null>(null);
+  const [selectedComponentId, setSelectedComponentId] = useState<string | null>(null);
   const [isExploded, setIsExploded] = useState(false);
+  const [explodeDistance, setExplodeDistance] = useState(0);
   const [openScadRes, setOpenScadRes] = useState(50);
-  const [globalLightIntensitySlider, setGlobalLightIntensitySlider] = useState(0);
-  const [globalLightsOn, setGlobalLightsOn] = useState(true);
-  const [showLightMeshes, setShowLightMeshes] = useState(true);
-  const [showGrid, setShowGrid] = useState(true);
+  const [globalLightIntensitySlider, setGlobalLightIntensitySlider] = useLocalStorageState('dream_ui_luxBase', 0);
+  const [globalLightsOn, setGlobalLightsOn] = useLocalStorageState('dream_ui_globalLightsOn', true);
+  const [showLightMeshes, setShowLightMeshes] = useLocalStorageState('dream_ui_showLightMeshes', true);
+  const [showGrid, setShowGrid] = useLocalStorageState('dream_ui_showGrid', true);
   const [modelSize, setModelSize] = useState({x:20, y:20, z:20});
   const [isResizingMesh, setIsResizingMesh] = useState(false);
   const [materialType, setMaterialType] = useState<'plastic' | 'matte' | 'metallic'>('metallic');
-  const [roomTheme, setRoomTheme] = useState<'dark' | 'light'>('dark');
+  const [roomTheme, setRoomTheme] = useLocalStorageState<'dark' | 'light'>('dream_ui_roomTheme', 'dark');
   const [isOriginLocked, setIsOriginLocked] = useState(false);
-  const [cameraView, setCameraView] = useState<ViewMode>('3D');
+  const [cameraView, setCameraView] = useLocalStorageState<ViewMode>('dream_ui_cameraView', '3D');
 
+  const isInitialMountUI = React.useRef(true);
   useEffect(() => {
+      if (isInitialMountUI.current) {
+          isInitialMountUI.current = false;
+          return;
+      }
       setGlobalLightIntensitySlider(roomTheme === 'light' ? 500 : 0);
-  }, [roomTheme]);
+  }, [roomTheme, setGlobalLightIntensitySlider]);
 
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
@@ -360,10 +409,11 @@ const FabFlowPage: React.FC = () => {
         const sizeBytes = new Blob([dataStr]).size;
         if (sizeBytes > 10 * 1024 * 1024) throw new Error("Payload exceeds limit.");
 
-        const fileRef = ref(storage, `users/${auth.currentUser.uid}/projects/${activeProject.id}.dream`);
+        const ext = activeProject.appExtension || '.fabflow';
+        const fileRef = ref(storage, `users/${auth.currentUser.uid}/projects/${activeProject.id}${ext}`);
         await uploadString(fileRef, dataStr, 'raw');
 
-        const cloudMeta: CloudProject = { id: activeProject.id, name: activeProject.name, sizeBytes, uploadedAt: Date.now() };
+        const cloudMeta: CloudProject = { id: activeProject.id, name: activeProject.name, sizeBytes, uploadedAt: Date.now(), appExtension: ext };
         await setDoc(doc(db, `users/${auth.currentUser.uid}/cloudProjects`, activeProject.id), cloudMeta);
         
         await fetchCloudProjects();
@@ -399,6 +449,123 @@ const FabFlowPage: React.FC = () => {
       } finally {
           setCloudLoadingAction(null);
       }
+  };
+
+  const runDreamproAnalysis = async (jsonText: string) => {
+      try {
+          const projectData = JSON.parse(jsonText) as DesignProject;
+          if (projectData.id) {
+              setProjects(prev => {
+                  const filtered = prev.filter(p => p.id !== projectData.id);
+                  return [projectData, ...filtered];
+              });
+              setActiveProjectId(projectData.id);
+          }
+
+          const partsToAnalyze = projectData.specs?.bom?.length > 0 ? projectData.specs.bom : projectData.nodes;
+          if (!partsToAnalyze || partsToAnalyze.length === 0) {
+              alert("No physical topology found in this .dreampro asset to extract.");
+              return;
+          }
+          
+          const initialState = partsToAnalyze.map((p: any) => ({ name: p.component || p.name, status: 'pending' as BOMExtractionStatus }));
+          setBomExtractionState(initialState);
+          const newBomItems: any[] = [];
+          
+          for (let i = 0; i < partsToAnalyze.length; i++) {
+              const baseNode = partsToAnalyze[i];
+              const partName = baseNode.component || baseNode.name;
+              setBomExtractionState(prev => prev!.map((item, idx) => idx === i ? { ...item, status: 'processing' } : item));
+              
+              try {
+                  let size = new THREE.Vector3(10, 10, 10);
+                  if (baseNode.dimensions) {
+                      size = new THREE.Vector3(baseNode.dimensions[0], baseNode.dimensions[1], baseNode.dimensions[2]);
+                  } else if (baseNode.type === 'imported_cad' && baseNode.fileData && baseNode.extension === 'stl') {
+                      const base64Data = baseNode.fileData.split(',')[1];
+                      if (base64Data) {
+                          const binaryString = window.atob(base64Data);
+                          const bytes = new Uint8Array(binaryString.length);
+                          for (let j = 0; j < binaryString.length; j++) bytes[j] = binaryString.charCodeAt(j);
+                          const stlGeo = new STLLoader().parse(bytes.buffer);
+                          stlGeo.computeBoundingBox();
+                          if (stlGeo.boundingBox) {
+                              size = stlGeo.boundingBox.max.clone().sub(stlGeo.boundingBox.min);
+                          }
+                      }
+                  }
+                  
+                  const isMerged = partName.toLowerCase().match(/(bearing|spring|coil|washer|screw|bolt|nut|pin|rivet|bushing)/) !== null;
+                  const analysis = await analyzeCADPart({
+                      name: partName,
+                      dimensions: [size.x, size.y, size.z],
+                      color: baseNode.color || [0.5, 0.5, 0.5],
+                      isMerged
+                  }, projectData.name || "Unknown Assembly");
+                  
+                  newBomItems.push({
+                      component: analysis.component || partName,
+                      type: analysis.type || baseNode.type || 'Mechanical',
+                      quantity: baseNode.quantity || 1,
+                      estimatedCost: analysis.estimatedCost ? String(analysis.estimatedCost) : "2.00",
+                      description: analysis.description || ""
+                  });
+                  
+                  setBomExtractionState(prev => prev!.map((item, idx) => idx === i ? { ...item, status: 'success' } : item));
+              } catch (err: any) {
+                  console.error("Extraction error", err);
+                  setBomExtractionState(prev => prev!.map((item, idx) => idx === i ? { ...item, status: 'error', errorMsg: err.message } : item));
+              }
+          }
+          
+          const finalSpecs = projectData.specs || {} as any;
+          finalSpecs.bom = newBomItems;
+          const finalProject = { ...projectData, specs: finalSpecs, appExtension: '.fabflow' }; // Native Persistence hook
+          setProjects(prev => {
+              const filtered = prev.filter(p => p.id !== finalProject.id);
+              return [finalProject, ...filtered];
+          });
+          setActiveProjectId(finalProject.id);
+          
+          setTimeout(() => setBomExtractionState(null), 3000);
+          
+      } catch (e) {
+          console.error("Failed to parse .dreampro", e);
+          alert("Invalid or corrupted .dreampro architecture.");
+          setBomExtractionState(null);
+      }
+  };
+
+  const handleCloudImportAndAnalyze = async (cloudProj: CloudProject) => {
+      if (!auth.currentUser) return;
+      try {
+          setCloudLoadingAction(cloudProj.id);
+          const ext = cloudProj.appExtension || '.dream';
+          if (ext !== '.dreampro') {
+             alert("Only .dreampro assemblies contain the topological matrices required for AI BOM Extraction.");
+             return;
+          }
+          const fileRef = ref(storage, `users/${auth.currentUser.uid}/projects/${cloudProj.id}${ext}`);
+          const url = await getDownloadURL(fileRef);
+          const response = await fetch(url);
+          const text = await response.text();
+          setIsCloudModalOpen(false);
+          runDreamproAnalysis(text);
+      } catch (err: any) {
+          alert(`Cloud Fetch Failed: ${err.message}`);
+      } finally {
+          setCloudLoadingAction(null);
+      }
+  };
+
+  const runLocalDreamproAnalysis = (project: DesignProject) => {
+      setIsProjectModalOpen(false);
+      runDreamproAnalysis(JSON.stringify(project));
+  };
+  
+  const handleCloudImportAndAnalyzeSelected = async (cloudProj: CloudProject) => {
+      setIsProjectModalOpen(false);
+      handleCloudImportAndAnalyze(cloudProj);
   };
 
   const handleDeleteFromCloud = async (cloudProj: CloudProject) => {
@@ -505,10 +672,77 @@ const FabFlowPage: React.FC = () => {
             <div className="px-4 py-2 border-b border-zinc-800/80 shrink-0 bg-transparent flex flex-col items-center bg-black/60 z-20 relative">
                 
                 {/* FIRST ROW: File Menu & Main Views */}
-                <div className="flex justify-between items-center w-full gap-4">
+                <div className="flex justify-start items-center w-full gap-1">
                     {/* File Main Actions */}
                     <div className="flex items-center gap-2 bg-black/60 p-1.5 rounded-lg border border-zinc-800/80 shadow-[0_4px_30px_rgba(0,0,0,0.5)] backdrop-blur-sm overflow-x-auto no-scrollbar shrink-0">
-                        <button onClick={() => setRenderMode('solid')} className={`relative flex items-center justify-center p-1.5 w-8 h-8 rounded-md transition-all duration-200 border ${renderMode === 'solid' ? 'bg-[#00ffcc]/20 text-[#00ffcc] border-[#00ffcc]/30 shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]' : 'text-zinc-500 border-transparent hover:text-zinc-300 hover:bg-zinc-800/70'}`} title="Solid Shaded View">
+                        <button onClick={() => navigate('/studio')} className="p-1.5 text-zinc-300 hover:text-emerald-400 hover:bg-emerald-900/40 rounded transition-colors" title="New Project">
+                            <PlusCircle className="w-5 h-5 drop-shadow-md" />
+                        </button>
+                        <button onClick={() => handleDownloadProject()} className="p-1.5 px-2 text-blue-400 hover:text-blue-300 hover:bg-blue-900/40 rounded transition-colors flex items-center justify-center gap-1.5" title="Save File Locally">
+                            <Save className="w-5 h-5 drop-shadow-md fill-blue-500/10" />
+                            <ArrowDownToLine className="w-3.5 h-3.5 opacity-80" />
+                        </button>
+                        <div className="w-px h-5 bg-zinc-700/80 mx-0.5 rounded"></div>
+                        <button onClick={() => alert("Please import natively via ProStudio before running Simulation.")} className="p-1 hover:bg-emerald-900/40 rounded transition-colors flex items-center" title="Load Local File">
+                            <div className="relative p-1 flex items-center justify-center">
+                                <FolderOpen className="w-5 h-5 text-emerald-500 drop-shadow-md" />
+                            </div>
+                        </button>
+                        <div className="w-px h-5 bg-zinc-700/80 mx-0.5 rounded"></div>
+                        <button onClick={() => setIsProjectModalOpen(true)} className="flex items-center gap-2 px-3 py-1 bg-black/40 border border-yellow-500/30 shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)] rounded-lg hover:border-yellow-500/70 hover:bg-yellow-900/40 transition-all text-yellow-400 font-bold text-[9px] uppercase tracking-wider group" title="Import Assembly">
+                            <Layers className="w-4 h-4 text-[#3b82f6] group-hover:drop-shadow-[0_0_8px_rgba(59,130,246,0.8)]" />
+                            <ArrowRight className="w-3 h-3 text-zinc-500 group-hover:text-zinc-300" />
+                            <Factory className="w-4 h-4 text-[#eab308] group-hover:drop-shadow-[0_0_8px_rgba(234,179,8,0.8)]" />
+                        </button>
+                        <div className="w-px h-5 bg-zinc-700/80 mx-0.5 rounded"></div>
+                        <button onClick={handleSaveToCloud} disabled={isCloudSaving} className="p-1.5 text-blue-400 hover:text-blue-300 hover:bg-blue-900/40 rounded transition-colors flex items-center gap-1.5 disabled:opacity-50" title="Commit to Remote Cloud">
+                            {isCloudSaving ? <RefreshCw className="w-5 h-5 animate-spin drop-shadow-md" /> : <UploadCloud className="w-5 h-5 drop-shadow-md fill-blue-500/20" />}
+                        </button>
+                        <div className="w-px h-5 bg-zinc-700/80 mx-0.5 rounded"></div>
+                        <button onClick={() => { setActiveProjectId(null); navigate('/fabflow'); }} className="p-1.5 text-zinc-300 hover:text-yellow-400 hover:bg-yellow-900/40 rounded transition-colors" title="Close Project">
+                            <XSquare className="w-5 h-5 drop-shadow-md" />
+                        </button>
+                    </div>
+
+                    {/* Zoom Controls */}
+                    <div className="flex items-center gap-1 bg-black/60 p-1.5 rounded-lg border border-zinc-800/80 shadow-[0_4px_30px_rgba(0,0,0,0.5)] backdrop-blur-sm shrink-0">
+                        <button onClick={() => window.dispatchEvent(new CustomEvent('viewport-zoom', { detail: 'in' }))} className="p-1.5 text-blue-400 hover:text-white hover:bg-blue-900/40 rounded transition-colors" title="Zoom In">
+                            <ZoomIn className="w-5 h-5 drop-shadow-md" />
+                        </button>
+                        <button onClick={() => window.dispatchEvent(new CustomEvent('viewport-zoom', { detail: 'out' }))} className="p-1.5 text-blue-400 hover:text-white hover:bg-blue-900/40 rounded transition-colors" title="Zoom Out">
+                            <ZoomOut className="w-5 h-5 drop-shadow-md" />
+                        </button>
+                        <div className="w-px h-4 bg-zinc-700/80 mx-1 rounded"></div>
+                        <button onClick={() => window.dispatchEvent(new CustomEvent('viewport-zoom', { detail: 'fit' }))} className="p-1.5 text-indigo-400 hover:text-white hover:bg-indigo-900/40 rounded transition-colors" title="Zoom to Fit All">
+                            <Maximize className="w-5 h-5 drop-shadow-md" />
+                        </button>
+                    </div>
+                </div>
+
+                {/* SECOND ROW: App-Specific Workspace Menubars */}
+                <div className="flex justify-start items-center w-full gap-1 mt-1">
+                    <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pointer-events-auto">
+                        
+                        {/* Viewport Render Modes */}
+                        <div className="flex items-center gap-1 bg-black/60 p-1.5 rounded-lg border border-zinc-800/80 shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]">
+                            <button onClick={() => setRenderMode('wireframe')} className={`relative flex items-center justify-center p-1.5 w-8 h-8 rounded-md transition-all duration-200 border ${renderMode === 'wireframe' ? 'bg-[#eab308]/20 text-[#eab308] border-[#eab308]/30 shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]' : 'text-zinc-500 border-transparent hover:text-zinc-300 hover:bg-zinc-800/70'}`} title="Wireframe View">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" className="w-full h-full">
+                                   <circle cx="12" cy="12" r="9" />
+                                   <ellipse cx="12" cy="12" rx="9" ry="3.5" />
+                                   <ellipse cx="12" cy="12" rx="4" ry="9" />
+                                </svg>
+                            </button>
+                            <button onClick={() => setRenderMode('edges')} className={`relative flex items-center justify-center p-1.5 w-8 h-8 rounded-md transition-all duration-200 border ${renderMode === 'edges' ? 'bg-[#eab308]/20 text-[#eab308] border-[#eab308]/30 shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]' : 'text-zinc-500 border-transparent hover:text-zinc-300 hover:bg-zinc-800/70'}`} title="Solid + Edge View">
+                                <svg viewBox="0 0 24 24" className="w-full h-full">
+                                    <polygon points="12 3 4 7.5 12 12 20 7.5" fill="currentColor" fillOpacity="0.8" />
+                                    <polygon points="4 16.5 4 7.5 12 12 12 21" fill="currentColor" fillOpacity="0.4" />
+                                    <polygon points="12 21 12 12 20 7.5 20 16.5" fill="currentColor" fillOpacity="0.6" />
+                                    <path d="M20 16.5V7.5L12 3 4 7.5v9l8 4.5z" fill="none" stroke={renderMode === 'edges' ? '#eab308' : '#18181b'} strokeWidth="1.5" strokeLinejoin="round" />
+                                    <polyline points="4 7.5 12 12 20 7.5" fill="none" stroke={renderMode === 'edges' ? '#eab308' : '#18181b'} strokeWidth="1.5" strokeLinejoin="round" />
+                                    <line x1="12" y1="21" x2="12" y2="12" stroke={renderMode === 'edges' ? '#eab308' : '#18181b'} strokeWidth="1.5" strokeLinecap="round" />
+                                </svg>
+                            </button>
+                            <button onClick={() => setRenderMode('solid')} className={`relative flex items-center justify-center p-1.5 w-8 h-8 rounded-md transition-all duration-200 border ${renderMode === 'solid' ? 'bg-[#eab308]/20 text-[#eab308] border-[#eab308]/30 shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]' : 'text-zinc-500 border-transparent hover:text-zinc-300 hover:bg-zinc-800/70'}`} title="Solid Shaded View">
                                 <svg viewBox="0 0 24 24" className="w-full h-full">
                                     <circle cx="12" cy="12" r="9" fill="url(#smooth-grad-sim)" />
                                     <defs>
@@ -520,200 +754,165 @@ const FabFlowPage: React.FC = () => {
                                 </svg>
                             </button>
 
-                            <div className="w-px h-4 bg-zinc-700/80 mx-1.5 rounded"></div>
+                            <div className="w-px h-5 bg-zinc-700/80 mx-1.5 rounded"></div>
 
-                            <button onClick={() => alert('V-Ray Plugin Not Licensed')} className="w-[39px] h-[39px] mx-0.5 rounded-sm border border-zinc-600/80 hover:border-orange-500 overflow-hidden relative shadow-md group outline-none transition-colors" title="Photorealistic GPU Render">
-                                <img src="/crankshaft_render.png" alt="Render" className="w-full h-full object-cover group-hover:scale-125 transition-transform duration-700 ease-out" />
-                                <div className="absolute inset-0 ring-1 ring-inset ring-black/40 group-hover:ring-orange-500/30 mix-blend-overlay pointer-events-none"></div>
+                            <button onClick={() => alert('V-Ray Plugin Not Licensed')} className="relative flex items-center justify-center p-1.5 w-8 h-8 mx-0.5 rounded border border-transparent hover:border-yellow-500/50 hover:bg-yellow-900/40 text-yellow-500 group transition-all duration-300" title="Photorealistic GPU Render">
+                                <Aperture className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" />
+                                <Sparkles className="w-2.5 h-2.5 absolute top-[4px] right-[4px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-yellow-300" />
                             </button>
                         </div>
                         <div className="w-px h-5 bg-zinc-700/80 mx-0.5 rounded"></div>
 
-                        {/* Mesh Resolution */}
-                        <div className="flex items-center gap-3 bg-black/60 px-3 py-1.5 rounded-lg border border-zinc-800/80 shadow-inner opacity-40 hover:opacity-100 transition-opacity">
-                            <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest flex items-center gap-1"><Maximize2 className="w-3 h-3 text-zinc-400" /> Mesh Res</span>
-                            <input 
-                               type="range" min="10" max="150" step="5" 
-                               value={openScadRes} 
-                               onChange={e => setOpenScadRes(Number(e.target.value))} 
-                               onMouseUp={handleResApply} 
-                               onTouchEnd={handleResApply} 
-                               className="w-24 md:w-32 accent-yellow-500 outline-none cursor-pointer" 
-                               disabled={isResizingMesh} 
-                            />
-                            <div className="w-10 text-right font-mono text-xs text-yellow-500">
-                                {isResizingMesh ? <RefreshCw className="w-3 h-3 animate-spin inline-block text-yellow-500" /> : openScadRes}
-                            </div>
-                        </div>
 
-                        {/* Environment & Materials */}
-                        <div className="flex items-center gap-1 bg-black/60 p-1.5 rounded-lg border border-zinc-800/80 shadow-[0_4px_30px_rgba(0,0,0,0.5)] backdrop-blur-sm shrink-0">
+                        {/* Lighting Toolbar */}
+                        <div className="flex items-center gap-2 bg-black/60 p-1.5 rounded-lg border border-zinc-800/80 shadow-[0_4px_30px_rgba(0,0,0,0.5)] backdrop-blur-sm shrink-0">
                             <button onClick={() => setRoomTheme(roomTheme === 'dark' ? 'light' : 'dark')} className="p-1.5 rounded transition-colors text-zinc-500 hover:text-zinc-300" title="Toggle Environment">
-                               {roomTheme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                               {roomTheme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
                             </button>
-                        </div>
-
-                        <div className="flex items-center gap-1 bg-black/60 p-1.5 rounded-lg border border-zinc-800/80 shadow-[0_4px_30px_rgba(0,0,0,0.5)] backdrop-blur-sm shrink-0">
-                            <button onClick={() => setMaterialType('matte')} className={`p-1.5 rounded transition-colors ${materialType === 'matte' ? 'bg-yellow-900/40 text-yellow-400' : 'text-zinc-500 hover:text-zinc-300'}`} title="Matte Finish"><BoxIcon className="w-4 h-4" /></button>
-                            <button onClick={() => setMaterialType('plastic')} className={`p-1.5 rounded transition-colors ${materialType === 'plastic' ? 'bg-yellow-900/40 text-yellow-400' : 'text-zinc-500 hover:text-zinc-300'}`} title="Glossy Plastic"><Droplet className="w-4 h-4" /></button>
-                            <button onClick={() => setMaterialType('metallic')} className={`p-1.5 rounded transition-colors ${materialType === 'metallic' ? 'bg-yellow-900/40 text-yellow-400' : 'text-zinc-500 hover:text-zinc-300'}`} title="Metallic Finish"><Sparkles className="w-4 h-4" /></button>
-                        </div>
-
-                        {/* Lux Controls */}
-                        <div className="flex items-center gap-3 bg-black/60 px-3 py-1.5 rounded-lg border border-zinc-800/80 shadow-inner">
+                            <div className="w-px h-5 bg-zinc-700/80 mx-1 rounded"></div>
                             <div className="flex items-center gap-2">
-                                <button onClick={() => setShowGrid(!showGrid)} className="outline-none transition-colors border-r border-zinc-700 pr-2 mr-1" title="Toggle Grid">
-                                   <Grid3X3 className={`w-4 h-4 ${showGrid ? 'text-yellow-500 hover:text-yellow-400' : 'text-zinc-600 hover:text-zinc-500'}`} />
+                                <button onClick={() => setShowGrid(!showGrid)} className="p-1.5 outline-none transition-colors border-r border-zinc-700/80 pr-2 mr-1 block" title="Toggle Grid">
+                                   <Grid3X3 className={`w-5 h-5 ${showGrid ? 'text-yellow-500 hover:text-yellow-400' : 'text-zinc-600 hover:text-zinc-500'}`} />
                                 </button>
-                                <button onClick={() => setShowLightMeshes(!showLightMeshes)} className="outline-none transition-colors border-r border-zinc-700 pr-2 mr-1" title="Show/Hide Physical Light Frames">
-                                   {showLightMeshes ? <Eye className="w-4 h-4 text-zinc-300 hover:text-white" /> : <EyeOff className="w-4 h-4 text-zinc-600 hover:text-zinc-500" />}
+                                <button onClick={() => setShowLightMeshes(!showLightMeshes)} className="p-1.5 outline-none transition-colors border-r border-zinc-700/80 pr-2 mr-1 block" title="Show/Hide Physical Light Frames">
+                                   {showLightMeshes ? <Eye className="w-5 h-5 text-zinc-300 hover:text-white" /> : <EyeOff className="w-5 h-5 text-zinc-600 hover:text-zinc-500" />}
                                 </button>
-                                <button onClick={() => setGlobalLightsOn(!globalLightsOn)} className="outline-none transition-colors" title="Toggle All Lights">
-                                   {globalLightsOn ? <Lightbulb className="w-4 h-4 text-yellow-500 hover:text-yellow-400" /> : <LightbulbOff className="w-4 h-4 text-zinc-600 hover:text-zinc-500" />}
+                                <button onClick={() => setGlobalLightsOn(!globalLightsOn)} className="p-1.5 outline-none transition-colors block" title="Toggle All Lights">
+                                   {globalLightsOn ? <Lightbulb className="w-5 h-5 text-yellow-500 hover:text-yellow-400" /> : <LightbulbOff className="w-5 h-5 text-zinc-600 hover:text-zinc-500" />}
                                 </button>
-                                <span className="text-xs text-zinc-400 font-bold tracking-wider">LUX BASE</span>
                                 <input 
                                   type="range" min="-1000" max="1000" step="1" 
                                   value={globalLightIntensitySlider} 
                                   onChange={e => setGlobalLightIntensitySlider(Number(e.target.value))} 
                                   className="w-24 accent-yellow-500 outline-none cursor-pointer" 
                                 />
-                                <span className="text-xs font-mono w-8 text-zinc-300">{globalLightIntensitySlider > 0 ? `+${globalLightIntensitySlider}` : globalLightIntensitySlider}</span>
+                                <span className="text-xs font-mono w-8 text-zinc-300 flex items-center ml-1">{globalLightIntensitySlider > 0 ? `+${globalLightIntensitySlider}` : globalLightIntensitySlider}</span>
                             </div>
                         </div>
 
-                        <button 
-                           onClick={() => setIsExploded(!isExploded)} 
-                           className={`px-3 py-1 flex items-center gap-1.5 rounded transition-colors text-[10px] font-bold uppercase tracking-widest border ${isExploded ? 'bg-red-900/40 text-red-400 border-red-500/30 hover:bg-red-900/60' : 'bg-black/60 text-zinc-400 border-zinc-500/30 hover:text-white hover:border-zinc-400/50'}`}
-                        >
-                            {isExploded ? <Minimize2 className="w-3 h-3" /> : <Maximize2 className="w-3 h-3" />}
-                            {isExploded ? 'Assemble' : 'Explode'}
-                        </button>
+                        <div className="flex items-center gap-1 bg-black/60 p-1.5 rounded-lg border border-zinc-800/80 shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)] shrink-0 h-[44px]">
+                            <button onClick={() => setIsExploded(!isExploded)} className={`mr-2 p-1.5 rounded transition-colors border ${isExploded ? 'bg-yellow-900/40 text-yellow-400 border-yellow-500/50' : 'text-zinc-500 border-transparent hover:text-zinc-300 hover:bg-zinc-800/70'}`} title="Exploded View (Right-Click Canvas to Cycle Modes)"><Component className="w-5 h-5" /></button>
+                            {isExploded && (
+                                <input 
+                                    type="range" 
+                                    min="0" 
+                                    max="100" 
+                                    step="2"
+                                    value={explodeDistance} 
+                                    onChange={(e) => setExplodeDistance(Number(e.target.value))}
+                                    className="w-16 accent-yellow-500 cursor-pointer mx-1" 
+                                    title={`Explosion Distance: ${explodeDistance}%`} 
+                                />
+                            )}
+                        </div>
                     </div>
                     
                     {/* Metrics Toolbar Elements */}
                     <div className="flex items-center gap-2 shrink-0">
-                        <button className="p-1.5 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded transition-colors" title="Global Manufacturing Network"><Globe2 className="w-4 h-4" /></button>
-                        <button className="p-1.5 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded transition-colors" title="Compute Tiers"><Server className="w-4 h-4" /></button>
-                        <button className="p-1.5 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded transition-colors" title="Energy Metrics"><Zap className="w-4 h-4" /></button>
-                        <button className="p-1.5 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded transition-colors" title="Compliance Validation"><ShieldCheck className="w-4 h-4" /></button>
+                        <button className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white rounded border border-zinc-700/50 transition-colors flex items-center gap-2 text-xs font-bold uppercase tracking-widest shadow-sm" title="Virtual Gigafactory Vendor Connect" onClick={() => {}}><Globe2 className="w-4 h-4 text-emerald-500" /></button>
+                        <button className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white rounded border border-zinc-700/50 transition-colors flex items-center gap-2 text-xs font-bold uppercase tracking-widest shadow-sm" title="Compliance Validation"><ShieldCheck className="w-4 h-4 text-zinc-400" /></button>
                     </div>
                 </div>
             </div>
             
             <div className="flex-1 w-full h-full bg-[#09090b] relative cursor-move">
-                {activeProject?.assetUrls?.stl ? (
-                    <div className="absolute inset-0 z-0">
-                        <Canvas camera={{ position: [100, 75, 100], fov: 45 }}>
-                            <color attach="background" args={[roomTheme === 'dark' ? '#09090b' : '#808080']} />
-                            <fog attach="fog" args={[roomTheme === 'dark' ? '#09090b' : '#808080', 50, 400]} />
-                            
-                            <StudioLighting modelSize={modelSize} showLightMeshes={showLightMeshes} globalIntensitySlider={globalLightIntensitySlider} globalLightsOn={globalLightsOn} roomTheme={roomTheme} />
-                            
-                            {showGrid && (
-                                <Grid 
-                                   renderOrder={-1} 
-                                   position={[0, -0.01, 0]} 
-                                   infiniteGrid 
-                                   cellSize={10} 
-                                   cellThickness={0.5} 
-                                   sectionSize={50} 
-                                   sectionThickness={1} 
-                                   cellColor={roomTheme === 'dark' ? '#27272a' : '#d4d4d8'} 
-                                   sectionColor={roomTheme === 'dark' ? '#3f3f46' : '#a1a1aa'} 
-                                   fadeDistance={200} 
-                                />
-                            )}
+                <div className="absolute inset-0 z-0">
+                    <Canvas camera={{ position: [100, 75, 100], fov: 45 }}>
+                        <color attach="background" args={[roomTheme === 'dark' ? '#09090b' : '#808080']} />
+                        <fog attach="fog" args={[roomTheme === 'dark' ? '#09090b' : '#808080', 50, 400]} />
+                        
+                        <StudioLighting modelSize={modelSize} showLightMeshes={showLightMeshes} globalIntensitySlider={globalLightIntensitySlider} globalLightsOn={globalLightsOn} roomTheme={roomTheme} />
+                        
+                        {showGrid && (
+                            <Grid 
+                               renderOrder={-1} 
+                               position={[0, -0.01, 0]} 
+                               infiniteGrid 
+                               cellSize={10} 
+                               cellThickness={0.5} 
+                               sectionSize={50} 
+                               sectionThickness={1} 
+                               cellColor={roomTheme === 'dark' ? '#713f12' : '#fef08a'} 
+                               sectionColor={roomTheme === 'dark' ? '#a16207' : '#fde047'} 
+                               fadeDistance={200} 
+                            />
+                        )}
 
-                               <CameraPresets mode={cameraView} />
-                               <RoomWalls roomTheme={roomTheme} />
+                           <CameraPresets mode={cameraView} />
+                           <RoomWalls roomTheme={roomTheme} />
+                           <CameraManager />
 
-                            <React.Suspense fallback={null}>
-                                <Environment preset="city" />
-                                <ContactShadows position={[0, -50, 0]} opacity={0.8} scale={300} blur={2.5} far={100} />
-                                
-                                <group position={[0, 0, 0]}>
-                                    {activeProject.assemblyParts && activeProject.assemblyParts.length > 0 ? (
-                                        activeProject.assemblyParts.map((part) => (
-                                            part.stlUrl && (
-                                                <StlModel 
-                                                    key={part.id} 
-                                                    stlData={part.stlUrl} 
+                        <React.Suspense fallback={null}>
+                            <Environment preset="city" />
+                            <ContactShadows position={[0, -50, 0]} opacity={0.8} scale={300} blur={2.5} far={100} />
+                            
+                            <group position={[0, 0, 0]}>
+                                {activeProject?.nodes && activeProject.nodes.length > 0 ? (
+                                    activeProject.nodes.map((node) => (
+                                        node.type === 'imported_cad' && node.fileData ? (
+                                            <React.Suspense key={node.id} fallback={null}>
+                                                <ImportedCADGeometry 
+                                                    fileUrl={node.fileData} 
+                                                    extension={node.extension || 'stl'} 
                                                     isExploded={isExploded}
-                                                    isHovered={hoveredComponentId === part.id}
-                                                    isSelected={false}
-                                                    materialType={materialType}
-                                                    baseColor={primaryMaterialInfo.color}
-                                                    onHover={(state) => setHoveredComponentId(state ? part.id : null)}
-                                                    onClick={() => setHoveredComponentId(part.id)}
-                                                    onLoaded={(size) => setModelSize(prev => ({
-                                                        x: Math.max(prev.x, size.x),
-                                                        y: Math.max(prev.y, size.y),
-                                                        z: Math.max(prev.z, size.z)
-                                                    }))}
+                                                    explodeDistance={explodeDistance}
+                                                    assemblyName={node.name}
+                                                    renderMode={renderMode}
+                                                    selectedBomComponent={selectedComponentId}
+                                                    hoveredBomComponent={hoveredComponentId}
+                                                    onPartClick={(partName) => setSelectedComponentId(prev => prev === partName ? null : partName)}
+                                                    onPartHover={(partName) => setHoveredComponentId(partName)}
                                                 />
-                                            )
-                                        ))
-                                    ) : (
-                                        <StlModel stlData={activeProject.assetUrls.stl} materialType={materialType} baseColor={primaryMaterialInfo.color} renderMode={renderMode} onLoaded={(size) => setModelSize(size)} />
-                                    )}
-                                    
-                                    {/* Legacy Placeholders omitted if assembly logic is rendering natives */}
-                                    {(!activeProject.assemblyParts || activeProject.assemblyParts.length === 0) && vendorMatches.map((comp, idx) => (
-                                        <ExplodedNode 
-                                            key={comp.partId} 
-                                            comp={comp} 
-                                            idx={idx} 
-                                            total={vendorMatches.length} 
-                                            isHovered={hoveredComponentId === comp.partId}
-                                            setHovered={setHoveredComponentId}
-                                        />
-                                    ))}
-                                </group>
-                            </React.Suspense>
-                            
-                            <GizmoHelper alignment="top-right" margin={[60, 60]}>
-                                <GizmoViewport axisColors={['#ef4444', '#10b981', '#3b82f6']} labelColor="black" />
-                            </GizmoHelper>
-
-                            <OrbitControls makeDefault autoRotate={false} minDistance={20} maxDistance={500} />
-                        </Canvas>
-
-                    </div>
-                ) : !activeProject ? (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-30">
-                        <div className="max-w-md text-center bg-transparent pointer-events-auto bg-black/80 backdrop-blur p-8 rounded-xl border border-zinc-800 shadow-2xl">
-                            <Factory className="w-12 h-12 text-zinc-600 mx-auto mb-4" />
-                            <h3 className="text-xl font-black text-zinc-400 tracking-widest uppercase mb-3">FabFlow Engine</h3>
-                            <p className="text-zinc-500 leading-relaxed text-sm mb-6">Select a local project or load a global blueprint from the WorkSpace sidebar to begin manufacturing trace analysis.</p>
-                        </div>
-                    </div>
-                ) : (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-30">
-                        <div className="max-w-md text-center bg-transparent pointer-events-auto bg-black/80 backdrop-blur p-8 rounded-xl border border-zinc-800 shadow-2xl">
-                            <Binary className="w-12 h-12 text-zinc-600 mx-auto mb-4" />
-                            <h3 className="text-xl font-black text-zinc-400 tracking-widest uppercase mb-3">FabFlow Simulation Engine</h3>
-                            <p className="text-zinc-500 leading-relaxed text-sm mb-6">A solid geometric representation (OpenSCAD / STL) is required to run component manufacturing flow analysis.</p>
-                            
-                            <button 
-                                onClick={handleGenerateModel}
-                                disabled={isGeneratingModel}
-                                className="w-full py-3 bg-yellow-600 hover:bg-yellow-500 text-black font-bold tracking-widest uppercase rounded-lg shadow-[0_0_20px_rgba(202,138,4,0.4)] transition-all flex justify-center items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                {isGeneratingModel ? (
-                                    <><RefreshCw className="w-5 h-5 animate-spin" /> Compiling Solid Flow Volumes...</>
+                                            </React.Suspense>
+                                        ) : null
+                                    ))
                                 ) : (
-                                    <><Hammer className="w-5 h-5" /> Import & Resolve Physics</>
+                                    <StlModel stlData={activeProject?.assetUrls?.stl || ''} materialType={materialType} baseColor={primaryMaterialInfo.color} renderMode={renderMode} onLoaded={(size) => setModelSize(size)} />
                                 )}
-                            </button>
+                            </group>
+                        </React.Suspense>
+                        
+                        <GizmoHelper alignment="top-right" margin={[60, 60]}>
+                            <GizmoViewport axisColors={['#ef4444', '#10b981', '#3b82f6']} labelColor="black" />
+                        </GizmoHelper>
+
+                        <OrbitControls makeDefault autoRotate={false} minDistance={20} maxDistance={500} />
+                    </Canvas>
+                </div>
+                
+                {bomExtractionState && (
+                    <div className="absolute right-6 top-24 z-50 bg-[#09090b]/95 backdrop-blur-md border border-yellow-500/30 rounded-lg shadow-[10px_10px_30px_rgba(0,0,0,0.5)] w-[320px] max-h-[60vh] flex flex-col overflow-hidden animate-in slide-in-from-right-4 fade-in duration-200">
+                        <div className="px-3 py-2 border-b border-zinc-800 bg-yellow-900/10 flex justify-between items-center shrink-0">
+                            <span className="text-[10px] font-bold text-yellow-400 uppercase tracking-widest flex items-center gap-1.5"><Bot className="w-3 h-3" /> AI BOM Extraction</span>
+                            <button onClick={() => setBomExtractionState(null)} className="text-zinc-500 hover:text-white"><X className="w-3 h-3" /></button>
+                        </div>
+                        <div className="flex-1 overflow-y-auto p-2 space-y-2">
+                            {bomExtractionState.map((state, idx) => (
+                                <div key={idx} className="flex flex-col gap-1 p-2 rounded bg-black border border-zinc-800/80">
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-xs font-bold text-white truncate w-4/5">{state.name}</span>
+                                        {state.status === 'pending' && <Clock className="w-3 h-3 text-zinc-500" />}
+                                        {state.status === 'processing' && <Loader2 className="w-3 h-3 text-yellow-400 animate-spin" />}
+                                        {state.status === 'success' && <CheckCircle className="w-3 h-3 text-emerald-400" />}
+                                        {state.status === 'error' && <AlertTriangle className="w-3 h-3 text-red-500" />}
+                                    </div>
+                                    <div className="flex justify-between items-center mt-1">
+                                        <span className={`text-[10px] font-bold uppercase tracking-widest ${state.status === 'pending' ? 'text-zinc-600' : state.status === 'processing' ? 'text-yellow-500' : state.status === 'success' ? 'text-emerald-500' : 'text-red-500'}`}>
+                                            {state.status}
+                                        </span>
+                                    </div>
+                                    {state.errorMsg && <div className="text-[10px] text-red-400 mt-1 leading-tight">{state.errorMsg}</div>}
+                                </div>
+                            ))}
                         </div>
                     </div>
                 )}
+                
                 <SimHUD colorClass="yellow" />
             </div>
         </ThemePanel>
 
-                {/* Horizontal Resizer Handle */}
+        {/* Horizontal Resizer Handle */}
         <div 
           onMouseDown={handleBottomPanelMouseDown}
           className="resize-handle h-1.5 w-full bg-zinc-800 flex-shrink-0 cursor-row-resize hover:bg-yellow-500 transition-colors z-30"
@@ -725,40 +924,61 @@ const FabFlowPage: React.FC = () => {
                 <h2 className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest flex items-center gap-2"><Globe2 className="w-3.5 h-3.5 text-yellow-500" /> Bill of Materials & Vendor Matching</h2>
                 <span className="text-[9px] bg-yellow-900/40 text-yellow-300 px-2 py-0.5 rounded uppercase tracking-widest font-bold border border-yellow-500/20 shadow-inner block">Algorithm Under Development</span>
             </div>
-            
+
             <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
-                {activeProject && activeProject.nodes && activeProject.nodes.length > 0 ? (
+                {activeProject?.specs?.bom && activeProject.specs.bom.length > 0 ? (
                     <table className="w-full text-left text-xs text-zinc-400 border-collapse">
-                        <thead className="text-[9px] uppercase tracking-widest text-zinc-500 border-b border-zinc-800 bg-zinc-900/40">
-                            <tr>
-                                <th className="py-2.5 px-4 font-bold">Component Name</th>
+                        <thead>
+                            <tr className="border-b border-zinc-800 text-[10px] uppercase tracking-wider text-zinc-500">
+                                <th className="py-2.5 px-4 font-bold">Part Name</th>
                                 <th className="py-2.5 px-4 font-bold">Material</th>
-                                <th className="py-2.5 px-4 font-bold">Volume / Mass</th>
-                                <th className="py-2.5 px-4 font-bold">Potential Vendor</th>
-                                <th className="py-2.5 px-4 text-right font-bold">Est. Unit Cost</th>
+                                <th className="py-2.5 px-4 font-bold">Est. Cost</th>
+                                <th className="py-2.5 px-4 font-bold text-center">Qty</th>
+                                <th className="py-2.5 px-4 font-bold">Matched Vendor API</th>
+                                <th className="py-2.5 px-4 font-bold text-right">Vendor Price</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {activeProject.nodes.map((node, i) => {
-                                const vMatch = vendorMatches.find(v => v.partId === node.id) || vendorMatches[i % vendorMatches.length];
-                                const mat = node.materialType || 'Plastic';
-                                const vol = Math.abs((node.dimensions?.[0]||10) * (node.dimensions?.[1]||10) * (node.dimensions?.[2]||10) / 1000).toFixed(2);
-                                
+                            {/* Root Assembly Node */}
+                            <tr 
+                                className={`border-b border-zinc-800/50 hover:bg-zinc-800/30 transition-colors cursor-pointer ${selectedComponentId === null ? 'bg-zinc-800/50 border-l-2 border-yellow-500' : 'border-l-2 border-transparent'}`}
+                                onClick={() => setSelectedComponentId(null)}
+                            >
+                                <td colSpan={6} className="py-2.5 px-4">
+                                    <div className="flex items-center gap-2">
+                                        <ChevronDown className="w-4 h-4 text-zinc-500" />
+                                        <Factory className="w-4 h-4 text-yellow-500" />
+                                        <span className="font-normal text-zinc-200 tracking-wider text-[11px] uppercase">{activeProject.name || 'Assembly Root'}</span>
+                                    </div>
+                                </td>
+                            </tr>
+                            {/* Leaf Component Nodes */}
+                            {activeProject.specs.bom.map((part: any, i: number) => {
+                                const vMatch = vendorMatches.find(v => v.partId === part.id) || vendorMatches[i % vendorMatches.length];
+                                const mat = part.materialType || 'Steel';
+                                const parsedCost = part.estimatedCost ? part.estimatedCost.replace(/[^0-9.]/g, '') : "2.00";
+                                const isHovered = hoveredComponentId === part.component;
+                                const isSelected = selectedComponentId === part.component;
+
                                 return (
-                                    <tr 
-                                        key={node.id} 
-                                        onMouseEnter={() => setHoveredComponentId(node.id)}
+                                    <tr
+                                        key={`part_${i}`}
+                                        className={`border-b border-zinc-800/50 hover:bg-zinc-800/30 transition-colors cursor-pointer ${isSelected ? 'bg-zinc-800/50 border-l-2 border-yellow-500' : isHovered ? 'bg-zinc-800/40 border-l-2 border-yellow-500' : 'border-l-2 border-transparent'}`}
+                                        onMouseEnter={() => setHoveredComponentId(part.component)}
                                         onMouseLeave={() => setHoveredComponentId(null)}
-                                        className={`border-b border-zinc-800/50 hover:bg-[#00ffcc]/5 cursor-pointer transition-colors ${hoveredComponentId === node.id ? 'bg-[#00ffcc]/10' : ''}`}
+                                        onClick={() => setSelectedComponentId(prev => prev === part.component ? null : part.component)}
                                     >
-                                        <td className="py-2.5 px-4 font-bold text-zinc-300 flex items-center gap-2">
-                                            <div className="w-1.5 h-1.5 rounded-full" style={{backgroundColor: node.color}}></div>
-                                            {node.name || `Topology Face ${i+1}`}
+                                        <td className="py-2.5 pl-10 pr-4">
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-2 h-2 rounded-full hidden md:block shadow-sm" style={{ backgroundColor: part.color || '#3b82f6' }}></div>
+                                                <span className="font-semibold text-zinc-300">{part.component}</span>
+                                            </div>
                                         </td>
-                                        <td className="py-2.5 px-4 capitalize whitespace-nowrap">{mat} {['metal','aluminum','steel'].includes(mat) ? '(CNC Machined)' : '(Injection Mold)'}</td>
-                                        <td className="py-2.5 px-4 font-mono text-[11px] text-blue-400">{vol} cm³</td>
-                                        <td className="py-2.5 px-4 text-emerald-400 flex items-center gap-1.5"><Factory className="w-3 h-3 text-zinc-500" /> {vMatch?.vendorName || 'ProtoLabs Inc.'}</td>
-                                        <td className="py-2.5 px-4 text-right font-mono font-bold text-yellow-500">{vMatch?.price || '$14.50'}</td>
+                                        <td className="py-2.5 px-4 truncate max-w-[120px]" title={mat}>{mat}</td>
+                                        <td className="py-2.5 px-4 font-mono text-zinc-300">${Number(parsedCost).toFixed(2)}</td>
+                                        <td className="py-2.5 px-4 text-center">{part.quantity || 1}</td>
+                                        <td className="py-2.5 px-4 text-emerald-400"><div className="flex items-center gap-1.5"><Factory className="w-3 h-3 text-zinc-500" /> {vMatch?.vendorName || 'ProtoLabs Inc.'}</div></td>
+                                        <td className="py-2.5 px-4 text-right font-mono font-bold text-yellow-500">{vMatch?.price || `$${(Number(parsedCost) * 1.5).toFixed(2)}`}</td>
                                     </tr>
                                 );
                             })}
@@ -814,9 +1034,20 @@ const FabFlowPage: React.FC = () => {
           isOpen={isCloudModalOpen}
           onClose={() => setIsCloudModalOpen(false)}
           projects={cloudProjects}
-          onLoad={handleDownloadFromCloud}
+          onLoad={cloudModalMode === 'analyze' ? handleCloudImportAndAnalyze : handleDownloadFromCloud}
           onDelete={handleDeleteFromCloud}
           loadingAction={cloudLoadingAction}
+          appTheme="fabflow"
+      />
+      <ProjectSelectionModal 
+          isOpen={isProjectModalOpen}
+          onClose={() => setIsProjectModalOpen(false)}
+          projects={projects}
+          cloudProjects={cloudProjects}
+          onSelectLocal={runLocalDreamproAnalysis}
+          onSelectCloud={handleCloudImportAndAnalyzeSelected}
+          loadingAction={cloudLoadingAction}
+          appTheme="fabflow"
       />
     </div>
   );

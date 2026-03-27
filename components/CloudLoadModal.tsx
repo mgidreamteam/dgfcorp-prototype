@@ -1,5 +1,5 @@
 import React from 'react';
-import { Cloud, CloudDownload, Loader2, Trash2 } from 'lucide-react';
+import { Cloud, CloudDownload, Loader2, Trash2, Cuboid, Factory, Hammer, Radar } from 'lucide-react';
 import GlobalModal from './GlobalModal';
 import { CloudProject } from '../types';
 
@@ -10,15 +10,25 @@ export interface CloudLoadModalProps {
     onLoad: (p: CloudProject) => void;
     onDelete: (p: CloudProject) => void;
     loadingAction: string | null;
+    appTheme?: 'prostudio' | 'fabflow' | 'studiosim' | 'tacticalsim';
 }
 
-const CloudLoadModal: React.FC<CloudLoadModalProps> = ({ isOpen, onClose, projects, onLoad, onDelete, loadingAction }) => {
+const CloudLoadModal: React.FC<CloudLoadModalProps> = ({ isOpen, onClose, projects, onLoad, onDelete, loadingAction, appTheme = 'prostudio' }) => {
+    const themeParams = {
+        prostudio: { color: 'text-blue-500', bg: 'bg-blue-600', hoverBg: 'hover:bg-blue-500', icon: <Cuboid className="w-5 h-5 text-blue-500" /> },
+        fabflow: { color: 'text-yellow-500', bg: 'bg-yellow-600', hoverBg: 'hover:bg-yellow-500', icon: <Factory className="w-5 h-5 text-yellow-500" /> },
+        studiosim: { color: 'text-emerald-500', bg: 'bg-emerald-600', hoverBg: 'hover:bg-emerald-500', icon: <Hammer className="w-5 h-5 text-emerald-500" /> },
+        tacticalsim: { color: 'text-red-500', bg: 'bg-red-600', hoverBg: 'hover:bg-red-500', icon: <Radar className="w-5 h-5 text-red-500" /> }
+    };
+    
+    const theme = themeParams[appTheme];
+
     return (
         <GlobalModal
             isOpen={isOpen}
             onClose={onClose}
-            title={<div className="text-sm font-bold uppercase text-white">Cloud Storage Directory</div>}
-            icon={<Cloud className="w-5 h-5 text-[#3b82f6]" />}
+            title={<div className="text-sm font-bold uppercase text-white flex items-center gap-2">{theme.icon} Cloud Storage Directory</div>}
+            icon={<Cloud className={`w-5 h-5 ${theme.color}`} />}
             maxWidth="42rem"
         >
             <div className="space-y-3">
@@ -29,7 +39,7 @@ const CloudLoadModal: React.FC<CloudLoadModalProps> = ({ isOpen, onClose, projec
                         <div key={p.id} className="bg-[#27272a]/40 border border-[#3f3f46]/50 p-4 rounded-xl flex items-center justify-between hover:border-[#71717a] transition-colors">
                             <div>
                                 <div className="text-white font-semibold mb-1">{p.name}</div>
-                                <div className="text-sm font-normal flex gap-4 mt-1">
+                                <div className="text-sm font-normal flex gap-4 mt-1 text-zinc-400">
                                     <span>{(p.sizeBytes / 1000000).toFixed(2)} MB</span>
                                     <span>{new Date(p.uploadedAt).toLocaleString()}</span>
                                 </div>
@@ -38,9 +48,9 @@ const CloudLoadModal: React.FC<CloudLoadModalProps> = ({ isOpen, onClose, projec
                                 <button
                                     onClick={() => onLoad(p)}
                                     disabled={loadingAction === p.id}
-                                    className="bg-[#2563eb] hover:bg-[#3b82f6] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 flex items-center gap-2"
+                                    className={`${theme.bg} ${theme.hoverBg} text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 flex items-center gap-2`}
                                 >
-                                    {loadingAction === p.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <CloudDownload className="w-4 h-4" />} Stream
+                                    {loadingAction === p.id ? <Loader2 className="w-4 h-4 animate-spin text-white" /> : <CloudDownload className="w-4 h-4" />} Stream
                                 </button>
                                 <button
                                     onClick={() => onDelete(p)}

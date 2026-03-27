@@ -1,0 +1,1037 @@
+components/AssetViewer.tsx(132,27): error TS2322: Type 'string' is not assignable to type 'never'.
+components/AssetViewer.tsx(143,27): error TS2322: Type 'string' is not assignable to type 'never'.
+components/ImageViewer.tsx(103,27): error TS2322: Type 'string' is not assignable to type 'never'.
+components/ImageViewer.tsx(114,27): error TS2322: Type 'string' is not assignable to type 'never'.
+components/StudioLighting.tsx(31,22): error TS2554: Expected 1 arguments, but got 0.
+external/react-cad/packages/core/__tests__/makeBox.ts(1,26): error TS2307: Cannot find module '..' or its corresponding type declarations.
+external/react-cad/packages/core/__tests__/makeBox.ts(3,1): error TS2593: Cannot find name 'describe'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha` and then add 'jest' or 'mocha' to the types field in your tsconfig.
+external/react-cad/packages/core/__tests__/makeBox.ts(4,3): error TS2593: Cannot find name 'describe'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha` and then add 'jest' or 'mocha' to the types field in your tsconfig.
+external/react-cad/packages/core/__tests__/makeBox.ts(5,5): error TS2593: Cannot find name 'it'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha` and then add 'jest' or 'mocha' to the types field in your tsconfig.
+external/react-cad/packages/core/__tests__/makeBox.ts(8,7): error TS2304: Cannot find name 'expect'.
+external/react-cad/packages/core/__tests__/makeBox.ts(13,3): error TS2593: Cannot find name 'describe'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha` and then add 'jest' or 'mocha' to the types field in your tsconfig.
+external/react-cad/packages/core/__tests__/makeBox.ts(14,5): error TS2593: Cannot find name 'it'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha` and then add 'jest' or 'mocha' to the types field in your tsconfig.
+external/react-cad/packages/core/__tests__/makeBox.ts(17,7): error TS2304: Cannot find name 'expect'.
+external/react-cad/packages/core/__tests__/progress.ts(1,26): error TS2307: Cannot find module '..' or its corresponding type declarations.
+external/react-cad/packages/core/__tests__/progress.ts(3,1): error TS2593: Cannot find name 'describe'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha` and then add 'jest' or 'mocha' to the types field in your tsconfig.
+external/react-cad/packages/core/__tests__/progress.ts(4,3): error TS2593: Cannot find name 'it'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha` and then add 'jest' or 'mocha' to the types field in your tsconfig.
+external/react-cad/packages/core/__tests__/progress.ts(14,3): error TS2593: Cannot find name 'it'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha` and then add 'jest' or 'mocha' to the types field in your tsconfig.
+external/react-cad/packages/core/__tests__/progress.ts(15,29): error TS2304: Cannot find name 'jest'.
+external/react-cad/packages/core/__tests__/progress.ts(21,7): error TS2304: Cannot find name 'expect'.
+external/react-cad/packages/core/__tests__/progress.ts(22,7): error TS2304: Cannot find name 'expect'.
+external/react-cad/packages/core/__tests__/progress.ts(23,7): error TS2304: Cannot find name 'expect'.
+external/react-cad/packages/core/__tests__/ReactCADNode.ts(1,26): error TS2307: Cannot find module '..' or its corresponding type declarations.
+external/react-cad/packages/core/__tests__/ReactCADNode.ts(3,1): error TS2593: Cannot find name 'describe'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha` and then add 'jest' or 'mocha' to the types field in your tsconfig.
+external/react-cad/packages/core/__tests__/ReactCADNode.ts(4,3): error TS2593: Cannot find name 'it'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha` and then add 'jest' or 'mocha' to the types field in your tsconfig.
+external/react-cad/packages/core/__tests__/ReactCADNode.ts(7,5): error TS2304: Cannot find name 'expect'.
+external/react-cad/packages/create-component/lib/template/src/Example.stories.tsx(2,29): error TS2307: Cannot find module '@react-cad/storybook-framework' or its corresponding type declarations.
+external/react-cad/packages/create-component/lib/template/src/Example.tsx(9,3): error TS2339: Property 'difference' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/create-component/lib/template/src/Example.tsx(11,5): error TS2339: Property 'box' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/create-component/lib/template/src/Example.tsx(12,3): error TS2339: Property 'difference' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/docs/src/Example.tsx(3,35): error TS2307: Cannot find module '@storybook/components' or its corresponding type declarations.
+external/react-cad/packages/docs/src/Example.tsx(4,21): error TS2307: Cannot find module '@storybook/theming' or its corresponding type declarations.
+external/react-cad/packages/docs/src/Example.tsx(12,3): error TS2875: This JSX tag requires the module path '@emotion/react/jsx-runtime' to exist, but none could be found. Make sure you have types for the appropriate package installed.
+external/react-cad/packages/docs/src/Example.tsx(13,5): error TS2322: Type '{ children: Element[]; css: any; }' is not assignable to type 'DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement>'.
+  Property 'css' does not exist on type 'DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement>'.
+external/react-cad/packages/docs/src/Example.tsx(28,9): error TS2322: Type '{ src: string; css: any; }' is not assignable to type 'DetailedHTMLProps<ImgHTMLAttributes<HTMLImageElement>, HTMLImageElement>'.
+  Property 'css' does not exist on type 'DetailedHTMLProps<ImgHTMLAttributes<HTMLImageElement>, HTMLImageElement>'.
+external/react-cad/packages/docs/src/Example.tsx(42,7): error TS2322: Type '{ children: Element; css: any; }' is not assignable to type 'DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement>'.
+  Property 'css' does not exist on type 'DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement>'.
+external/react-cad/packages/docs/src/Link.tsx(3,21): error TS2307: Cannot find module '@storybook/theming' or its corresponding type declarations.
+external/react-cad/packages/docs/src/Link.tsx(4,20): error TS2307: Cannot find module '@storybook/addon-links/react' or its corresponding type declarations.
+external/react-cad/packages/docs/src/Link.tsx(10,38): error TS2339: Property 'children' does not exist on type 'Props'.
+external/react-cad/packages/docs/src/Link.tsx(11,3): error TS2875: This JSX tag requires the module path '@emotion/react/jsx-runtime' to exist, but none could be found. Make sure you have types for the appropriate package installed.
+external/react-cad/packages/examples/src/Compose.stories.tsx(2,29): error TS2307: Cannot find module '@react-cad/storybook-framework' or its corresponding type declarations.
+external/react-cad/packages/examples/src/Composed.tsx(12,3): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/Composed.tsx(16,5): error TS2339: Property 'difference' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/Composed.tsx(17,7): error TS2339: Property 'union' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/Composed.tsx(18,9): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/Composed.tsx(19,11): error TS2339: Property 'box' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/Composed.tsx(20,9): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/Composed.tsx(21,9): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/Composed.tsx(22,11): error TS2339: Property 'box' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/Composed.tsx(23,9): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/Composed.tsx(24,9): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/Composed.tsx(25,11): error TS2339: Property 'box' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/Composed.tsx(26,9): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/Composed.tsx(27,7): error TS2339: Property 'union' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/Composed.tsx(28,7): error TS2339: Property 'translation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/Composed.tsx(30,7): error TS2339: Property 'translation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/Composed.tsx(31,5): error TS2339: Property 'difference' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/Composed.tsx(32,3): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/Errors.stories.tsx(2,29): error TS2307: Cannot find module '@react-cad/storybook-framework' or its corresponding type declarations.
+external/react-cad/packages/examples/src/Errors.stories.tsx(10,36): error TS2339: Property 'evolution' does not exist on type 'IntrinsicElements'.
+external/react-cad/packages/examples/src/Errors.stories.tsx(13,3): error TS2339: Property 'union' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/Errors.stories.tsx(14,5): error TS2339: Property 'difference' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/Errors.stories.tsx(15,7): error TS2339: Property 'box' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/Errors.stories.tsx(16,7): error TS2339: Property 'evolution' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/Errors.stories.tsx(17,5): error TS2339: Property 'difference' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/Errors.stories.tsx(18,3): error TS2339: Property 'union' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/import/brep.stories.tsx(2,29): error TS2307: Cannot find module '@react-cad/storybook-framework' or its corresponding type declarations.
+external/react-cad/packages/examples/src/import/brep.stories.tsx(7,43): error TS2339: Property 'brep' does not exist on type 'IntrinsicElements'.
+external/react-cad/packages/examples/src/import/brep.stories.tsx(16,17): error TS2339: Property 'brep' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/import/obj.stories.tsx(2,29): error TS2307: Cannot find module '@react-cad/storybook-framework' or its corresponding type declarations.
+external/react-cad/packages/examples/src/import/obj.stories.tsx(7,43): error TS2339: Property 'obj' does not exist on type 'IntrinsicElements'.
+external/react-cad/packages/examples/src/import/obj.stories.tsx(16,17): error TS2339: Property 'obj' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/import/step.stories.tsx(2,29): error TS2307: Cannot find module '@react-cad/storybook-framework' or its corresponding type declarations.
+external/react-cad/packages/examples/src/import/step.stories.tsx(7,43): error TS2339: Property 'step' does not exist on type 'IntrinsicElements'.
+external/react-cad/packages/examples/src/import/step.stories.tsx(16,17): error TS2339: Property 'step' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/import/stl.stories.tsx(2,29): error TS2307: Cannot find module '@react-cad/storybook-framework' or its corresponding type declarations.
+external/react-cad/packages/examples/src/import/stl.stories.tsx(7,43): error TS2339: Property 'stl' does not exist on type 'IntrinsicElements'.
+external/react-cad/packages/examples/src/import/stl.stories.tsx(16,17): error TS2339: Property 'stl' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/MakeBottle.tsx(16,5): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/MakeBottle.tsx(20,5): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/MakeBottle.tsx(32,5): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/MakeBottle.tsx(33,7): error TS2339: Property 'loft' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/MakeBottle.tsx(34,9): error TS2339: Property 'cylindricalSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/MakeBottle.tsx(45,9): error TS2339: Property 'cylindricalSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/MakeBottle.tsx(46,9): error TS2339: Property 'cylindricalSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/MakeBottle.tsx(57,9): error TS2339: Property 'cylindricalSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/MakeBottle.tsx(58,7): error TS2339: Property 'loft' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/MakeBottle.tsx(59,5): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/MakeBottle.tsx(74,3): error TS2339: Property 'union' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/MakeBottle.tsx(75,5): error TS2339: Property 'hollow' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/MakeBottle.tsx(82,7): error TS2339: Property 'fillet' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/MakeBottle.tsx(83,9): error TS2339: Property 'prism' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/MakeBottle.tsx(85,9): error TS2339: Property 'prism' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/MakeBottle.tsx(86,7): error TS2339: Property 'fillet' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/MakeBottle.tsx(87,7): error TS2339: Property 'translation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/MakeBottle.tsx(88,9): error TS2339: Property 'cylinder' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/MakeBottle.tsx(89,7): error TS2339: Property 'translation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/MakeBottle.tsx(90,5): error TS2339: Property 'hollow' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/MakeBottle.tsx(91,5): error TS2339: Property 'translation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/MakeBottle.tsx(93,5): error TS2339: Property 'translation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/MakeBottle.tsx(94,3): error TS2339: Property 'union' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/operations/difference.stories.tsx(2,29): error TS2307: Cannot find module '@react-cad/storybook-framework' or its corresponding type declarations.
+external/react-cad/packages/examples/src/operations/difference.stories.tsx(5,3): error TS2339: Property 'difference' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/operations/difference.stories.tsx(7,5): error TS2339: Property 'box' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/operations/difference.stories.tsx(8,5): error TS2339: Property 'box' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/operations/difference.stories.tsx(9,3): error TS2339: Property 'difference' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/operations/intersection.stories.tsx(2,29): error TS2307: Cannot find module '@react-cad/storybook-framework' or its corresponding type declarations.
+external/react-cad/packages/examples/src/operations/intersection.stories.tsx(5,3): error TS2339: Property 'intersection' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/operations/intersection.stories.tsx(7,5): error TS2339: Property 'box' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/operations/intersection.stories.tsx(8,5): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/operations/intersection.stories.tsx(9,7): error TS2339: Property 'box' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/operations/intersection.stories.tsx(10,5): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/operations/intersection.stories.tsx(11,3): error TS2339: Property 'intersection' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/operations/union.stories.tsx(2,29): error TS2307: Cannot find module '@react-cad/storybook-framework' or its corresponding type declarations.
+external/react-cad/packages/examples/src/operations/union.stories.tsx(5,3): error TS2339: Property 'union' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/operations/union.stories.tsx(6,5): error TS2339: Property 'box' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/operations/union.stories.tsx(8,3): error TS2339: Property 'union' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/box.stories.tsx(2,29): error TS2307: Cannot find module '@react-cad/storybook-framework' or its corresponding type declarations.
+external/react-cad/packages/examples/src/primitives/box.stories.tsx(4,36): error TS2339: Property 'box' does not exist on type 'IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/box.stories.tsx(6,45): error TS2339: Property 'box' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/cone.stories.tsx(2,29): error TS2307: Cannot find module '@react-cad/storybook-framework' or its corresponding type declarations.
+external/react-cad/packages/examples/src/primitives/cone.stories.tsx(4,36): error TS2339: Property 'cone' does not exist on type 'IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/cone.stories.tsx(6,49): error TS2339: Property 'cone' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/cylinder.stories.tsx(2,29): error TS2307: Cannot find module '@react-cad/storybook-framework' or its corresponding type declarations.
+external/react-cad/packages/examples/src/primitives/cylinder.stories.tsx(4,36): error TS2339: Property 'cylinder' does not exist on type 'IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/cylinder.stories.tsx(6,53): error TS2339: Property 'cylinder' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/polyhedron.stories.tsx(2,29): error TS2307: Cannot find module '@react-cad/storybook-framework' or its corresponding type declarations.
+external/react-cad/packages/examples/src/primitives/polyhedron.stories.tsx(4,36): error TS2339: Property 'polyhedron' does not exist on type 'IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/polyhedron.stories.tsx(6,55): error TS2339: Property 'polyhedron' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(2,29): error TS2307: Cannot find module '@react-cad/storybook-framework' or its corresponding type declarations.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(4,36): error TS2339: Property 'solid' does not exist on type 'IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(6,43): error TS2339: Property 'solid' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(15,3): error TS2339: Property 'solid' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(16,5): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(20,5): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(22,5): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(23,7): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(27,7): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(28,5): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(30,5): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(31,7): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(35,7): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(36,5): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(38,5): error TS2339: Property 'translation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(39,7): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(40,9): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(44,9): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(45,7): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(46,5): error TS2339: Property 'translation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(48,5): error TS2339: Property 'translation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(49,7): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(50,9): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(54,9): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(55,7): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(56,5): error TS2339: Property 'translation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(58,5): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(62,5): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(63,3): error TS2339: Property 'solid' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(67,3): error TS2339: Property 'solid' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(68,5): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(72,5): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(73,5): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(74,7): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(78,7): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(79,5): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(80,5): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(81,7): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(85,7): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(86,5): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(87,5): error TS2339: Property 'translation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(88,7): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(89,9): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(97,9): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(98,7): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(99,5): error TS2339: Property 'translation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(100,3): error TS2339: Property 'solid' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(104,3): error TS2339: Property 'solid' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(106,5): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(110,5): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(113,5): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(114,7): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(118,7): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(119,5): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(120,5): error TS2339: Property 'translation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(121,7): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(122,9): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(126,9): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(127,7): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(128,5): error TS2339: Property 'translation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(131,5): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(132,7): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(136,7): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(137,5): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(138,5): error TS2339: Property 'translation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(139,7): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(140,9): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(144,9): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(145,7): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(146,5): error TS2339: Property 'translation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(149,5): error TS2339: Property 'translation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(150,7): error TS2339: Property 'cylindricalSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(154,7): error TS2339: Property 'cylindricalSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(155,5): error TS2339: Property 'translation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/solid.stories.tsx(156,3): error TS2339: Property 'solid' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/sphere.stories.tsx(2,29): error TS2307: Cannot find module '@react-cad/storybook-framework' or its corresponding type declarations.
+external/react-cad/packages/examples/src/primitives/sphere.stories.tsx(4,36): error TS2339: Property 'sphere' does not exist on type 'IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/torus.stories.tsx(2,29): error TS2307: Cannot find module '@react-cad/storybook-framework' or its corresponding type declarations.
+external/react-cad/packages/examples/src/primitives/torus.stories.tsx(4,36): error TS2339: Property 'torus' does not exist on type 'IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/torus.stories.tsx(6,50): error TS2339: Property 'torus' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/wedge.stories.tsx(2,29): error TS2307: Cannot find module '@react-cad/storybook-framework' or its corresponding type declarations.
+external/react-cad/packages/examples/src/primitives/wedge.stories.tsx(4,36): error TS2339: Property 'wedge' does not exist on type 'IntrinsicElements'.
+external/react-cad/packages/examples/src/primitives/wedge.stories.tsx(6,50): error TS2339: Property 'wedge' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/evolution.stories.tsx(2,29): error TS2307: Cannot find module '@react-cad/storybook-framework' or its corresponding type declarations.
+external/react-cad/packages/examples/src/sweeps/evolution.stories.tsx(6,36): error TS2339: Property 'evolution' does not exist on type 'IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/evolution.stories.tsx(27,54): error TS2339: Property 'evolution' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/evolution.stories.tsx(50,7): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/evolution.stories.tsx(50,40): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/helix.stories.tsx(2,29): error TS2307: Cannot find module '@react-cad/storybook-framework' or its corresponding type declarations.
+external/react-cad/packages/examples/src/sweeps/helix.stories.tsx(7,36): error TS2339: Property 'helix' does not exist on type 'IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/helix.stories.tsx(16,50): error TS2339: Property 'helix' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/helix.stories.tsx(59,7): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/helix.stories.tsx(61,7): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/loft.stories.tsx(2,29): error TS2307: Cannot find module '@react-cad/storybook-framework' or its corresponding type declarations.
+external/react-cad/packages/examples/src/sweeps/loft.stories.tsx(8,36): error TS2339: Property 'loft' does not exist on type 'IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/loft.stories.tsx(10,49): error TS2339: Property 'loft' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/loft.stories.tsx(19,5): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/loft.stories.tsx(20,7): error TS2339: Property 'sphericalSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/loft.stories.tsx(24,7): error TS2339: Property 'sphericalSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/loft.stories.tsx(25,5): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/loft.stories.tsx(26,5): error TS2339: Property 'translation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/loft.stories.tsx(27,7): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/loft.stories.tsx(31,7): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/loft.stories.tsx(32,5): error TS2339: Property 'translation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/loft.stories.tsx(33,5): error TS2339: Property 'translation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/loft.stories.tsx(34,7): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/loft.stories.tsx(38,7): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/loft.stories.tsx(39,5): error TS2339: Property 'translation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/loft.stories.tsx(40,5): error TS2339: Property 'translation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/loft.stories.tsx(41,7): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/loft.stories.tsx(42,9): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/loft.stories.tsx(46,9): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/loft.stories.tsx(47,7): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/loft.stories.tsx(48,5): error TS2339: Property 'translation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/loft.stories.tsx(55,7): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/loft.stories.tsx(57,7): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/loft.stories.tsx(58,7): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/loft.stories.tsx(60,7): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/loft.stories.tsx(61,7): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/loft.stories.tsx(63,7): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/loft.stories.tsx(71,7): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/loft.stories.tsx(93,7): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/loft.stories.tsx(94,7): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/loft.stories.tsx(113,7): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/loft.stories.tsx(114,7): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/loft.stories.tsx(136,7): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/loft.stories.tsx(148,5): error TS2339: Property 'union' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/loft.stories.tsx(149,7): error TS2339: Property 'difference' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/loft.stories.tsx(150,9): error TS2339: Property 'cylinder' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/loft.stories.tsx(151,9): error TS2339: Property 'cylinder' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/loft.stories.tsx(152,7): error TS2339: Property 'difference' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/loft.stories.tsx(153,7): error TS2339: Property 'loft' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/loft.stories.tsx(154,9): error TS2339: Property 'cylindricalSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/loft.stories.tsx(165,9): error TS2339: Property 'cylindricalSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/loft.stories.tsx(166,9): error TS2339: Property 'cylindricalSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/loft.stories.tsx(177,9): error TS2339: Property 'cylindricalSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/loft.stories.tsx(178,7): error TS2339: Property 'loft' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/loft.stories.tsx(179,5): error TS2339: Property 'union' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/loft.stories.tsx(186,7): error TS2339: Property 'cylindricalSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/loft.stories.tsx(190,7): error TS2339: Property 'cylindricalSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/loft.stories.tsx(191,7): error TS2339: Property 'cylindricalSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/loft.stories.tsx(195,7): error TS2339: Property 'cylindricalSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/loft.stories.tsx(202,5): error TS2339: Property 'translation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/loft.stories.tsx(203,7): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/loft.stories.tsx(205,11): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/loft.stories.tsx(209,11): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/loft.stories.tsx(210,11): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/loft.stories.tsx(214,11): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/loft.stories.tsx(215,11): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/loft.stories.tsx(219,11): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/loft.stories.tsx(220,11): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/loft.stories.tsx(224,11): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/loft.stories.tsx(226,7): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/loft.stories.tsx(227,5): error TS2339: Property 'translation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/pipe.stories.tsx(2,29): error TS2307: Cannot find module '@react-cad/storybook-framework' or its corresponding type declarations.
+external/react-cad/packages/examples/src/sweeps/pipe.stories.tsx(6,36): error TS2339: Property 'pipe' does not exist on type 'IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/pipe.stories.tsx(30,49): error TS2339: Property 'pipe' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/pipe.stories.tsx(53,7): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/pipe.stories.tsx(53,44): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/Polygon.tsx(2,34): error TS2307: Cannot find module '@react-cad/renderer' or its corresponding type declarations.
+external/react-cad/packages/examples/src/sweeps/Polygon.tsx(16,11): error TS2339: Property 'approximation' does not exist on type '{}'.
+external/react-cad/packages/examples/src/sweeps/prism.stories.tsx(2,29): error TS2307: Cannot find module '@react-cad/storybook-framework' or its corresponding type declarations.
+external/react-cad/packages/examples/src/sweeps/prism.stories.tsx(8,36): error TS2339: Property 'prism' does not exist on type 'IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/prism.stories.tsx(19,50): error TS2339: Property 'prism' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/prism.stories.tsx(57,7): error TS2339: Property 'sphericalSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/prism.stories.tsx(59,7): error TS2339: Property 'sphericalSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/revolution.stories.tsx(2,29): error TS2307: Cannot find module '@react-cad/core' or its corresponding type declarations.
+external/react-cad/packages/examples/src/sweeps/revolution.stories.tsx(3,29): error TS2307: Cannot find module '@react-cad/storybook-framework' or its corresponding type declarations.
+external/react-cad/packages/examples/src/sweeps/revolution.stories.tsx(8,36): error TS2339: Property 'revolution' does not exist on type 'IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/revolution.stories.tsx(18,55): error TS2339: Property 'revolution' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/revolution.stories.tsx(49,5): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/revolution.stories.tsx(49,62): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/sweeps/Text.tsx(2,22): error TS2307: Cannot find module 'opentype.js/dist/opentype.module' or its corresponding type declarations.
+external/react-cad/packages/examples/src/sweeps/Text.tsx(3,20): error TS2307: Cannot find module './Roboto-Regular.otffont' or its corresponding type declarations.
+external/react-cad/packages/examples/src/transformations/affine.stories.tsx(2,29): error TS2307: Cannot find module '@react-cad/storybook-framework' or its corresponding type declarations.
+external/react-cad/packages/examples/src/transformations/affine.stories.tsx(4,36): error TS2339: Property 'affine' does not exist on type 'IntrinsicElements'.
+external/react-cad/packages/examples/src/transformations/affine.stories.tsx(7,3): error TS2339: Property 'affine' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/transformations/affine.stories.tsx(8,5): error TS2339: Property 'box' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/transformations/affine.stories.tsx(9,3): error TS2339: Property 'affine' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/transformations/mirror.stories.tsx(2,29): error TS2307: Cannot find module '@react-cad/storybook-framework' or its corresponding type declarations.
+external/react-cad/packages/examples/src/transformations/mirror.stories.tsx(4,36): error TS2339: Property 'mirror' does not exist on type 'IntrinsicElements'.
+external/react-cad/packages/examples/src/transformations/mirror.stories.tsx(7,3): error TS2339: Property 'union' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/transformations/mirror.stories.tsx(8,5): error TS2339: Property 'translation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/transformations/mirror.stories.tsx(9,7): error TS2339: Property 'box' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/transformations/mirror.stories.tsx(10,5): error TS2339: Property 'translation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/transformations/mirror.stories.tsx(11,5): error TS2339: Property 'mirror' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/transformations/mirror.stories.tsx(12,7): error TS2339: Property 'translation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/transformations/mirror.stories.tsx(13,9): error TS2339: Property 'box' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/transformations/mirror.stories.tsx(14,7): error TS2339: Property 'translation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/transformations/mirror.stories.tsx(15,5): error TS2339: Property 'mirror' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/transformations/mirror.stories.tsx(16,3): error TS2339: Property 'union' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/transformations/rotation.stories.tsx(2,29): error TS2307: Cannot find module '@react-cad/storybook-framework' or its corresponding type declarations.
+external/react-cad/packages/examples/src/transformations/rotation.stories.tsx(3,36): error TS2307: Cannot find module '@react-cad/core' or its corresponding type declarations.
+external/react-cad/packages/examples/src/transformations/rotation.stories.tsx(5,36): error TS2339: Property 'rotation' does not exist on type 'IntrinsicElements'.
+external/react-cad/packages/examples/src/transformations/rotation.stories.tsx(8,3): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/transformations/rotation.stories.tsx(9,5): error TS2339: Property 'box' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/transformations/rotation.stories.tsx(10,3): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/transformations/scale.stories.tsx(2,28): error TS2307: Cannot find module '@react-cad/core' or its corresponding type declarations.
+external/react-cad/packages/examples/src/transformations/scale.stories.tsx(3,29): error TS2307: Cannot find module '@react-cad/storybook-framework' or its corresponding type declarations.
+external/react-cad/packages/examples/src/transformations/scale.stories.tsx(5,36): error TS2339: Property 'scale' does not exist on type 'IntrinsicElements'.
+external/react-cad/packages/examples/src/transformations/scale.stories.tsx(8,3): error TS2339: Property 'scale' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/transformations/scale.stories.tsx(9,5): error TS2339: Property 'box' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/transformations/scale.stories.tsx(10,3): error TS2339: Property 'scale' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/transformations/translation.stories.tsx(2,29): error TS2307: Cannot find module '@react-cad/storybook-framework' or its corresponding type declarations.
+external/react-cad/packages/examples/src/transformations/translation.stories.tsx(4,36): error TS2339: Property 'translation' does not exist on type 'IntrinsicElements'.
+external/react-cad/packages/examples/src/transformations/translation.stories.tsx(7,3): error TS2339: Property 'translation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/transformations/translation.stories.tsx(8,5): error TS2339: Property 'box' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/examples/src/transformations/translation.stories.tsx(9,3): error TS2339: Property 'translation' does not exist on type 'JSX.IntrinsicElements'.
+external/react-cad/packages/playground/src/components/App/index.tsx(2,30): error TS2307: Cannot find module '@typescript/sandbox' or its corresponding type declarations.
+external/react-cad/packages/playground/src/components/App/sandbox.ts(1,40): error TS2307: Cannot find module '@typescript/sandbox' or its corresponding type declarations.
+external/react-cad/packages/playground/src/components/App/useMonacoActions.ts(2,30): error TS2307: Cannot find module '@typescript/sandbox' or its corresponding type declarations.
+external/react-cad/packages/playground/src/components/Preview/index.tsx(2,28): error TS2307: Cannot find module '@react-cad/viewer' or its corresponding type declarations.
+external/react-cad/packages/playground/src/components/Preview/useReactCADCore.ts(2,35): error TS2307: Cannot find module '@react-cad/core' or its corresponding type declarations.
+external/react-cad/packages/playground/src/components/Preview/useReactCADCore.ts(11,17): error TS2307: Cannot find module '@react-cad/core' or its corresponding type declarations.
+external/react-cad/packages/playground/src/index.tsx(8,12): error TS2339: Property 'render' does not exist on type 'typeof import("D:/Codebase/mgi-dream/node_modules/.pnpm/@types+react-dom@19.2.3_@types+react@19.2.14/node_modules/@types/react-dom/index")'.
+external/react-cad/packages/react-cad/src/index.ts(1,15): error TS2307: Cannot find module '@react-cad/renderer' or its corresponding type declarations.
+external/react-cad/packages/react-cad/src/index.ts(3,25): error TS2307: Cannot find module '@react-cad/renderer' or its corresponding type declarations.
+external/react-cad/packages/renderer/src/elements/__tests__/box.ts(3,1): error TS2593: Cannot find name 'describe'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha` and then add 'jest' or 'mocha' to the types field in your tsconfig.
+external/react-cad/packages/renderer/src/elements/__tests__/box.ts(4,3): error TS2593: Cannot find name 'describe'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha` and then add 'jest' or 'mocha' to the types field in your tsconfig.
+external/react-cad/packages/renderer/src/elements/__tests__/box.ts(5,5): error TS2593: Cannot find name 'it'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha` and then add 'jest' or 'mocha' to the types field in your tsconfig.
+external/react-cad/packages/renderer/src/elements/__tests__/box.ts(6,7): error TS2304: Cannot find name 'expect'.
+external/react-cad/packages/renderer/src/elements/__tests__/box.ts(8,7): error TS2304: Cannot find name 'expect'.
+external/react-cad/packages/renderer/src/elements/__tests__/box.ts(13,7): error TS2304: Cannot find name 'expect'.
+external/react-cad/packages/renderer/src/elements/__tests__/box.ts(15,7): error TS2304: Cannot find name 'expect'.
+external/react-cad/packages/renderer/src/elements/affine.ts(1,29): error TS2307: Cannot find module 'instance' or its corresponding type declarations.
+external/react-cad/packages/renderer/src/elements/box.ts(1,29): error TS2307: Cannot find module 'instance' or its corresponding type declarations.
+external/react-cad/packages/renderer/src/elements/cone.ts(1,29): error TS2307: Cannot find module 'instance' or its corresponding type declarations.
+external/react-cad/packages/renderer/src/elements/cylinder.ts(1,29): error TS2307: Cannot find module 'instance' or its corresponding type declarations.
+external/react-cad/packages/renderer/src/elements/cylindricalSurface.ts(1,29): error TS2307: Cannot find module 'instance' or its corresponding type declarations.
+external/react-cad/packages/renderer/src/elements/evolution.ts(1,29): error TS2307: Cannot find module 'instance' or its corresponding type declarations.
+external/react-cad/packages/renderer/src/elements/helix.ts(1,29): error TS2307: Cannot find module 'instance' or its corresponding type declarations.
+external/react-cad/packages/renderer/src/elements/import.ts(1,29): error TS2307: Cannot find module 'instance' or its corresponding type declarations.
+external/react-cad/packages/renderer/src/elements/loft.ts(1,29): error TS2307: Cannot find module 'instance' or its corresponding type declarations.
+external/react-cad/packages/renderer/src/elements/mirror.ts(1,29): error TS2307: Cannot find module 'instance' or its corresponding type declarations.
+external/react-cad/packages/renderer/src/elements/pipe.ts(1,29): error TS2307: Cannot find module 'instance' or its corresponding type declarations.
+external/react-cad/packages/renderer/src/elements/planeSurface.ts(1,29): error TS2307: Cannot find module 'instance' or its corresponding type declarations.
+external/react-cad/packages/renderer/src/elements/polyhedron.ts(1,23): error TS2307: Cannot find module '@react-cad/core' or its corresponding type declarations.
+external/react-cad/packages/renderer/src/elements/polyhedron.ts(2,29): error TS2307: Cannot find module 'instance' or its corresponding type declarations.
+external/react-cad/packages/renderer/src/elements/prism.ts(1,29): error TS2307: Cannot find module 'instance' or its corresponding type declarations.
+external/react-cad/packages/renderer/src/elements/revolution.ts(1,29): error TS2307: Cannot find module 'instance' or its corresponding type declarations.
+external/react-cad/packages/renderer/src/elements/rotation.ts(1,29): error TS2307: Cannot find module 'instance' or its corresponding type declarations.
+external/react-cad/packages/renderer/src/elements/scale.ts(1,29): error TS2307: Cannot find module 'instance' or its corresponding type declarations.
+external/react-cad/packages/renderer/src/elements/sphere.ts(1,29): error TS2307: Cannot find module 'instance' or its corresponding type declarations.
+external/react-cad/packages/renderer/src/elements/sphericalSurface.ts(1,29): error TS2307: Cannot find module 'instance' or its corresponding type declarations.
+external/react-cad/packages/renderer/src/elements/torus.ts(1,29): error TS2307: Cannot find module 'instance' or its corresponding type declarations.
+external/react-cad/packages/renderer/src/elements/translation.ts(1,29): error TS2307: Cannot find module 'instance' or its corresponding type declarations.
+external/react-cad/packages/renderer/src/elements/wedge.ts(1,29): error TS2307: Cannot find module 'instance' or its corresponding type declarations.
+external/react-cad/packages/renderer/src/index.ts(2,29): error TS2307: Cannot find module 'react-reconciler' or its corresponding type declarations.
+external/react-cad/packages/renderer/src/index.ts(3,44): error TS2307: Cannot find module '@react-cad/core' or its corresponding type declarations.
+external/react-cad/packages/renderer/src/index.ts(45,3): error TS2578: Unused '@ts-expect-error' directive.
+external/react-cad/packages/renderer/src/instance.ts(1,62): error TS2307: Cannot find module '@react-cad/core' or its corresponding type declarations.
+external/react-cad/packages/renderer/src/instance.ts(11,8): error TS2307: Cannot find module 'types' or its corresponding type declarations.
+external/react-cad/packages/renderer/src/instance.ts(60,14): error TS2339: Property 'node' does not exist on type 'never'.
+external/react-cad/packages/renderer/src/instance.ts(80,14): error TS2339: Property 'node' does not exist on type 'never'.
+external/react-cad/packages/renderer/src/instance.ts(94,14): error TS2339: Property 'node' does not exist on type 'never'.
+external/react-cad/packages/renderer/src/instance.ts(204,55): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'string'.
+external/react-cad/packages/renderer/src/instance.ts(206,43): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'string'.
+external/react-cad/packages/renderer/src/types.ts(1,23): error TS2307: Cannot find module 'react-reconciler' or its corresponding type declarations.
+external/react-cad/packages/renderer/src/types.ts(9,8): error TS2307: Cannot find module '@react-cad/core' or its corresponding type declarations.
+external/react-cad/packages/renderer/src/types.ts(10,29): error TS2307: Cannot find module 'instance' or its corresponding type declarations.
+external/react-cad/packages/storybook-framework/src/client/docs/config.tsx(2,22): error TS2307: Cannot find module 'react-lazyload' or its corresponding type declarations.
+external/react-cad/packages/storybook-framework/src/client/docs/config.tsx(3,28): error TS2307: Cannot find module '@react-cad/viewer' or its corresponding type declarations.
+external/react-cad/packages/storybook-framework/src/client/docs/config.tsx(7,8): error TS2307: Cannot find module '@storybook/docs-tools' or its corresponding type declarations.
+external/react-cad/packages/storybook-framework/src/client/docs/config.tsx(8,46): error TS2307: Cannot find module '@storybook/csf' or its corresponding type declarations.
+external/react-cad/packages/storybook-framework/src/client/docs/config.tsx(9,10): error TS2305: Module '"@storybook/react/dist/esm/client/docs/jsxDecorator"' has no exported member 'jsxDecorator'.
+external/react-cad/packages/storybook-framework/src/client/docs/config.tsx(10,10): error TS2305: Module '"@storybook/react/dist/esm/client/docs/extractArgTypes"' has no exported member 'extractArgTypes'.
+external/react-cad/packages/storybook-framework/src/client/index.ts(14,22): error TS2339: Property 'hot' does not exist on type 'Module'.
+external/react-cad/packages/storybook-framework/src/client/index.ts(14,36): error TS2339: Property 'hot' does not exist on type 'Module'.
+external/react-cad/packages/storybook-framework/src/client/index.ts(15,10): error TS2339: Property 'hot' does not exist on type 'Module'.
+external/react-cad/packages/storybook-framework/src/client/preview/hooks.ts(2,35): error TS2307: Cannot find module '@react-cad/core' or its corresponding type declarations.
+external/react-cad/packages/storybook-framework/src/client/preview/hooks.ts(11,17): error TS2307: Cannot find module '@react-cad/core' or its corresponding type declarations.
+external/react-cad/packages/storybook-framework/src/client/preview/index.ts(2,23): error TS2307: Cannot find module '@storybook/core' or its corresponding type declarations.
+external/react-cad/packages/storybook-framework/src/client/preview/index.ts(3,47): error TS2307: Cannot find module '@storybook/addons' or its corresponding type declarations.
+external/react-cad/packages/storybook-framework/src/client/preview/index.ts(23,35): error TS2339: Property 'storiesOf' does not exist on type 'ClientApi'.
+external/react-cad/packages/storybook-framework/src/client/preview/index.ts(25,15): error TS2339: Property 'storiesOf' does not exist on type 'ClientApi'.
+external/react-cad/packages/storybook-framework/src/client/preview/index.ts(33,38): error TS2339: Property 'addDecorator' does not exist on type 'ClientApi'.
+external/react-cad/packages/storybook-framework/src/client/preview/index.ts(34,30): error TS2339: Property 'addDecorator' does not exist on type 'ClientApi'.
+external/react-cad/packages/storybook-framework/src/client/preview/index.ts(35,39): error TS2339: Property 'addParameters' does not exist on type 'ClientApi'.
+external/react-cad/packages/storybook-framework/src/client/preview/index.ts(36,31): error TS2339: Property 'addParameters' does not exist on type 'ClientApi'.
+external/react-cad/packages/storybook-framework/src/client/preview/render.tsx(7,8): error TS2307: Cannot find module '@storybook/preview-web' or its corresponding type declarations.
+external/react-cad/packages/storybook-framework/src/client/preview/render.tsx(8,31): error TS2307: Cannot find module '@storybook/store' or its corresponding type declarations.
+external/react-cad/packages/storybook-framework/src/client/preview/render.tsx(10,28): error TS2307: Cannot find module '@react-cad/viewer' or its corresponding type declarations.
+external/react-cad/packages/storybook-framework/src/client/preview/render.tsx(47,12): error TS2339: Property 'render' does not exist on type 'typeof import("D:/Codebase/mgi-dream/node_modules/.pnpm/@types+react-dom@19.2.3_@types+react@19.2.14/node_modules/@types/react-dom/index")'.
+external/react-cad/packages/storybook-framework/src/client/preview/types-6-0.ts(6,8): error TS2307: Cannot find module '@storybook/csf' or its corresponding type declarations.
+external/react-cad/packages/storybook-framework/src/client/preview/types-6-0.ts(16,8): error TS2307: Cannot find module '@storybook/addons' or its corresponding type declarations.
+external/react-cad/packages/storybook-framework/src/client/preview/types-7-0.ts(1,27): error TS2307: Cannot find module '@storybook/csf' or its corresponding type declarations.
+external/react-cad/packages/storybook-framework/src/client/preview/types.ts(2,36): error TS2307: Cannot find module '@storybook/core' or its corresponding type declarations.
+external/react-cad/packages/storybook-framework/src/server/build.ts(1,29): error TS2307: Cannot find module '@storybook/core/server' or its corresponding type declarations.
+external/react-cad/packages/storybook-framework/src/server/findEsm.ts(2,36): error TS2307: Cannot find module 'find-up' or its corresponding type declarations.
+external/react-cad/packages/storybook-framework/src/server/framework-preset-react-cad-docs.ts(1,38): error TS2307: Cannot find module '@storybook/core-common' or its corresponding type declarations.
+external/react-cad/packages/storybook-framework/src/server/framework-preset-react-cad-docs.ts(3,35): error TS2307: Cannot find module '@storybook/docs-tools' or its corresponding type declarations.
+external/react-cad/packages/storybook-framework/src/server/framework-preset-react-cad-docs.ts(6,3): error TS2305: Module '"@storybook/react/dist/cjs/server/framework-preset-react-docs"' has no exported member 'babel'.
+external/react-cad/packages/storybook-framework/src/server/framework-preset-react-cad-docs.ts(7,3): error TS2305: Module '"@storybook/react/dist/cjs/server/framework-preset-react-docs"' has no exported member 'webpackFinal'.
+external/react-cad/packages/storybook-framework/src/server/framework-preset-react-cad.ts(3,34): error TS2307: Cannot find module '@babel/core' or its corresponding type declarations.
+external/react-cad/packages/storybook-framework/src/server/framework-preset-react-cad.ts(4,45): error TS2307: Cannot find module 'webpack' or its corresponding type declarations.
+external/react-cad/packages/storybook-framework/src/server/framework-preset-react-cad.ts(5,24): error TS2307: Cannot find module 'copy-webpack-plugin' or its corresponding type declarations.
+external/react-cad/packages/storybook-framework/src/server/framework-preset-react-cad.ts(6,38): error TS2307: Cannot find module '@storybook/core-common' or its corresponding type declarations.
+external/react-cad/packages/storybook-framework/src/server/framework-preset-react-cad.ts(9,3): error TS2305: Module '"@storybook/react/dist/cjs/server/framework-preset-react"' has no exported member 'babel'.
+external/react-cad/packages/storybook-framework/src/server/framework-preset-react-cad.ts(10,3): error TS2305: Module '"@storybook/react/dist/cjs/server/framework-preset-react"' has no exported member 'webpackFinal'.
+external/react-cad/packages/storybook-framework/src/server/index.ts(1,26): error TS2307: Cannot find module '@storybook/core/server' or its corresponding type declarations.
+external/react-cad/packages/storybook-framework/src/server/options.ts(1,22): error TS2307: Cannot find module 'read-pkg-up' or its corresponding type declarations.
+external/react-cad/packages/storybook-framework/src/server/options.ts(2,34): error TS2307: Cannot find module '@storybook/core-common' or its corresponding type declarations.
+external/react-cad/packages/storybook-framework/src/server/preset.ts(1,38): error TS2307: Cannot find module '@storybook/core-common' or its corresponding type declarations.
+external/react-cad/packages/storybook-framework/src/server/theme.ts(1,24): error TS2307: Cannot find module '@storybook/addons' or its corresponding type declarations.
+external/react-cad/packages/storybook-framework/src/server/theme.ts(2,24): error TS2307: Cannot find module '@storybook/theming' or its corresponding type declarations.
+external/react-cad/packages/viewer/src/ErrorOverlay/index.tsx(3,31): error TS2307: Cannot find module '@react-cad/core' or its corresponding type declarations.
+external/react-cad/packages/viewer/src/ErrorOverlay/RedBox.tsx(3,30): error TS2307: Cannot find module 'error-stack-parser' or its corresponding type declarations.
+external/react-cad/packages/viewer/src/ErrorOverlay/RedBox.tsx(5,31): error TS2307: Cannot find module 'sourcemapped-stacktrace' or its corresponding type declarations.
+external/react-cad/packages/viewer/src/ExportButton.tsx(2,32): error TS2307: Cannot find module '@storybook/theming' or its corresponding type declarations.
+external/react-cad/packages/viewer/src/ExportButton.tsx(3,43): error TS2307: Cannot find module 'react-icons/tb' or its corresponding type declarations.
+external/react-cad/packages/viewer/src/ExportButton.tsx(65,8): error TS2322: Type '{ children: Element; title: string; onClick: () => void; }' is not assignable to type 'IntrinsicAttributes & ButtonProps'.
+  Property 'children' does not exist on type 'IntrinsicAttributes & ButtonProps'.
+external/react-cad/packages/viewer/src/ExportButton.tsx(68,8): error TS2322: Type '{ children: Element[]; open: boolean; }' is not assignable to type 'IntrinsicAttributes & { open: boolean; }'.
+  Property 'children' does not exist on type 'IntrinsicAttributes & { open: boolean; }'.
+external/react-cad/packages/viewer/src/hooks/useExport.ts(2,49): error TS2307: Cannot find module '@react-cad/core' or its corresponding type declarations.
+external/react-cad/packages/viewer/src/hooks/useProgressQueue.ts(2,40): error TS2307: Cannot find module '@react-cad/core' or its corresponding type declarations.
+external/react-cad/packages/viewer/src/hooks/useProgressQueue.ts(81,29): error TS2554: Expected 1 arguments, but got 0.
+external/react-cad/packages/viewer/src/hooks/useReactCADRenderer.tsx(2,31): error TS2307: Cannot find module 'react-error-boundary' or its corresponding type declarations.
+external/react-cad/packages/viewer/src/hooks/useReactCADRenderer.tsx(3,49): error TS2307: Cannot find module '@react-cad/core' or its corresponding type declarations.
+external/react-cad/packages/viewer/src/hooks/useReactCADRenderer.tsx(4,28): error TS2307: Cannot find module '@react-cad/renderer' or its corresponding type declarations.
+external/react-cad/packages/viewer/src/hooks/useReactCADView.ts(2,49): error TS2307: Cannot find module '@react-cad/core' or its corresponding type declarations.
+external/react-cad/packages/viewer/src/hooks/useReactCADView.ts(13,27): error TS2554: Expected 1 arguments, but got 0.
+external/react-cad/packages/viewer/src/hooks/useReactCADView.ts(14,22): error TS2554: Expected 1 arguments, but got 0.
+external/react-cad/packages/viewer/src/ProgressBar.tsx(3,40): error TS2307: Cannot find module '@react-cad/core' or its corresponding type declarations.
+external/react-cad/packages/viewer/src/ProgressBar.tsx(13,3): error TS2339: Property 'children' does not exist on type 'Props'.
+external/react-cad/packages/viewer/src/ProgressBar.tsx(99,13): error TS2322: Type '{ children: string; css: { width: string; margin: number; backgroundColor: string; height: number; appearance: string; border: string; padding: number; display: string; "&::-webkit-progress-bar": { ...; }; "&::-webkit-progress-value": { ...; }; "&::-moz-progress-bar": { ...; }; }; max: number; value: number; }' is not assignable to type 'DetailedHTMLProps<ProgressHTMLAttributes<HTMLProgressElement>, HTMLProgressElement>'.
+  Property 'css' does not exist on type 'DetailedHTMLProps<ProgressHTMLAttributes<HTMLProgressElement>, HTMLProgressElement>'.
+external/react-cad/packages/viewer/src/ReactCADNodeViewer.tsx(6,8): error TS2307: Cannot find module '@react-cad/core' or its corresponding type declarations.
+external/react-cad/packages/viewer/src/ReactCADNodeViewer.tsx(136,10): error TS2322: Type '{ children: Element; options: ViewOptions; setOptions: Dispatch<SetStateAction<ViewOptions>>; exportFns: ExportFns; ... 5 more ...; borderless: boolean; }' is not assignable to type 'IntrinsicAttributes & Props'.
+  Property 'children' does not exist on type 'IntrinsicAttributes & Props'.
+external/react-cad/packages/viewer/src/ReactCADNodeViewer.tsx(147,12): error TS2322: Type '{ children: Element; progressIndicator: any; queuedTasks: number; }' is not assignable to type 'IntrinsicAttributes & Props'.
+  Property 'children' does not exist on type 'IntrinsicAttributes & Props'.
+external/react-cad/packages/viewer/src/ReactCADViewer.tsx(8,31): error TS2307: Cannot find module '@react-cad/core' or its corresponding type declarations.
+external/react-cad/packages/viewer/src/Toolbar.tsx(19,8): error TS2307: Cannot find module 'react-icons/tb' or its corresponding type declarations.
+external/react-cad/packages/viewer/src/Toolbar.tsx(50,3): error TS2339: Property 'children' does not exist on type 'Props'.
+external/react-cad/packages/viewer/src/Toolbar.tsx(180,7): error TS2322: Type '{ children: Element[]; css: { "&:focus": { outline: string; }; "&, & *": { boxSizing: string; }; border?: string; display: string; alignItems: string; width: string; height: string; }; tabIndex: number; onKeyPress: (event: KeyboardEvent<...>) => void; ref: RefObject<...>; }' is not assignable to type 'DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement>'.
+  Property 'css' does not exist on type 'DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement>'.
+external/react-cad/packages/viewer/src/Toolbar.tsx(208,10): error TS2559: Type '{ children: Element[]; }' has no properties in common with type 'IntrinsicAttributes'.
+external/react-cad/packages/viewer/src/Toolbar.tsx(209,12): error TS2322: Type '{ children: Element; title: string; onClick: () => void; }' is not assignable to type 'IntrinsicAttributes & ButtonProps'.
+  Property 'children' does not exist on type 'IntrinsicAttributes & ButtonProps'.
+external/react-cad/packages/viewer/src/Toolbar.tsx(212,12): error TS2322: Type '{ children: Element; title: string; onClick: () => void; }' is not assignable to type 'IntrinsicAttributes & ButtonProps'.
+  Property 'children' does not exist on type 'IntrinsicAttributes & ButtonProps'.
+external/react-cad/packages/viewer/src/Toolbar.tsx(215,12): error TS2322: Type '{ children: Element; title: string; onClick: () => void; }' is not assignable to type 'IntrinsicAttributes & ButtonProps'.
+  Property 'children' does not exist on type 'IntrinsicAttributes & ButtonProps'.
+external/react-cad/packages/viewer/src/Toolbar.tsx(220,10): error TS2559: Type '{ children: Element[]; }' has no properties in common with type 'IntrinsicAttributes'.
+external/react-cad/packages/viewer/src/Toolbar.tsx(221,12): error TS2322: Type '{ children: Element; title: string; onClick: () => void; }' is not assignable to type 'IntrinsicAttributes & ButtonProps'.
+  Property 'children' does not exist on type 'IntrinsicAttributes & ButtonProps'.
+external/react-cad/packages/viewer/src/Toolbar.tsx(224,12): error TS2322: Type '{ children: Element; title: string; onClick: () => void; }' is not assignable to type 'IntrinsicAttributes & ButtonProps'.
+  Property 'children' does not exist on type 'IntrinsicAttributes & ButtonProps'.
+external/react-cad/packages/viewer/src/Toolbar.tsx(230,12): error TS2322: Type '{ children: Element; title: string; onClick: () => void; }' is not assignable to type 'IntrinsicAttributes & ButtonProps'.
+  Property 'children' does not exist on type 'IntrinsicAttributes & ButtonProps'.
+external/react-cad/packages/viewer/src/Toolbar.tsx(233,12): error TS2322: Type '{ children: Element; title: string; onClick: () => void; }' is not assignable to type 'IntrinsicAttributes & ButtonProps'.
+  Property 'children' does not exist on type 'IntrinsicAttributes & ButtonProps'.
+external/react-cad/packages/viewer/src/Toolbar.tsx(236,12): error TS2322: Type '{ children: Element; title: string; onClick: () => void; }' is not assignable to type 'IntrinsicAttributes & ButtonProps'.
+  Property 'children' does not exist on type 'IntrinsicAttributes & ButtonProps'.
+external/react-cad/packages/viewer/src/Toolbar.tsx(239,12): error TS2322: Type '{ children: Element; title: string; onClick: () => void; }' is not assignable to type 'IntrinsicAttributes & ButtonProps'.
+  Property 'children' does not exist on type 'IntrinsicAttributes & ButtonProps'.
+external/react-cad/packages/viewer/src/Toolbar.tsx(242,12): error TS2322: Type '{ children: Element; title: string; onClick: () => void; }' is not assignable to type 'IntrinsicAttributes & ButtonProps'.
+  Property 'children' does not exist on type 'IntrinsicAttributes & ButtonProps'.
+external/react-cad/packages/viewer/src/Toolbar.tsx(247,10): error TS2559: Type '{ children: Element[]; }' has no properties in common with type 'IntrinsicAttributes'.
+external/react-cad/packages/viewer/src/Toolbar.tsx(248,12): error TS2322: Type '{ children: Element; active: boolean; title: string; onClick: () => void; }' is not assignable to type 'IntrinsicAttributes & ButtonProps'.
+  Property 'children' does not exist on type 'IntrinsicAttributes & ButtonProps'.
+external/react-cad/packages/viewer/src/Toolbar.tsx(255,12): error TS2322: Type '{ children: Element; active: boolean; title: string; onClick: () => void; }' is not assignable to type 'IntrinsicAttributes & ButtonProps'.
+  Property 'children' does not exist on type 'IntrinsicAttributes & ButtonProps'.
+external/react-cad/packages/viewer/src/Toolbar.tsx(264,10): error TS2559: Type '{ children: Element[]; }' has no properties in common with type 'IntrinsicAttributes'.
+external/react-cad/packages/viewer/src/Toolbar.tsx(265,12): error TS2322: Type '{ children: Element; title: string; onClick: () => void; active: boolean; }' is not assignable to type 'IntrinsicAttributes & ButtonProps'.
+  Property 'children' does not exist on type 'IntrinsicAttributes & ButtonProps'.
+external/react-cad/packages/viewer/src/Toolbar.tsx(272,12): error TS2322: Type '{ children: Element; title: string; onClick: () => void; active: boolean; }' is not assignable to type 'IntrinsicAttributes & ButtonProps'.
+  Property 'children' does not exist on type 'IntrinsicAttributes & ButtonProps'.
+external/react-cad/packages/viewer/src/Toolbar.tsx(281,10): error TS2559: Type '{ children: Element[]; }' has no properties in common with type 'IntrinsicAttributes'.
+external/react-cad/packages/viewer/src/Toolbar.tsx(282,12): error TS2322: Type '{ children: Element; title: string; onClick: () => void; active: boolean; }' is not assignable to type 'IntrinsicAttributes & ButtonProps'.
+  Property 'children' does not exist on type 'IntrinsicAttributes & ButtonProps'.
+external/react-cad/packages/viewer/src/Toolbar.tsx(289,12): error TS2322: Type '{ children: Element; title: string; onClick: () => void; active: boolean; }' is not assignable to type 'IntrinsicAttributes & ButtonProps'.
+  Property 'children' does not exist on type 'IntrinsicAttributes & ButtonProps'.
+external/react-cad/packages/viewer/src/Toolbar.tsx(298,10): error TS2559: Type '{ children: Element[]; }' has no properties in common with type 'IntrinsicAttributes'.
+external/react-cad/packages/viewer/src/Toolbar.tsx(299,12): error TS2322: Type '{ children: Element; title: string; onClick: () => void; active: boolean; }' is not assignable to type 'IntrinsicAttributes & ButtonProps'.
+  Property 'children' does not exist on type 'IntrinsicAttributes & ButtonProps'.
+external/react-cad/packages/viewer/src/Toolbar.tsx(306,12): error TS2322: Type '{ children: Element; title: string; onClick: () => void; active: boolean; }' is not assignable to type 'IntrinsicAttributes & ButtonProps'.
+  Property 'children' does not exist on type 'IntrinsicAttributes & ButtonProps'.
+external/react-cad/packages/viewer/src/Toolbar.tsx(315,10): error TS2559: Type '{ children: Element; }' has no properties in common with type 'IntrinsicAttributes'.
+external/react-cad/packages/viewer/src/ui.tsx(3,35): error TS2339: Property 'children' does not exist on type '{}'.
+external/react-cad/packages/viewer/src/ui.tsx(17,3): error TS2339: Property 'children' does not exist on type 'ButtonProps'.
+external/react-cad/packages/viewer/src/ui.tsx(24,7): error TS2322: Type '{ children: any; type: "button"; onClick: (event: MouseEvent<HTMLButtonElement, MouseEvent>) => void; title: string; css: { backgroundColor: string; ... 15 more ...; "&:focus:not(:focus-visible)": { ...; }; }; }' is not assignable to type 'DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement>'.
+  Property 'css' does not exist on type 'DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement>'.
+external/react-cad/packages/viewer/src/ui.tsx(63,5): error TS2322: Type '{ css: { height: number; width: number; backgroundColor: string; margin: number; }; }' is not assignable to type 'DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement>'.
+  Property 'css' does not exist on type 'DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement>'.
+external/react-cad/packages/viewer/src/ui.tsx(72,37): error TS2339: Property 'children' does not exist on type '{}'.
+external/react-cad/packages/viewer/src/ui.tsx(76,63): error TS2339: Property 'children' does not exist on type '{ open: boolean; }'.
+external/react-cad/packages/viewer/src/ui.tsx(116,59): error TS2339: Property 'a' does not exist on type 'IntrinsicElements'.
+pages/StudioSimPage.tsx(2,268): error TS2300: Duplicate identifier 'Sparkles'.
+pages/StudioSimPage.tsx(26,60): error TS2300: Duplicate identifier 'Sparkles'.
+react-cad-main/packages/core/__tests__/makeBox.ts(1,26): error TS2307: Cannot find module '..' or its corresponding type declarations.
+react-cad-main/packages/core/__tests__/makeBox.ts(3,1): error TS2593: Cannot find name 'describe'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha` and then add 'jest' or 'mocha' to the types field in your tsconfig.
+react-cad-main/packages/core/__tests__/makeBox.ts(4,3): error TS2593: Cannot find name 'describe'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha` and then add 'jest' or 'mocha' to the types field in your tsconfig.
+react-cad-main/packages/core/__tests__/makeBox.ts(5,5): error TS2593: Cannot find name 'it'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha` and then add 'jest' or 'mocha' to the types field in your tsconfig.
+react-cad-main/packages/core/__tests__/makeBox.ts(8,7): error TS2304: Cannot find name 'expect'.
+react-cad-main/packages/core/__tests__/makeBox.ts(13,3): error TS2593: Cannot find name 'describe'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha` and then add 'jest' or 'mocha' to the types field in your tsconfig.
+react-cad-main/packages/core/__tests__/makeBox.ts(14,5): error TS2593: Cannot find name 'it'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha` and then add 'jest' or 'mocha' to the types field in your tsconfig.
+react-cad-main/packages/core/__tests__/makeBox.ts(17,7): error TS2304: Cannot find name 'expect'.
+react-cad-main/packages/core/__tests__/progress.ts(1,26): error TS2307: Cannot find module '..' or its corresponding type declarations.
+react-cad-main/packages/core/__tests__/progress.ts(3,1): error TS2593: Cannot find name 'describe'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha` and then add 'jest' or 'mocha' to the types field in your tsconfig.
+react-cad-main/packages/core/__tests__/progress.ts(4,3): error TS2593: Cannot find name 'it'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha` and then add 'jest' or 'mocha' to the types field in your tsconfig.
+react-cad-main/packages/core/__tests__/progress.ts(14,3): error TS2593: Cannot find name 'it'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha` and then add 'jest' or 'mocha' to the types field in your tsconfig.
+react-cad-main/packages/core/__tests__/progress.ts(15,29): error TS2304: Cannot find name 'jest'.
+react-cad-main/packages/core/__tests__/progress.ts(21,7): error TS2304: Cannot find name 'expect'.
+react-cad-main/packages/core/__tests__/progress.ts(22,7): error TS2304: Cannot find name 'expect'.
+react-cad-main/packages/core/__tests__/progress.ts(23,7): error TS2304: Cannot find name 'expect'.
+react-cad-main/packages/core/__tests__/ReactCADNode.ts(1,26): error TS2307: Cannot find module '..' or its corresponding type declarations.
+react-cad-main/packages/core/__tests__/ReactCADNode.ts(3,1): error TS2593: Cannot find name 'describe'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha` and then add 'jest' or 'mocha' to the types field in your tsconfig.
+react-cad-main/packages/core/__tests__/ReactCADNode.ts(4,3): error TS2593: Cannot find name 'it'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha` and then add 'jest' or 'mocha' to the types field in your tsconfig.
+react-cad-main/packages/core/__tests__/ReactCADNode.ts(7,5): error TS2304: Cannot find name 'expect'.
+react-cad-main/packages/create-component/lib/template/src/Example.stories.tsx(2,29): error TS2307: Cannot find module '@react-cad/storybook-framework' or its corresponding type declarations.
+react-cad-main/packages/create-component/lib/template/src/Example.tsx(9,3): error TS2339: Property 'difference' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/create-component/lib/template/src/Example.tsx(11,5): error TS2339: Property 'box' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/create-component/lib/template/src/Example.tsx(12,3): error TS2339: Property 'difference' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/docs/src/Example.tsx(3,35): error TS2307: Cannot find module '@storybook/components' or its corresponding type declarations.
+react-cad-main/packages/docs/src/Example.tsx(4,21): error TS2307: Cannot find module '@storybook/theming' or its corresponding type declarations.
+react-cad-main/packages/docs/src/Example.tsx(12,3): error TS2875: This JSX tag requires the module path '@emotion/react/jsx-runtime' to exist, but none could be found. Make sure you have types for the appropriate package installed.
+react-cad-main/packages/docs/src/Example.tsx(13,5): error TS2322: Type '{ children: Element[]; css: any; }' is not assignable to type 'DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement>'.
+  Property 'css' does not exist on type 'DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement>'.
+react-cad-main/packages/docs/src/Example.tsx(28,9): error TS2322: Type '{ src: string; css: any; }' is not assignable to type 'DetailedHTMLProps<ImgHTMLAttributes<HTMLImageElement>, HTMLImageElement>'.
+  Property 'css' does not exist on type 'DetailedHTMLProps<ImgHTMLAttributes<HTMLImageElement>, HTMLImageElement>'.
+react-cad-main/packages/docs/src/Example.tsx(42,7): error TS2322: Type '{ children: Element; css: any; }' is not assignable to type 'DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement>'.
+  Property 'css' does not exist on type 'DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement>'.
+react-cad-main/packages/docs/src/Link.tsx(3,21): error TS2307: Cannot find module '@storybook/theming' or its corresponding type declarations.
+react-cad-main/packages/docs/src/Link.tsx(4,20): error TS2307: Cannot find module '@storybook/addon-links/react' or its corresponding type declarations.
+react-cad-main/packages/docs/src/Link.tsx(10,38): error TS2339: Property 'children' does not exist on type 'Props'.
+react-cad-main/packages/docs/src/Link.tsx(11,3): error TS2875: This JSX tag requires the module path '@emotion/react/jsx-runtime' to exist, but none could be found. Make sure you have types for the appropriate package installed.
+react-cad-main/packages/examples/src/Compose.stories.tsx(2,29): error TS2307: Cannot find module '@react-cad/storybook-framework' or its corresponding type declarations.
+react-cad-main/packages/examples/src/Composed.tsx(12,3): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/Composed.tsx(16,5): error TS2339: Property 'difference' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/Composed.tsx(17,7): error TS2339: Property 'union' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/Composed.tsx(18,9): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/Composed.tsx(19,11): error TS2339: Property 'box' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/Composed.tsx(20,9): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/Composed.tsx(21,9): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/Composed.tsx(22,11): error TS2339: Property 'box' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/Composed.tsx(23,9): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/Composed.tsx(24,9): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/Composed.tsx(25,11): error TS2339: Property 'box' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/Composed.tsx(26,9): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/Composed.tsx(27,7): error TS2339: Property 'union' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/Composed.tsx(28,7): error TS2339: Property 'translation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/Composed.tsx(30,7): error TS2339: Property 'translation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/Composed.tsx(31,5): error TS2339: Property 'difference' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/Composed.tsx(32,3): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/Errors.stories.tsx(2,29): error TS2307: Cannot find module '@react-cad/storybook-framework' or its corresponding type declarations.
+react-cad-main/packages/examples/src/Errors.stories.tsx(10,36): error TS2339: Property 'evolution' does not exist on type 'IntrinsicElements'.
+react-cad-main/packages/examples/src/Errors.stories.tsx(13,3): error TS2339: Property 'union' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/Errors.stories.tsx(14,5): error TS2339: Property 'difference' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/Errors.stories.tsx(15,7): error TS2339: Property 'box' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/Errors.stories.tsx(16,7): error TS2339: Property 'evolution' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/Errors.stories.tsx(17,5): error TS2339: Property 'difference' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/Errors.stories.tsx(18,3): error TS2339: Property 'union' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/import/brep.stories.tsx(2,29): error TS2307: Cannot find module '@react-cad/storybook-framework' or its corresponding type declarations.
+react-cad-main/packages/examples/src/import/brep.stories.tsx(7,43): error TS2339: Property 'brep' does not exist on type 'IntrinsicElements'.
+react-cad-main/packages/examples/src/import/brep.stories.tsx(16,17): error TS2339: Property 'brep' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/import/obj.stories.tsx(2,29): error TS2307: Cannot find module '@react-cad/storybook-framework' or its corresponding type declarations.
+react-cad-main/packages/examples/src/import/obj.stories.tsx(7,43): error TS2339: Property 'obj' does not exist on type 'IntrinsicElements'.
+react-cad-main/packages/examples/src/import/obj.stories.tsx(16,17): error TS2339: Property 'obj' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/import/step.stories.tsx(2,29): error TS2307: Cannot find module '@react-cad/storybook-framework' or its corresponding type declarations.
+react-cad-main/packages/examples/src/import/step.stories.tsx(7,43): error TS2339: Property 'step' does not exist on type 'IntrinsicElements'.
+react-cad-main/packages/examples/src/import/step.stories.tsx(16,17): error TS2339: Property 'step' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/import/stl.stories.tsx(2,29): error TS2307: Cannot find module '@react-cad/storybook-framework' or its corresponding type declarations.
+react-cad-main/packages/examples/src/import/stl.stories.tsx(7,43): error TS2339: Property 'stl' does not exist on type 'IntrinsicElements'.
+react-cad-main/packages/examples/src/import/stl.stories.tsx(16,17): error TS2339: Property 'stl' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/MakeBottle.tsx(16,5): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/MakeBottle.tsx(20,5): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/MakeBottle.tsx(32,5): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/MakeBottle.tsx(33,7): error TS2339: Property 'loft' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/MakeBottle.tsx(34,9): error TS2339: Property 'cylindricalSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/MakeBottle.tsx(45,9): error TS2339: Property 'cylindricalSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/MakeBottle.tsx(46,9): error TS2339: Property 'cylindricalSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/MakeBottle.tsx(57,9): error TS2339: Property 'cylindricalSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/MakeBottle.tsx(58,7): error TS2339: Property 'loft' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/MakeBottle.tsx(59,5): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/MakeBottle.tsx(74,3): error TS2339: Property 'union' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/MakeBottle.tsx(75,5): error TS2339: Property 'hollow' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/MakeBottle.tsx(82,7): error TS2339: Property 'fillet' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/MakeBottle.tsx(83,9): error TS2339: Property 'prism' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/MakeBottle.tsx(85,9): error TS2339: Property 'prism' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/MakeBottle.tsx(86,7): error TS2339: Property 'fillet' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/MakeBottle.tsx(87,7): error TS2339: Property 'translation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/MakeBottle.tsx(88,9): error TS2339: Property 'cylinder' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/MakeBottle.tsx(89,7): error TS2339: Property 'translation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/MakeBottle.tsx(90,5): error TS2339: Property 'hollow' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/MakeBottle.tsx(91,5): error TS2339: Property 'translation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/MakeBottle.tsx(93,5): error TS2339: Property 'translation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/MakeBottle.tsx(94,3): error TS2339: Property 'union' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/operations/difference.stories.tsx(2,29): error TS2307: Cannot find module '@react-cad/storybook-framework' or its corresponding type declarations.
+react-cad-main/packages/examples/src/operations/difference.stories.tsx(5,3): error TS2339: Property 'difference' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/operations/difference.stories.tsx(7,5): error TS2339: Property 'box' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/operations/difference.stories.tsx(8,5): error TS2339: Property 'box' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/operations/difference.stories.tsx(9,3): error TS2339: Property 'difference' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/operations/intersection.stories.tsx(2,29): error TS2307: Cannot find module '@react-cad/storybook-framework' or its corresponding type declarations.
+react-cad-main/packages/examples/src/operations/intersection.stories.tsx(5,3): error TS2339: Property 'intersection' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/operations/intersection.stories.tsx(7,5): error TS2339: Property 'box' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/operations/intersection.stories.tsx(8,5): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/operations/intersection.stories.tsx(9,7): error TS2339: Property 'box' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/operations/intersection.stories.tsx(10,5): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/operations/intersection.stories.tsx(11,3): error TS2339: Property 'intersection' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/operations/union.stories.tsx(2,29): error TS2307: Cannot find module '@react-cad/storybook-framework' or its corresponding type declarations.
+react-cad-main/packages/examples/src/operations/union.stories.tsx(5,3): error TS2339: Property 'union' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/operations/union.stories.tsx(6,5): error TS2339: Property 'box' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/operations/union.stories.tsx(8,3): error TS2339: Property 'union' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/box.stories.tsx(2,29): error TS2307: Cannot find module '@react-cad/storybook-framework' or its corresponding type declarations.
+react-cad-main/packages/examples/src/primitives/box.stories.tsx(4,36): error TS2339: Property 'box' does not exist on type 'IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/box.stories.tsx(6,45): error TS2339: Property 'box' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/cone.stories.tsx(2,29): error TS2307: Cannot find module '@react-cad/storybook-framework' or its corresponding type declarations.
+react-cad-main/packages/examples/src/primitives/cone.stories.tsx(4,36): error TS2339: Property 'cone' does not exist on type 'IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/cone.stories.tsx(6,49): error TS2339: Property 'cone' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/cylinder.stories.tsx(2,29): error TS2307: Cannot find module '@react-cad/storybook-framework' or its corresponding type declarations.
+react-cad-main/packages/examples/src/primitives/cylinder.stories.tsx(4,36): error TS2339: Property 'cylinder' does not exist on type 'IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/cylinder.stories.tsx(6,53): error TS2339: Property 'cylinder' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/polyhedron.stories.tsx(2,29): error TS2307: Cannot find module '@react-cad/storybook-framework' or its corresponding type declarations.
+react-cad-main/packages/examples/src/primitives/polyhedron.stories.tsx(4,36): error TS2339: Property 'polyhedron' does not exist on type 'IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/polyhedron.stories.tsx(6,55): error TS2339: Property 'polyhedron' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(2,29): error TS2307: Cannot find module '@react-cad/storybook-framework' or its corresponding type declarations.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(4,36): error TS2339: Property 'solid' does not exist on type 'IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(6,43): error TS2339: Property 'solid' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(15,3): error TS2339: Property 'solid' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(16,5): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(20,5): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(22,5): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(23,7): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(27,7): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(28,5): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(30,5): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(31,7): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(35,7): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(36,5): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(38,5): error TS2339: Property 'translation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(39,7): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(40,9): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(44,9): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(45,7): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(46,5): error TS2339: Property 'translation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(48,5): error TS2339: Property 'translation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(49,7): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(50,9): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(54,9): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(55,7): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(56,5): error TS2339: Property 'translation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(58,5): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(62,5): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(63,3): error TS2339: Property 'solid' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(67,3): error TS2339: Property 'solid' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(68,5): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(72,5): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(73,5): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(74,7): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(78,7): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(79,5): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(80,5): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(81,7): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(85,7): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(86,5): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(87,5): error TS2339: Property 'translation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(88,7): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(89,9): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(97,9): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(98,7): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(99,5): error TS2339: Property 'translation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(100,3): error TS2339: Property 'solid' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(104,3): error TS2339: Property 'solid' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(106,5): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(110,5): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(113,5): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(114,7): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(118,7): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(119,5): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(120,5): error TS2339: Property 'translation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(121,7): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(122,9): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(126,9): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(127,7): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(128,5): error TS2339: Property 'translation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(131,5): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(132,7): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(136,7): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(137,5): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(138,5): error TS2339: Property 'translation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(139,7): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(140,9): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(144,9): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(145,7): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(146,5): error TS2339: Property 'translation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(149,5): error TS2339: Property 'translation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(150,7): error TS2339: Property 'cylindricalSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(154,7): error TS2339: Property 'cylindricalSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(155,5): error TS2339: Property 'translation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/solid.stories.tsx(156,3): error TS2339: Property 'solid' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/sphere.stories.tsx(2,29): error TS2307: Cannot find module '@react-cad/storybook-framework' or its corresponding type declarations.
+react-cad-main/packages/examples/src/primitives/sphere.stories.tsx(4,36): error TS2339: Property 'sphere' does not exist on type 'IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/torus.stories.tsx(2,29): error TS2307: Cannot find module '@react-cad/storybook-framework' or its corresponding type declarations.
+react-cad-main/packages/examples/src/primitives/torus.stories.tsx(4,36): error TS2339: Property 'torus' does not exist on type 'IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/torus.stories.tsx(6,50): error TS2339: Property 'torus' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/wedge.stories.tsx(2,29): error TS2307: Cannot find module '@react-cad/storybook-framework' or its corresponding type declarations.
+react-cad-main/packages/examples/src/primitives/wedge.stories.tsx(4,36): error TS2339: Property 'wedge' does not exist on type 'IntrinsicElements'.
+react-cad-main/packages/examples/src/primitives/wedge.stories.tsx(6,50): error TS2339: Property 'wedge' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/evolution.stories.tsx(2,29): error TS2307: Cannot find module '@react-cad/storybook-framework' or its corresponding type declarations.
+react-cad-main/packages/examples/src/sweeps/evolution.stories.tsx(6,36): error TS2339: Property 'evolution' does not exist on type 'IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/evolution.stories.tsx(27,54): error TS2339: Property 'evolution' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/evolution.stories.tsx(50,7): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/evolution.stories.tsx(50,40): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/helix.stories.tsx(2,29): error TS2307: Cannot find module '@react-cad/storybook-framework' or its corresponding type declarations.
+react-cad-main/packages/examples/src/sweeps/helix.stories.tsx(7,36): error TS2339: Property 'helix' does not exist on type 'IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/helix.stories.tsx(16,50): error TS2339: Property 'helix' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/helix.stories.tsx(59,7): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/helix.stories.tsx(61,7): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/loft.stories.tsx(2,29): error TS2307: Cannot find module '@react-cad/storybook-framework' or its corresponding type declarations.
+react-cad-main/packages/examples/src/sweeps/loft.stories.tsx(8,36): error TS2339: Property 'loft' does not exist on type 'IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/loft.stories.tsx(10,49): error TS2339: Property 'loft' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/loft.stories.tsx(19,5): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/loft.stories.tsx(20,7): error TS2339: Property 'sphericalSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/loft.stories.tsx(24,7): error TS2339: Property 'sphericalSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/loft.stories.tsx(25,5): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/loft.stories.tsx(26,5): error TS2339: Property 'translation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/loft.stories.tsx(27,7): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/loft.stories.tsx(31,7): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/loft.stories.tsx(32,5): error TS2339: Property 'translation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/loft.stories.tsx(33,5): error TS2339: Property 'translation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/loft.stories.tsx(34,7): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/loft.stories.tsx(38,7): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/loft.stories.tsx(39,5): error TS2339: Property 'translation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/loft.stories.tsx(40,5): error TS2339: Property 'translation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/loft.stories.tsx(41,7): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/loft.stories.tsx(42,9): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/loft.stories.tsx(46,9): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/loft.stories.tsx(47,7): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/loft.stories.tsx(48,5): error TS2339: Property 'translation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/loft.stories.tsx(55,7): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/loft.stories.tsx(57,7): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/loft.stories.tsx(58,7): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/loft.stories.tsx(60,7): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/loft.stories.tsx(61,7): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/loft.stories.tsx(63,7): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/loft.stories.tsx(71,7): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/loft.stories.tsx(93,7): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/loft.stories.tsx(94,7): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/loft.stories.tsx(113,7): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/loft.stories.tsx(114,7): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/loft.stories.tsx(136,7): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/loft.stories.tsx(148,5): error TS2339: Property 'union' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/loft.stories.tsx(149,7): error TS2339: Property 'difference' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/loft.stories.tsx(150,9): error TS2339: Property 'cylinder' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/loft.stories.tsx(151,9): error TS2339: Property 'cylinder' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/loft.stories.tsx(152,7): error TS2339: Property 'difference' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/loft.stories.tsx(153,7): error TS2339: Property 'loft' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/loft.stories.tsx(154,9): error TS2339: Property 'cylindricalSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/loft.stories.tsx(165,9): error TS2339: Property 'cylindricalSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/loft.stories.tsx(166,9): error TS2339: Property 'cylindricalSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/loft.stories.tsx(177,9): error TS2339: Property 'cylindricalSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/loft.stories.tsx(178,7): error TS2339: Property 'loft' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/loft.stories.tsx(179,5): error TS2339: Property 'union' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/loft.stories.tsx(186,7): error TS2339: Property 'cylindricalSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/loft.stories.tsx(190,7): error TS2339: Property 'cylindricalSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/loft.stories.tsx(191,7): error TS2339: Property 'cylindricalSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/loft.stories.tsx(195,7): error TS2339: Property 'cylindricalSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/loft.stories.tsx(202,5): error TS2339: Property 'translation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/loft.stories.tsx(203,7): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/loft.stories.tsx(205,11): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/loft.stories.tsx(209,11): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/loft.stories.tsx(210,11): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/loft.stories.tsx(214,11): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/loft.stories.tsx(215,11): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/loft.stories.tsx(219,11): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/loft.stories.tsx(220,11): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/loft.stories.tsx(224,11): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/loft.stories.tsx(226,7): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/loft.stories.tsx(227,5): error TS2339: Property 'translation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/pipe.stories.tsx(2,29): error TS2307: Cannot find module '@react-cad/storybook-framework' or its corresponding type declarations.
+react-cad-main/packages/examples/src/sweeps/pipe.stories.tsx(6,36): error TS2339: Property 'pipe' does not exist on type 'IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/pipe.stories.tsx(30,49): error TS2339: Property 'pipe' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/pipe.stories.tsx(53,7): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/pipe.stories.tsx(53,44): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/Polygon.tsx(2,34): error TS2307: Cannot find module '@react-cad/renderer' or its corresponding type declarations.
+react-cad-main/packages/examples/src/sweeps/Polygon.tsx(16,11): error TS2339: Property 'approximation' does not exist on type '{}'.
+react-cad-main/packages/examples/src/sweeps/prism.stories.tsx(2,29): error TS2307: Cannot find module '@react-cad/storybook-framework' or its corresponding type declarations.
+react-cad-main/packages/examples/src/sweeps/prism.stories.tsx(8,36): error TS2339: Property 'prism' does not exist on type 'IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/prism.stories.tsx(19,50): error TS2339: Property 'prism' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/prism.stories.tsx(57,7): error TS2339: Property 'sphericalSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/prism.stories.tsx(59,7): error TS2339: Property 'sphericalSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/revolution.stories.tsx(2,29): error TS2307: Cannot find module '@react-cad/core' or its corresponding type declarations.
+react-cad-main/packages/examples/src/sweeps/revolution.stories.tsx(3,29): error TS2307: Cannot find module '@react-cad/storybook-framework' or its corresponding type declarations.
+react-cad-main/packages/examples/src/sweeps/revolution.stories.tsx(8,36): error TS2339: Property 'revolution' does not exist on type 'IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/revolution.stories.tsx(18,55): error TS2339: Property 'revolution' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/revolution.stories.tsx(49,5): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/revolution.stories.tsx(49,62): error TS2339: Property 'planeSurface' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/sweeps/Text.tsx(2,22): error TS2307: Cannot find module 'opentype.js/dist/opentype.module' or its corresponding type declarations.
+react-cad-main/packages/examples/src/sweeps/Text.tsx(3,20): error TS2307: Cannot find module './Roboto-Regular.otffont' or its corresponding type declarations.
+react-cad-main/packages/examples/src/transformations/affine.stories.tsx(2,29): error TS2307: Cannot find module '@react-cad/storybook-framework' or its corresponding type declarations.
+react-cad-main/packages/examples/src/transformations/affine.stories.tsx(4,36): error TS2339: Property 'affine' does not exist on type 'IntrinsicElements'.
+react-cad-main/packages/examples/src/transformations/affine.stories.tsx(7,3): error TS2339: Property 'affine' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/transformations/affine.stories.tsx(8,5): error TS2339: Property 'box' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/transformations/affine.stories.tsx(9,3): error TS2339: Property 'affine' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/transformations/mirror.stories.tsx(2,29): error TS2307: Cannot find module '@react-cad/storybook-framework' or its corresponding type declarations.
+react-cad-main/packages/examples/src/transformations/mirror.stories.tsx(4,36): error TS2339: Property 'mirror' does not exist on type 'IntrinsicElements'.
+react-cad-main/packages/examples/src/transformations/mirror.stories.tsx(7,3): error TS2339: Property 'union' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/transformations/mirror.stories.tsx(8,5): error TS2339: Property 'translation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/transformations/mirror.stories.tsx(9,7): error TS2339: Property 'box' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/transformations/mirror.stories.tsx(10,5): error TS2339: Property 'translation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/transformations/mirror.stories.tsx(11,5): error TS2339: Property 'mirror' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/transformations/mirror.stories.tsx(12,7): error TS2339: Property 'translation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/transformations/mirror.stories.tsx(13,9): error TS2339: Property 'box' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/transformations/mirror.stories.tsx(14,7): error TS2339: Property 'translation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/transformations/mirror.stories.tsx(15,5): error TS2339: Property 'mirror' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/transformations/mirror.stories.tsx(16,3): error TS2339: Property 'union' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/transformations/rotation.stories.tsx(2,29): error TS2307: Cannot find module '@react-cad/storybook-framework' or its corresponding type declarations.
+react-cad-main/packages/examples/src/transformations/rotation.stories.tsx(3,36): error TS2307: Cannot find module '@react-cad/core' or its corresponding type declarations.
+react-cad-main/packages/examples/src/transformations/rotation.stories.tsx(5,36): error TS2339: Property 'rotation' does not exist on type 'IntrinsicElements'.
+react-cad-main/packages/examples/src/transformations/rotation.stories.tsx(8,3): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/transformations/rotation.stories.tsx(9,5): error TS2339: Property 'box' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/transformations/rotation.stories.tsx(10,3): error TS2339: Property 'rotation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/transformations/scale.stories.tsx(2,28): error TS2307: Cannot find module '@react-cad/core' or its corresponding type declarations.
+react-cad-main/packages/examples/src/transformations/scale.stories.tsx(3,29): error TS2307: Cannot find module '@react-cad/storybook-framework' or its corresponding type declarations.
+react-cad-main/packages/examples/src/transformations/scale.stories.tsx(5,36): error TS2339: Property 'scale' does not exist on type 'IntrinsicElements'.
+react-cad-main/packages/examples/src/transformations/scale.stories.tsx(8,3): error TS2339: Property 'scale' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/transformations/scale.stories.tsx(9,5): error TS2339: Property 'box' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/transformations/scale.stories.tsx(10,3): error TS2339: Property 'scale' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/transformations/translation.stories.tsx(2,29): error TS2307: Cannot find module '@react-cad/storybook-framework' or its corresponding type declarations.
+react-cad-main/packages/examples/src/transformations/translation.stories.tsx(4,36): error TS2339: Property 'translation' does not exist on type 'IntrinsicElements'.
+react-cad-main/packages/examples/src/transformations/translation.stories.tsx(7,3): error TS2339: Property 'translation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/transformations/translation.stories.tsx(8,5): error TS2339: Property 'box' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/examples/src/transformations/translation.stories.tsx(9,3): error TS2339: Property 'translation' does not exist on type 'JSX.IntrinsicElements'.
+react-cad-main/packages/playground/src/components/App/index.tsx(2,30): error TS2307: Cannot find module '@typescript/sandbox' or its corresponding type declarations.
+react-cad-main/packages/playground/src/components/App/sandbox.ts(1,40): error TS2307: Cannot find module '@typescript/sandbox' or its corresponding type declarations.
+react-cad-main/packages/playground/src/components/App/useMonacoActions.ts(2,30): error TS2307: Cannot find module '@typescript/sandbox' or its corresponding type declarations.
+react-cad-main/packages/playground/src/components/Preview/index.tsx(2,28): error TS2307: Cannot find module '@react-cad/viewer' or its corresponding type declarations.
+react-cad-main/packages/playground/src/components/Preview/useReactCADCore.ts(2,35): error TS2307: Cannot find module '@react-cad/core' or its corresponding type declarations.
+react-cad-main/packages/playground/src/components/Preview/useReactCADCore.ts(11,17): error TS2307: Cannot find module '@react-cad/core' or its corresponding type declarations.
+react-cad-main/packages/playground/src/index.tsx(8,12): error TS2339: Property 'render' does not exist on type 'typeof import("D:/Codebase/mgi-dream/node_modules/.pnpm/@types+react-dom@19.2.3_@types+react@19.2.14/node_modules/@types/react-dom/index")'.
+react-cad-main/packages/react-cad/src/index.ts(1,15): error TS2307: Cannot find module '@react-cad/renderer' or its corresponding type declarations.
+react-cad-main/packages/react-cad/src/index.ts(3,25): error TS2307: Cannot find module '@react-cad/renderer' or its corresponding type declarations.
+react-cad-main/packages/renderer/src/elements/__tests__/box.ts(3,1): error TS2593: Cannot find name 'describe'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha` and then add 'jest' or 'mocha' to the types field in your tsconfig.
+react-cad-main/packages/renderer/src/elements/__tests__/box.ts(4,3): error TS2593: Cannot find name 'describe'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha` and then add 'jest' or 'mocha' to the types field in your tsconfig.
+react-cad-main/packages/renderer/src/elements/__tests__/box.ts(5,5): error TS2593: Cannot find name 'it'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha` and then add 'jest' or 'mocha' to the types field in your tsconfig.
+react-cad-main/packages/renderer/src/elements/__tests__/box.ts(6,7): error TS2304: Cannot find name 'expect'.
+react-cad-main/packages/renderer/src/elements/__tests__/box.ts(8,7): error TS2304: Cannot find name 'expect'.
+react-cad-main/packages/renderer/src/elements/__tests__/box.ts(13,7): error TS2304: Cannot find name 'expect'.
+react-cad-main/packages/renderer/src/elements/__tests__/box.ts(15,7): error TS2304: Cannot find name 'expect'.
+react-cad-main/packages/renderer/src/elements/affine.ts(1,29): error TS2307: Cannot find module 'instance' or its corresponding type declarations.
+react-cad-main/packages/renderer/src/elements/box.ts(1,29): error TS2307: Cannot find module 'instance' or its corresponding type declarations.
+react-cad-main/packages/renderer/src/elements/cone.ts(1,29): error TS2307: Cannot find module 'instance' or its corresponding type declarations.
+react-cad-main/packages/renderer/src/elements/cylinder.ts(1,29): error TS2307: Cannot find module 'instance' or its corresponding type declarations.
+react-cad-main/packages/renderer/src/elements/cylindricalSurface.ts(1,29): error TS2307: Cannot find module 'instance' or its corresponding type declarations.
+react-cad-main/packages/renderer/src/elements/evolution.ts(1,29): error TS2307: Cannot find module 'instance' or its corresponding type declarations.
+react-cad-main/packages/renderer/src/elements/helix.ts(1,29): error TS2307: Cannot find module 'instance' or its corresponding type declarations.
+react-cad-main/packages/renderer/src/elements/import.ts(1,29): error TS2307: Cannot find module 'instance' or its corresponding type declarations.
+react-cad-main/packages/renderer/src/elements/loft.ts(1,29): error TS2307: Cannot find module 'instance' or its corresponding type declarations.
+react-cad-main/packages/renderer/src/elements/mirror.ts(1,29): error TS2307: Cannot find module 'instance' or its corresponding type declarations.
+react-cad-main/packages/renderer/src/elements/pipe.ts(1,29): error TS2307: Cannot find module 'instance' or its corresponding type declarations.
+react-cad-main/packages/renderer/src/elements/planeSurface.ts(1,29): error TS2307: Cannot find module 'instance' or its corresponding type declarations.
+react-cad-main/packages/renderer/src/elements/polyhedron.ts(1,23): error TS2307: Cannot find module '@react-cad/core' or its corresponding type declarations.
+react-cad-main/packages/renderer/src/elements/polyhedron.ts(2,29): error TS2307: Cannot find module 'instance' or its corresponding type declarations.
+react-cad-main/packages/renderer/src/elements/prism.ts(1,29): error TS2307: Cannot find module 'instance' or its corresponding type declarations.
+react-cad-main/packages/renderer/src/elements/revolution.ts(1,29): error TS2307: Cannot find module 'instance' or its corresponding type declarations.
+react-cad-main/packages/renderer/src/elements/rotation.ts(1,29): error TS2307: Cannot find module 'instance' or its corresponding type declarations.
+react-cad-main/packages/renderer/src/elements/scale.ts(1,29): error TS2307: Cannot find module 'instance' or its corresponding type declarations.
+react-cad-main/packages/renderer/src/elements/sphere.ts(1,29): error TS2307: Cannot find module 'instance' or its corresponding type declarations.
+react-cad-main/packages/renderer/src/elements/sphericalSurface.ts(1,29): error TS2307: Cannot find module 'instance' or its corresponding type declarations.
+react-cad-main/packages/renderer/src/elements/torus.ts(1,29): error TS2307: Cannot find module 'instance' or its corresponding type declarations.
+react-cad-main/packages/renderer/src/elements/translation.ts(1,29): error TS2307: Cannot find module 'instance' or its corresponding type declarations.
+react-cad-main/packages/renderer/src/elements/wedge.ts(1,29): error TS2307: Cannot find module 'instance' or its corresponding type declarations.
+react-cad-main/packages/renderer/src/index.ts(2,29): error TS2307: Cannot find module 'react-reconciler' or its corresponding type declarations.
+react-cad-main/packages/renderer/src/index.ts(3,44): error TS2307: Cannot find module '@react-cad/core' or its corresponding type declarations.
+react-cad-main/packages/renderer/src/index.ts(45,3): error TS2578: Unused '@ts-expect-error' directive.
+react-cad-main/packages/renderer/src/instance.ts(1,62): error TS2307: Cannot find module '@react-cad/core' or its corresponding type declarations.
+react-cad-main/packages/renderer/src/instance.ts(11,8): error TS2307: Cannot find module 'types' or its corresponding type declarations.
+react-cad-main/packages/renderer/src/instance.ts(60,14): error TS2339: Property 'node' does not exist on type 'never'.
+react-cad-main/packages/renderer/src/instance.ts(80,14): error TS2339: Property 'node' does not exist on type 'never'.
+react-cad-main/packages/renderer/src/instance.ts(94,14): error TS2339: Property 'node' does not exist on type 'never'.
+react-cad-main/packages/renderer/src/instance.ts(204,55): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'string'.
+react-cad-main/packages/renderer/src/instance.ts(206,43): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'string'.
+react-cad-main/packages/renderer/src/types.ts(1,23): error TS2307: Cannot find module 'react-reconciler' or its corresponding type declarations.
+react-cad-main/packages/renderer/src/types.ts(9,8): error TS2307: Cannot find module '@react-cad/core' or its corresponding type declarations.
+react-cad-main/packages/renderer/src/types.ts(10,29): error TS2307: Cannot find module 'instance' or its corresponding type declarations.
+react-cad-main/packages/storybook-framework/src/client/docs/config.tsx(2,22): error TS2307: Cannot find module 'react-lazyload' or its corresponding type declarations.
+react-cad-main/packages/storybook-framework/src/client/docs/config.tsx(3,28): error TS2307: Cannot find module '@react-cad/viewer' or its corresponding type declarations.
+react-cad-main/packages/storybook-framework/src/client/docs/config.tsx(7,8): error TS2307: Cannot find module '@storybook/docs-tools' or its corresponding type declarations.
+react-cad-main/packages/storybook-framework/src/client/docs/config.tsx(8,46): error TS2307: Cannot find module '@storybook/csf' or its corresponding type declarations.
+react-cad-main/packages/storybook-framework/src/client/docs/config.tsx(9,10): error TS2305: Module '"@storybook/react/dist/esm/client/docs/jsxDecorator"' has no exported member 'jsxDecorator'.
+react-cad-main/packages/storybook-framework/src/client/docs/config.tsx(10,10): error TS2305: Module '"@storybook/react/dist/esm/client/docs/extractArgTypes"' has no exported member 'extractArgTypes'.
+react-cad-main/packages/storybook-framework/src/client/index.ts(14,22): error TS2339: Property 'hot' does not exist on type 'Module'.
+react-cad-main/packages/storybook-framework/src/client/index.ts(14,36): error TS2339: Property 'hot' does not exist on type 'Module'.
+react-cad-main/packages/storybook-framework/src/client/index.ts(15,10): error TS2339: Property 'hot' does not exist on type 'Module'.
+react-cad-main/packages/storybook-framework/src/client/preview/hooks.ts(2,35): error TS2307: Cannot find module '@react-cad/core' or its corresponding type declarations.
+react-cad-main/packages/storybook-framework/src/client/preview/hooks.ts(11,17): error TS2307: Cannot find module '@react-cad/core' or its corresponding type declarations.
+react-cad-main/packages/storybook-framework/src/client/preview/index.ts(2,23): error TS2307: Cannot find module '@storybook/core' or its corresponding type declarations.
+react-cad-main/packages/storybook-framework/src/client/preview/index.ts(3,47): error TS2307: Cannot find module '@storybook/addons' or its corresponding type declarations.
+react-cad-main/packages/storybook-framework/src/client/preview/index.ts(23,35): error TS2339: Property 'storiesOf' does not exist on type 'ClientApi'.
+react-cad-main/packages/storybook-framework/src/client/preview/index.ts(25,15): error TS2339: Property 'storiesOf' does not exist on type 'ClientApi'.
+react-cad-main/packages/storybook-framework/src/client/preview/index.ts(33,38): error TS2339: Property 'addDecorator' does not exist on type 'ClientApi'.
+react-cad-main/packages/storybook-framework/src/client/preview/index.ts(34,30): error TS2339: Property 'addDecorator' does not exist on type 'ClientApi'.
+react-cad-main/packages/storybook-framework/src/client/preview/index.ts(35,39): error TS2339: Property 'addParameters' does not exist on type 'ClientApi'.
+react-cad-main/packages/storybook-framework/src/client/preview/index.ts(36,31): error TS2339: Property 'addParameters' does not exist on type 'ClientApi'.
+react-cad-main/packages/storybook-framework/src/client/preview/render.tsx(7,8): error TS2307: Cannot find module '@storybook/preview-web' or its corresponding type declarations.
+react-cad-main/packages/storybook-framework/src/client/preview/render.tsx(8,31): error TS2307: Cannot find module '@storybook/store' or its corresponding type declarations.
+react-cad-main/packages/storybook-framework/src/client/preview/render.tsx(10,28): error TS2307: Cannot find module '@react-cad/viewer' or its corresponding type declarations.
+react-cad-main/packages/storybook-framework/src/client/preview/render.tsx(47,12): error TS2339: Property 'render' does not exist on type 'typeof import("D:/Codebase/mgi-dream/node_modules/.pnpm/@types+react-dom@19.2.3_@types+react@19.2.14/node_modules/@types/react-dom/index")'.
+react-cad-main/packages/storybook-framework/src/client/preview/types-6-0.ts(6,8): error TS2307: Cannot find module '@storybook/csf' or its corresponding type declarations.
+react-cad-main/packages/storybook-framework/src/client/preview/types-6-0.ts(16,8): error TS2307: Cannot find module '@storybook/addons' or its corresponding type declarations.
+react-cad-main/packages/storybook-framework/src/client/preview/types-7-0.ts(1,27): error TS2307: Cannot find module '@storybook/csf' or its corresponding type declarations.
+react-cad-main/packages/storybook-framework/src/client/preview/types.ts(2,36): error TS2307: Cannot find module '@storybook/core' or its corresponding type declarations.
+react-cad-main/packages/storybook-framework/src/server/build.ts(1,29): error TS2307: Cannot find module '@storybook/core/server' or its corresponding type declarations.
+react-cad-main/packages/storybook-framework/src/server/findEsm.ts(2,36): error TS2307: Cannot find module 'find-up' or its corresponding type declarations.
+react-cad-main/packages/storybook-framework/src/server/framework-preset-react-cad-docs.ts(1,38): error TS2307: Cannot find module '@storybook/core-common' or its corresponding type declarations.
+react-cad-main/packages/storybook-framework/src/server/framework-preset-react-cad-docs.ts(3,35): error TS2307: Cannot find module '@storybook/docs-tools' or its corresponding type declarations.
+react-cad-main/packages/storybook-framework/src/server/framework-preset-react-cad-docs.ts(6,3): error TS2305: Module '"@storybook/react/dist/cjs/server/framework-preset-react-docs"' has no exported member 'babel'.
+react-cad-main/packages/storybook-framework/src/server/framework-preset-react-cad-docs.ts(7,3): error TS2305: Module '"@storybook/react/dist/cjs/server/framework-preset-react-docs"' has no exported member 'webpackFinal'.
+react-cad-main/packages/storybook-framework/src/server/framework-preset-react-cad.ts(3,34): error TS2307: Cannot find module '@babel/core' or its corresponding type declarations.
+react-cad-main/packages/storybook-framework/src/server/framework-preset-react-cad.ts(4,45): error TS2307: Cannot find module 'webpack' or its corresponding type declarations.
+react-cad-main/packages/storybook-framework/src/server/framework-preset-react-cad.ts(5,24): error TS2307: Cannot find module 'copy-webpack-plugin' or its corresponding type declarations.
+react-cad-main/packages/storybook-framework/src/server/framework-preset-react-cad.ts(6,38): error TS2307: Cannot find module '@storybook/core-common' or its corresponding type declarations.
+react-cad-main/packages/storybook-framework/src/server/framework-preset-react-cad.ts(9,3): error TS2305: Module '"@storybook/react/dist/cjs/server/framework-preset-react"' has no exported member 'babel'.
+react-cad-main/packages/storybook-framework/src/server/framework-preset-react-cad.ts(10,3): error TS2305: Module '"@storybook/react/dist/cjs/server/framework-preset-react"' has no exported member 'webpackFinal'.
+react-cad-main/packages/storybook-framework/src/server/index.ts(1,26): error TS2307: Cannot find module '@storybook/core/server' or its corresponding type declarations.
+react-cad-main/packages/storybook-framework/src/server/options.ts(1,22): error TS2307: Cannot find module 'read-pkg-up' or its corresponding type declarations.
+react-cad-main/packages/storybook-framework/src/server/options.ts(2,34): error TS2307: Cannot find module '@storybook/core-common' or its corresponding type declarations.
+react-cad-main/packages/storybook-framework/src/server/preset.ts(1,38): error TS2307: Cannot find module '@storybook/core-common' or its corresponding type declarations.
+react-cad-main/packages/storybook-framework/src/server/theme.ts(1,24): error TS2307: Cannot find module '@storybook/addons' or its corresponding type declarations.
+react-cad-main/packages/storybook-framework/src/server/theme.ts(2,24): error TS2307: Cannot find module '@storybook/theming' or its corresponding type declarations.
+react-cad-main/packages/viewer/src/ErrorOverlay/index.tsx(3,31): error TS2307: Cannot find module '@react-cad/core' or its corresponding type declarations.
+react-cad-main/packages/viewer/src/ErrorOverlay/RedBox.tsx(3,30): error TS2307: Cannot find module 'error-stack-parser' or its corresponding type declarations.
+react-cad-main/packages/viewer/src/ErrorOverlay/RedBox.tsx(5,31): error TS2307: Cannot find module 'sourcemapped-stacktrace' or its corresponding type declarations.
+react-cad-main/packages/viewer/src/ExportButton.tsx(2,32): error TS2307: Cannot find module '@storybook/theming' or its corresponding type declarations.
+react-cad-main/packages/viewer/src/ExportButton.tsx(3,43): error TS2307: Cannot find module 'react-icons/tb' or its corresponding type declarations.
+react-cad-main/packages/viewer/src/ExportButton.tsx(65,8): error TS2322: Type '{ children: Element; title: string; onClick: () => void; }' is not assignable to type 'IntrinsicAttributes & ButtonProps'.
+  Property 'children' does not exist on type 'IntrinsicAttributes & ButtonProps'.
+react-cad-main/packages/viewer/src/ExportButton.tsx(68,8): error TS2322: Type '{ children: Element[]; open: boolean; }' is not assignable to type 'IntrinsicAttributes & { open: boolean; }'.
+  Property 'children' does not exist on type 'IntrinsicAttributes & { open: boolean; }'.
+react-cad-main/packages/viewer/src/hooks/useExport.ts(2,49): error TS2307: Cannot find module '@react-cad/core' or its corresponding type declarations.
+react-cad-main/packages/viewer/src/hooks/useProgressQueue.ts(2,40): error TS2307: Cannot find module '@react-cad/core' or its corresponding type declarations.
+react-cad-main/packages/viewer/src/hooks/useProgressQueue.ts(81,29): error TS2554: Expected 1 arguments, but got 0.
+react-cad-main/packages/viewer/src/hooks/useReactCADRenderer.tsx(2,31): error TS2307: Cannot find module 'react-error-boundary' or its corresponding type declarations.
+react-cad-main/packages/viewer/src/hooks/useReactCADRenderer.tsx(3,49): error TS2307: Cannot find module '@react-cad/core' or its corresponding type declarations.
+react-cad-main/packages/viewer/src/hooks/useReactCADRenderer.tsx(4,28): error TS2307: Cannot find module '@react-cad/renderer' or its corresponding type declarations.
+react-cad-main/packages/viewer/src/hooks/useReactCADView.ts(2,49): error TS2307: Cannot find module '@react-cad/core' or its corresponding type declarations.
+react-cad-main/packages/viewer/src/hooks/useReactCADView.ts(13,27): error TS2554: Expected 1 arguments, but got 0.
+react-cad-main/packages/viewer/src/hooks/useReactCADView.ts(14,22): error TS2554: Expected 1 arguments, but got 0.
+react-cad-main/packages/viewer/src/ProgressBar.tsx(3,40): error TS2307: Cannot find module '@react-cad/core' or its corresponding type declarations.
+react-cad-main/packages/viewer/src/ProgressBar.tsx(13,3): error TS2339: Property 'children' does not exist on type 'Props'.
+react-cad-main/packages/viewer/src/ProgressBar.tsx(99,13): error TS2322: Type '{ children: string; css: { width: string; margin: number; backgroundColor: string; height: number; appearance: string; border: string; padding: number; display: string; "&::-webkit-progress-bar": { ...; }; "&::-webkit-progress-value": { ...; }; "&::-moz-progress-bar": { ...; }; }; max: number; value: number; }' is not assignable to type 'DetailedHTMLProps<ProgressHTMLAttributes<HTMLProgressElement>, HTMLProgressElement>'.
+  Property 'css' does not exist on type 'DetailedHTMLProps<ProgressHTMLAttributes<HTMLProgressElement>, HTMLProgressElement>'.
+react-cad-main/packages/viewer/src/ReactCADNodeViewer.tsx(6,8): error TS2307: Cannot find module '@react-cad/core' or its corresponding type declarations.
+react-cad-main/packages/viewer/src/ReactCADNodeViewer.tsx(136,10): error TS2322: Type '{ children: Element; options: ViewOptions; setOptions: Dispatch<SetStateAction<ViewOptions>>; exportFns: ExportFns; ... 5 more ...; borderless: boolean; }' is not assignable to type 'IntrinsicAttributes & Props'.
+  Property 'children' does not exist on type 'IntrinsicAttributes & Props'.
+react-cad-main/packages/viewer/src/ReactCADNodeViewer.tsx(147,12): error TS2322: Type '{ children: Element; progressIndicator: any; queuedTasks: number; }' is not assignable to type 'IntrinsicAttributes & Props'.
+  Property 'children' does not exist on type 'IntrinsicAttributes & Props'.
+react-cad-main/packages/viewer/src/ReactCADViewer.tsx(8,31): error TS2307: Cannot find module '@react-cad/core' or its corresponding type declarations.
+react-cad-main/packages/viewer/src/Toolbar.tsx(19,8): error TS2307: Cannot find module 'react-icons/tb' or its corresponding type declarations.
+react-cad-main/packages/viewer/src/Toolbar.tsx(50,3): error TS2339: Property 'children' does not exist on type 'Props'.
+react-cad-main/packages/viewer/src/Toolbar.tsx(180,7): error TS2322: Type '{ children: Element[]; css: { "&:focus": { outline: string; }; "&, & *": { boxSizing: string; }; border?: string; display: string; alignItems: string; width: string; height: string; }; tabIndex: number; onKeyPress: (event: KeyboardEvent<...>) => void; ref: RefObject<...>; }' is not assignable to type 'DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement>'.
+  Property 'css' does not exist on type 'DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement>'.
+react-cad-main/packages/viewer/src/Toolbar.tsx(208,10): error TS2559: Type '{ children: Element[]; }' has no properties in common with type 'IntrinsicAttributes'.
+react-cad-main/packages/viewer/src/Toolbar.tsx(209,12): error TS2322: Type '{ children: Element; title: string; onClick: () => void; }' is not assignable to type 'IntrinsicAttributes & ButtonProps'.
+  Property 'children' does not exist on type 'IntrinsicAttributes & ButtonProps'.
+react-cad-main/packages/viewer/src/Toolbar.tsx(212,12): error TS2322: Type '{ children: Element; title: string; onClick: () => void; }' is not assignable to type 'IntrinsicAttributes & ButtonProps'.
+  Property 'children' does not exist on type 'IntrinsicAttributes & ButtonProps'.
+react-cad-main/packages/viewer/src/Toolbar.tsx(215,12): error TS2322: Type '{ children: Element; title: string; onClick: () => void; }' is not assignable to type 'IntrinsicAttributes & ButtonProps'.
+  Property 'children' does not exist on type 'IntrinsicAttributes & ButtonProps'.
+react-cad-main/packages/viewer/src/Toolbar.tsx(220,10): error TS2559: Type '{ children: Element[]; }' has no properties in common with type 'IntrinsicAttributes'.
+react-cad-main/packages/viewer/src/Toolbar.tsx(221,12): error TS2322: Type '{ children: Element; title: string; onClick: () => void; }' is not assignable to type 'IntrinsicAttributes & ButtonProps'.
+  Property 'children' does not exist on type 'IntrinsicAttributes & ButtonProps'.
+react-cad-main/packages/viewer/src/Toolbar.tsx(224,12): error TS2322: Type '{ children: Element; title: string; onClick: () => void; }' is not assignable to type 'IntrinsicAttributes & ButtonProps'.
+  Property 'children' does not exist on type 'IntrinsicAttributes & ButtonProps'.
+react-cad-main/packages/viewer/src/Toolbar.tsx(230,12): error TS2322: Type '{ children: Element; title: string; onClick: () => void; }' is not assignable to type 'IntrinsicAttributes & ButtonProps'.
+  Property 'children' does not exist on type 'IntrinsicAttributes & ButtonProps'.
+react-cad-main/packages/viewer/src/Toolbar.tsx(233,12): error TS2322: Type '{ children: Element; title: string; onClick: () => void; }' is not assignable to type 'IntrinsicAttributes & ButtonProps'.
+  Property 'children' does not exist on type 'IntrinsicAttributes & ButtonProps'.
+react-cad-main/packages/viewer/src/Toolbar.tsx(236,12): error TS2322: Type '{ children: Element; title: string; onClick: () => void; }' is not assignable to type 'IntrinsicAttributes & ButtonProps'.
+  Property 'children' does not exist on type 'IntrinsicAttributes & ButtonProps'.
+react-cad-main/packages/viewer/src/Toolbar.tsx(239,12): error TS2322: Type '{ children: Element; title: string; onClick: () => void; }' is not assignable to type 'IntrinsicAttributes & ButtonProps'.
+  Property 'children' does not exist on type 'IntrinsicAttributes & ButtonProps'.
+react-cad-main/packages/viewer/src/Toolbar.tsx(242,12): error TS2322: Type '{ children: Element; title: string; onClick: () => void; }' is not assignable to type 'IntrinsicAttributes & ButtonProps'.
+  Property 'children' does not exist on type 'IntrinsicAttributes & ButtonProps'.
+react-cad-main/packages/viewer/src/Toolbar.tsx(247,10): error TS2559: Type '{ children: Element[]; }' has no properties in common with type 'IntrinsicAttributes'.
+react-cad-main/packages/viewer/src/Toolbar.tsx(248,12): error TS2322: Type '{ children: Element; active: boolean; title: string; onClick: () => void; }' is not assignable to type 'IntrinsicAttributes & ButtonProps'.
+  Property 'children' does not exist on type 'IntrinsicAttributes & ButtonProps'.
+react-cad-main/packages/viewer/src/Toolbar.tsx(255,12): error TS2322: Type '{ children: Element; active: boolean; title: string; onClick: () => void; }' is not assignable to type 'IntrinsicAttributes & ButtonProps'.
+  Property 'children' does not exist on type 'IntrinsicAttributes & ButtonProps'.
+react-cad-main/packages/viewer/src/Toolbar.tsx(264,10): error TS2559: Type '{ children: Element[]; }' has no properties in common with type 'IntrinsicAttributes'.
+react-cad-main/packages/viewer/src/Toolbar.tsx(265,12): error TS2322: Type '{ children: Element; title: string; onClick: () => void; active: boolean; }' is not assignable to type 'IntrinsicAttributes & ButtonProps'.
+  Property 'children' does not exist on type 'IntrinsicAttributes & ButtonProps'.
+react-cad-main/packages/viewer/src/Toolbar.tsx(272,12): error TS2322: Type '{ children: Element; title: string; onClick: () => void; active: boolean; }' is not assignable to type 'IntrinsicAttributes & ButtonProps'.
+  Property 'children' does not exist on type 'IntrinsicAttributes & ButtonProps'.
+react-cad-main/packages/viewer/src/Toolbar.tsx(281,10): error TS2559: Type '{ children: Element[]; }' has no properties in common with type 'IntrinsicAttributes'.
+react-cad-main/packages/viewer/src/Toolbar.tsx(282,12): error TS2322: Type '{ children: Element; title: string; onClick: () => void; active: boolean; }' is not assignable to type 'IntrinsicAttributes & ButtonProps'.
+  Property 'children' does not exist on type 'IntrinsicAttributes & ButtonProps'.
+react-cad-main/packages/viewer/src/Toolbar.tsx(289,12): error TS2322: Type '{ children: Element; title: string; onClick: () => void; active: boolean; }' is not assignable to type 'IntrinsicAttributes & ButtonProps'.
+  Property 'children' does not exist on type 'IntrinsicAttributes & ButtonProps'.
+react-cad-main/packages/viewer/src/Toolbar.tsx(298,10): error TS2559: Type '{ children: Element[]; }' has no properties in common with type 'IntrinsicAttributes'.
+react-cad-main/packages/viewer/src/Toolbar.tsx(299,12): error TS2322: Type '{ children: Element; title: string; onClick: () => void; active: boolean; }' is not assignable to type 'IntrinsicAttributes & ButtonProps'.
+  Property 'children' does not exist on type 'IntrinsicAttributes & ButtonProps'.
+react-cad-main/packages/viewer/src/Toolbar.tsx(306,12): error TS2322: Type '{ children: Element; title: string; onClick: () => void; active: boolean; }' is not assignable to type 'IntrinsicAttributes & ButtonProps'.
+  Property 'children' does not exist on type 'IntrinsicAttributes & ButtonProps'.
+react-cad-main/packages/viewer/src/Toolbar.tsx(315,10): error TS2559: Type '{ children: Element; }' has no properties in common with type 'IntrinsicAttributes'.
+react-cad-main/packages/viewer/src/ui.tsx(3,35): error TS2339: Property 'children' does not exist on type '{}'.
+react-cad-main/packages/viewer/src/ui.tsx(17,3): error TS2339: Property 'children' does not exist on type 'ButtonProps'.
+react-cad-main/packages/viewer/src/ui.tsx(24,7): error TS2322: Type '{ children: any; type: "button"; onClick: (event: MouseEvent<HTMLButtonElement, MouseEvent>) => void; title: string; css: { backgroundColor: string; ... 15 more ...; "&:focus:not(:focus-visible)": { ...; }; }; }' is not assignable to type 'DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement>'.
+  Property 'css' does not exist on type 'DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement>'.
+react-cad-main/packages/viewer/src/ui.tsx(63,5): error TS2322: Type '{ css: { height: number; width: number; backgroundColor: string; margin: number; }; }' is not assignable to type 'DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement>'.
+  Property 'css' does not exist on type 'DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement>'.
+react-cad-main/packages/viewer/src/ui.tsx(72,37): error TS2339: Property 'children' does not exist on type '{}'.
+react-cad-main/packages/viewer/src/ui.tsx(76,63): error TS2339: Property 'children' does not exist on type '{ open: boolean; }'.
+react-cad-main/packages/viewer/src/ui.tsx(116,59): error TS2339: Property 'a' does not exist on type 'IntrinsicElements'.

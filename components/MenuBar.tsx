@@ -61,7 +61,7 @@ const FileMenuBar: React.FC<FileMenuBarProps> = ({ projectName, appType, onToggl
     const formattedUser = `User: ${firstName} ${lastInitial}`.trim();
 
     // Group & Company
-    const groupName = profile?.role === 'admin' ? 'AeroSpace Command' : 'Engineering Alpha';
+    const groupName = profile?.workgroup || (profile?.role === 'admin' ? 'AeroSpace Command' : 'Engineering Alpha');
     const formattedGroup = `Group: ${groupName}`;
     const accountCode = 'A/C: MGI';
 
